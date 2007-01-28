@@ -21,26 +21,26 @@ void control(Display *display, Input *input)
 			switch(event.key.keysym.sym) {
 			case SDLK_ESCAPE:
 			case SDLK_q:
-				input->state = QUIT;
+				input->state = Input::QUIT;
 				break;
 			case SDLK_f:
 				SDL_WM_ToggleFullScreen(display->screen);
 				break;
 			case SDLK_p:
 			case SDLK_PAUSE:
-				if(input->state == PLAY)  {
-					input->state = PAUSE;
+				if(input->state == Input::PLAY)  {
+					input->state = Input::PAUSE;
 					display_message(display, "paused");
 				}
-				else if(input->state == PAUSE)
-					input->state = PLAY;
+				else if(input->state == Input::PAUSE)
+					input->state = Input::PLAY;
 				break;
 			case SDLK_SPACE:
 			case SDLK_RETURN:
-				if(input->state == WELCOME || input->state == GAMEOVER)
-					input->state = INIT;
-				else if(input->state == PAUSE)
-					input->state = PLAY;
+				if(input->state == Input::WELCOME || input->state == Input::GAMEOVER)
+					input->state = Input::INIT;
+				else if(input->state == Input::PAUSE)
+					input->state = Input::PLAY;
 				break;
 			default:
 				break;
@@ -49,7 +49,7 @@ void control(Display *display, Input *input)
 			input->pressed[event.key.keysym.sym] = (event.type == SDL_KEYDOWN);
 			break;
 		case SDL_QUIT:
-			input->state = QUIT;
+			input->state = Input::QUIT;
 			break;
 		case SDL_VIDEORESIZE:
 			viewport(display, event.resize.w, event.resize.h, 0);
@@ -80,24 +80,24 @@ int main(int argc, char *argv[])
 	Ship player;
 
 	display_init(&display);
-	input.state = WELCOME;
+	input.state = Input::WELCOME;
 	display_message(&display, "welcome.  [press space]");
 
 	float dt = 0;
-	while(input.state != QUIT) {
+	while(input.state != Input::QUIT) {
 		int t0 = SDL_GetTicks();
 		display.rect_n = 0;
 
 		control(&display, &input);
 
 		switch(input.state) {
-		case INIT:
+		case Input::INIT:
 			ship_init(&player, 1);
 			ship_init(&digger, 12);
 			cave_init(&cave,&digger);
-			input.state = PLAY;
+			input.state = Input::PLAY;
 			break;
-		case PLAY:
+		case Input::PLAY:
 			display_start_frame(&display, &player);
 
 			player_control(&player, &input);
@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
 			ship_move(&digger, dt);
 			if(collision(&cave, &player) <= 0) {
 				display_message(&display, "gameover.  [press space]");
-				input.state = GAMEOVER;
+				input.state = Input::GAMEOVER;
 			}
 			cave_gen(&cave, &digger);
 
@@ -114,10 +114,10 @@ int main(int argc, char *argv[])
 			ship_model(&player);
 			display_end_frame(&display, &player);
 			break;
-		case WELCOME:
-		case PAUSE:
-		case GAMEOVER:
-		case QUIT:
+		case Input::WELCOME:
+		case Input::PAUSE:
+		case Input::GAMEOVER:
+		case Input::QUIT:
 			break;
 		}
 

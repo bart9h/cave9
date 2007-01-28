@@ -11,7 +11,7 @@ typedef struct {
 	SDL_Rect rect[16];
 	int rect_n;
 	Vec3 cam, target;
-	GLfloat near, far;
+	GLfloat near_plane, far_plane;
 } Display;
 
 void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp);

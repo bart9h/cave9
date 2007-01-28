@@ -1,13 +1,8 @@
 #ifndef math_h_included
 #define math_h_included
 
+#include <SDL_OpenGL.h>
 #include <GL/gl.h>
-
-#ifndef bool
-typedef unsigned char bool;
-#define false 0
-#define true  1
-#endif
 
 typedef GLfloat Vec3[3];
 

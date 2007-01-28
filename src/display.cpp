@@ -1,4 +1,4 @@
-
+#include <SDL_OpenGL.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <stdlib.h>
@@ -38,7 +38,7 @@ void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp)
 	
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(45,-w/(GLfloat)h,display->near,display->far);
+	gluPerspective(45,-w/(GLfloat)h,display->near_plane,display->far_plane);
 	
 
 	// settings
@@ -57,8 +57,8 @@ void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp)
 	glFogi(GL_FOG_MODE, GL_LINEAR);
 	GLfloat fog_color[] = {0,0,0,1};
 	glFogfv(GL_FOG_COLOR, fog_color);
-	glFogf(GL_FOG_START, display->near);
-	glFogf(GL_FOG_END, display->far);
+	glFogf(GL_FOG_START, display->near_plane);
+	glFogf(GL_FOG_END, display->far_plane);
 	glEnable(GL_FOG);
 #endif
 
@@ -177,8 +177,8 @@ void display_init(Display *display)
 	atexit(SDL_Quit);
 
 	display->rect_n = 0;
-	display->near = EPSILON;
-	display->far = CAVE_DEPTH * SEGMENT_LEN;
+	display->near_plane = EPSILON;
+	display->far_plane = CAVE_DEPTH * SEGMENT_LEN;
 	SET(display->cam,0,0,0);
 	SET(display->target,0,0,1);
 

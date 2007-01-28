@@ -25,7 +25,7 @@ void cave_gen(Cave *cave, Ship *digger);
 void cave_init(Cave *cave, Ship *digger);
 void ship_init(Ship* ship, float radius);
 void ship_move(Ship *ship, float dt);
-void digger_control();
+void digger_control(Ship *ship);
 float collision(Cave *, Ship *);
 
 #endif
