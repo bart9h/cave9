@@ -1,0 +1,25 @@
+TARGET=cave9.exe
+
+CC=/opt/mingw/bin/i586-mingw32msvc-gcc
+
+SRCS=\
+	 main.c \
+	 display.c \
+	 game.c \
+
+CFLAGS = -Wall -Werror -ggdb -I/opt/mingw/include \
+	 -I/opt/mingw/include/SDL -D_REENTRANT
+LDFLAGS = -L/opt/mingw/lib -lSDL_ttf -lSDL -ljpeg -lpng -lz \
+	  -lm -mconsole -lwinmm -lgdi32 -lmingw32 -lSDLmain -lglu32  -lopengl32
+
+OBJS = $(subst .c,.o,$(SRCS))
+
+$(TARGET): $(OBJS)
+	$(CC) -static $^ $(LDFLAGS) -o $@
+
+clean:
+	rm -f $(TARGET) *.o core*
+
+game.o: game.c game.h vec.h
+display.o: display.c display.h vec.h
+main.o: main.c vec.h display.h game.h
