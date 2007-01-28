@@ -15,7 +15,7 @@ void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp)
 	SDL_GL_SetAttribute( SDL_GL_RED_SIZE, bpp/3 );
 	SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, bpp/3 );
 	SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, bpp/3 );
-	SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, bpp );
+	SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 16 );
 	SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
 #if 1
 	SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1 );
@@ -46,7 +46,10 @@ void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp)
 	glClearDepth(1);	
 	glDepthFunc(GL_LEQUAL);	
 	glEnable(GL_DEPTH_TEST);
+	//glEnable(GL_CULL_FACE);
+	//glCullFace(GL_BACK);
 	glShadeModel(GL_SMOOTH);
+	//glShadeModel(GL_FLAT);
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -175,7 +178,7 @@ void display_init(Display *display)
 
 	display->rect_n = 0;
 	display->near = EPSILON;
-	display->far = 100;
+	display->far = CAVE_DEPTH * SEGMENT_LEN;
 	SET(display->cam,0,0,0);
 	SET(display->target,0,0,1);
 
@@ -187,7 +190,7 @@ void display_init(Display *display)
 	}
 	atexit(TTF_Quit);
 
-	display->font = TTF_OpenFont("profont.ttf", 16); // FIXME path
+	display->font = TTF_OpenFont("font.ttf", 16); // FIXME path
 	if(display->font == NULL) {
 		fprintf(stderr, "TTF_OpenFont(): %s\n", TTF_GetError());
 		exit(1);

@@ -15,7 +15,7 @@ void cave_gen(Cave *cave, Ship *digger)
 {
 	int i = (cave->i-1+CAVE_DEPTH)%CAVE_DEPTH;
 	//printf("[%d/%d] d(%f), c(%f)\n", cave->i, i, digger->pos[2], cave->segs[i][0][2] );
-	if( digger->pos[2] > 1 && digger->pos[2] - 1 < cave->segs[i][0][2] )
+	if( digger->pos[2] > 1 && digger->pos[2] - SEGMENT_LEN < cave->segs[i][0][2] )
 		return;
 	//puts("gen");
 	for( i = 0; i < N_SEGS; ++i ) {
@@ -36,7 +36,6 @@ void cave_gen(Cave *cave, Ship *digger)
 void cave_init(Cave *cave, Ship *digger)
 {
 	cave->i=0;
-//while(digger->pos[2] < CAVE_DEPTH) {
 	do {
 		digger_control(digger);
 		ship_move(digger, 1./FPS);
@@ -81,11 +80,51 @@ void ship_move(Ship *ship, float dt)
 #endif
 }
 
-void digger_control(Ship *player)
+void digger_control(Ship *ship)
 {
-	player->lefton  = rand()%2 ? true : false;
-	player->righton = rand()%2 ? true : false;
-	//printf("l(%d), r(%d)\n", player->lefton, player->righton);
+#if 0
+	ship->lefton  = rand()%2 ? true : false;
+	ship->righton = rand()%2 ? true : false;
+#else
+	static bool cave_change = true;
+	static float repeat = 0;
+
+	float skill = log((ship->pos[2]+200)/200);
+	if(repeat * ship->vel[1] < 0)
+		repeat = 0;
+	repeat += ship->vel[1]/1000.;
+
+	int dir = ship->lefton || ship->righton ? -1: 1;
+	float velocity_change_rate = 1./3.;
+	if(
+		(RAND < abs(velocity_change_rate*ship->vel[1]/skill) && ship->vel[1]*dir < 0)
+		|| (RAND < abs(repeat * skill) && repeat*dir < 0)
+	) {
+		ship->lefton  = !ship->lefton;
+		ship->righton = !ship->righton;
+	}
+	
+	float max_cave_height = 10+30/(1+skill);
+	float min_cave_height = max_cave_height/skill;
+	
+	float cave_change_rate = .2;
+	if(RAND > cave_change_rate/skill)
+		 cave_change = !cave_change;
+
+	if(ship->radius < min_cave_height) {
+		cave_change = !cave_change;
+		ship->radius = min_cave_height;
+	}
+		
+	if(ship->radius > max_cave_height) {
+		cave_change = !cave_change;
+		ship->radius = max_cave_height;
+	}
+		
+	if(cave_change)
+		ship->radius += RAND>.5?-1:1;
+#endif
+	//printf("l(%d), r(%d)\n", ship->lefton, ship->righton);
 }
 
 float collision(Cave *cave, Ship *ship)

@@ -54,6 +54,9 @@ void control(Display *display, Input *input)
 		case SDL_VIDEORESIZE:
 			viewport(display, event.resize.w, event.resize.h, 0);
 			break;
+	       case SDL_VIDEOEXPOSE:
+			//TODO
+			break;
 		}
 	}
 }

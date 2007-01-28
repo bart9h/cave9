@@ -5,7 +5,8 @@
 
 #define FPS 30
 #define N_SEGS 30
-#define CAVE_DEPTH 100
+#define CAVE_DEPTH 60
+#define SEGMENT_LEN 3.0
 
 typedef struct {
 	// triangle strip

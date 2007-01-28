@@ -17,6 +17,8 @@ typedef GLfloat Vec3[3];
 
 // FIXME parenthize
 
+#define RAND (rand()*1./RAND_MAX)
+
 #define COPY(a,b) \
 	a[0]=b[0]; \
 	a[1]=b[1]; \
