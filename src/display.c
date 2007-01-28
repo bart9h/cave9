@@ -3,6 +3,7 @@
 #include <GL/glu.h>
 #include <stdlib.h>
 #include <math.h>
+#include <assert.h>
 #include "display.h"
 
 void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp)
@@ -99,24 +100,38 @@ void ship_model(Ship *ship)
 {
 }
 
-void render_hud(Display *display, Ship *player)
+void render_text(Display *display, const char *text, float x, float y)
 {
-	char buf[32];
 	SDL_Color color = {0xff,0xff,0xff,0xff};
-	sprintf(buf, "collision %.1f  velocity %.3fKm/s  score %.1f", 
-			player->dist, LEN(player->vel), player->pos[2]);
-	SDL_Surface *label = TTF_RenderText_Blended(display->font, buf, color);
+	SDL_Surface *label = TTF_RenderText_Blended(display->font, text, color);
+	assert(label != NULL);
+
 	display->rect[display->rect_n].w = label->w;
 	display->rect[display->rect_n].h = label->h;
-	display->rect[display->rect_n].x = 
-		display->screen->w-display->rect[display->rect_n].w-display->screen->w/20;
-	display->rect[display->rect_n].y = 
-		display->screen->h-display->rect[display->rect_n].h-display->screen->h/20;
+	display->rect[display->rect_n].x = x*display->screen->w - .5*label->w;
+	display->rect[display->rect_n].y = y*display->screen->h - .5*label->h;
+
 	SDL_FillRect(display->screen, &display->rect[display->rect_n], 
-		SDL_MapRGBA(display->screen->format,
-			0x00,0x00,0x80,0xff));
+		SDL_MapRGBA(display->screen->format, 0x00,0x00,0x80,0xff));
 	SDL_BlitSurface(label, NULL, display->screen, &display->rect[display->rect_n]);
+
+	SDL_FreeSurface(label);
 	++display->rect_n;
+}
+
+void display_hud(Display *display, Ship *player)
+{
+	char buf[80];
+	sprintf(buf, "collision %.1f  velocity %.3fKm/s  score %.1f", 
+			player->dist, LEN(player->vel), player->pos[2]);
+	render_text(display, buf, .5, .9);
+}
+
+void display_message(Display *display, const char *msg)
+{
+	render_text(display, msg, .5, .5);
+	SDL_UpdateRects(display->screen, display->rect_n, display->rect); // only update 2D
+	SDL_GL_SwapBuffers(); // update geral
 }
 
 void display_start_frame(Display *display, Ship *player)
@@ -143,11 +158,22 @@ void display_start_frame(Display *display, Ship *player)
 #endif
 }
 
+void display_end_frame(Display *display, Ship *player)
+{
+	glFinish();
+
+	display_hud(display, player);
+	SDL_UpdateRects(display->screen, display->rect_n, display->rect); // only update 2D
+
+	SDL_GL_SwapBuffers(); // update 3d
+}
+
 void display_init(Display *display)
 {
 	SDL_Init(SDL_INIT_VIDEO);
 	atexit(SDL_Quit);
 
+	display->rect_n = 0;
 	display->near = EPSILON;
 	display->far = 100;
 	SET(display->cam,0,0,0);

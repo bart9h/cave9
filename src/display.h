@@ -20,6 +20,8 @@ void ship_model(Ship *ship);
 void render_hud(Display*, Ship *player);
 void display_init(Display* display);
 void display_start_frame(Display *display, Ship *player);
+void display_end_frame(Display *display, Ship *player);
+void display_message(Display *display, const char *msg);
 
 #endif
 
