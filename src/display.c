@@ -37,7 +37,7 @@ void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp)
 	
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(45,w/(GLfloat)h,display->near,display->far);
+	gluPerspective(45,-w/(GLfloat)h,display->near,display->far);
 	
 
 	// settings
@@ -86,7 +86,7 @@ void cave_model(Cave *cave)
 			glColor4f(.4, .6*i0/N_SEGS, .9*j1/CAVE_DEPTH, 1);
 			glVertex3fv(cave->segs[j0][i0]);
                                      
-			glColor4f(.6, .6*i0/N_SEGS, .9*j0/CAVE_DEPTH, 1);
+			glColor4f(.6, .6*i0/N_SEGS, .9*(1-j0/CAVE_DEPTH), 1);
 			glVertex3fv(cave->segs[j1][i0]);
 		}
 		glEnd();
@@ -103,7 +103,8 @@ void render_hud(Display *display, Ship *player)
 {
 	char buf[32];
 	SDL_Color color = {0xff,0xff,0xff,0xff};
-	sprintf(buf, "v: %.3f Km/s   score: %.1f", LEN(player->vel), player->pos[2]);
+	sprintf(buf, "collision %.1f  velocity %.3fKm/s  score %.1f", 
+			player->dist, LEN(player->vel), player->pos[2]);
 	SDL_Surface *label = TTF_RenderText_Blended(display->font, buf, color);
 	display->rect[display->rect_n].w = label->w;
 	display->rect[display->rect_n].h = label->h;
@@ -160,7 +161,7 @@ void display_init(Display *display)
 	}
 	atexit(TTF_Quit);
 
-	display->font = TTF_OpenFont("../data/font.ttf", 16); // FIXME path
+	display->font = TTF_OpenFont("profont.ttf", 16); // FIXME path
 	if(display->font == NULL) {
 		fprintf(stderr, "TTF_OpenFont(): %s\n", TTF_GetError());
 		exit(1);

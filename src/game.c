@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <float.h>
+#include <assert.h>
 #include "vec.h"
 #include "game.h"
 
@@ -12,10 +14,10 @@ float velocity = 16;
 void cave_gen(Cave *cave, Ship *digger)
 {
 	int i = (cave->i-1+CAVE_DEPTH)%CAVE_DEPTH;
-	printf("[%d/%d] d(%f), c(%f)\n", cave->i, i, digger->pos[2], cave->segs[i][0][2] );
+	//printf("[%d/%d] d(%f), c(%f)\n", cave->i, i, digger->pos[2], cave->segs[i][0][2] );
 	if( digger->pos[2] > 1 && digger->pos[2] - 1 < cave->segs[i][0][2] )
 		return;
-	puts("gen");
+	//puts("gen");
 	for( i = 0; i < N_SEGS; ++i ) {
 		float a = i*M_PI*2/N_SEGS;
 		float r = digger->radius;
@@ -57,12 +59,12 @@ void ship_move(Ship *ship, float dt)
 	
 
 	if(ship->lefton) {
-		Vec3 leftup = {+a,a/2,0};
+		Vec3 leftup = {-a,a/2,0};
 		ADD(ship->vel, leftup);
 	}
 
 	if(ship->righton) {
-		Vec3 rightup = {-a,a/2,0};
+		Vec3 rightup = {+a,a/2,0};
 		ADD(ship->vel, rightup);
 	}
 
@@ -86,9 +88,39 @@ void digger_control(Ship *player)
 	//printf("l(%d), r(%d)\n", player->lefton, player->righton);
 }
 
-float colision(Cave *cave, Ship *ship)
+float collision(Cave *cave, Ship *ship)
 {
-	return 1;
+	int j = cave->i;
+	float min = FLT_MAX;
+	int i;;
+	for( i = 0; i < N_SEGS; ++i ) {
+		int i0 = (i+0)%N_SEGS;
+		int i1 = (i+1)%N_SEGS;
+#if 1
+		Vec3 seg;
+		SUB2(seg, cave->segs[j][i1], cave->segs[j][i0]);
+		Vec3 front = {0,0,1};
+		Vec3 normal;
+		CROSS(normal, front, seg);
+		Vec3 dist;
+		SUB2(dist, ship->pos, cave->segs[j][i0]);
+		float dir = DOT(normal, dist);
+		float len = LEN(dist);
+		if(dir < 0) len = -len;
+		if(len < min) min = len;
+#endif
+	}
+
+	assert(min != FLT_MAX);
+
+#if 0
+	int j0 = (cave->i-1+CAVE_DEPTH)%CAVE_DEPTH;
+	int j1 = (cave->i);
+	int j2 = (cave->i + 1)%CAVE_DEPTH;
+#endif
+	ship->dist = min;
+
+	return min;
 }
 
 // vim600:fdm=syntax:fdn=1:

@@ -12,6 +12,7 @@ typedef struct {
 	float radius;
 	Vec3 pos, vel;
 	bool lefton, righton;
+	float dist;
 } Ship;
 
 typedef struct {
@@ -24,7 +25,7 @@ void cave_init(Cave *cave, Ship *digger);
 void ship_init(Ship* ship, float radius);
 void ship_move(Ship *ship, float dt);
 void digger_control();
-float colision(Cave *, Ship *);
+float collision(Cave *, Ship *);
 
 #endif
 

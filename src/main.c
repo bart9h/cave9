@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
 				ship_move(&player, dt);
 				digger_control(&digger);
 				ship_move(&digger, dt);
-				if(colision(&cave, &player) <= 0)
+				if(collision(&cave, &player) <= 0)
 					input.live = 0;
 				cave_gen(&cave, &digger);
 
@@ -113,6 +113,7 @@ int main(int argc, char *argv[])
 		SDL_Delay( MAX( 1, 1000/FPS-(t1-t0) ) );
 
 		dt = (SDL_GetTicks()-t0)/1000.;
+		dt = 1./FPS;
 	}
 
 	return 0;
