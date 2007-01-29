@@ -1,4 +1,4 @@
-#include <SDL_OpenGL.h>
+#include <SDL_opengl.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <stdlib.h>
@@ -35,16 +35,16 @@ void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp)
 
 	// projection
 	glViewport(0,0,w,h);
-	
+
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluPerspective(45,-w/(GLfloat)h,display->near_plane,display->far_plane);
-	
+
 
 	// settings
 	glClearColor(0,0,0,0);
-	glClearDepth(1);	
-	glDepthFunc(GL_LEQUAL);	
+	glClearDepth(1);
+	glDepthFunc(GL_LEQUAL);
 	glEnable(GL_DEPTH_TEST);
 	//glEnable(GL_CULL_FACE);
 	//glCullFace(GL_BACK);
@@ -54,17 +54,19 @@ void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 #if 1
-	glFogi(GL_FOG_MODE, GL_LINEAR);
-	GLfloat fog_color[] = {0,0,0,1};
-	glFogfv(GL_FOG_COLOR, fog_color);
-	glFogf(GL_FOG_START, display->near_plane);
-	glFogf(GL_FOG_END, display->far_plane);
-	glEnable(GL_FOG);
+	{
+		glFogi(GL_FOG_MODE, GL_LINEAR);
+		GLfloat fog_color[] = {0,0,0,1};
+		glFogfv(GL_FOG_COLOR, fog_color);
+		glFogf(GL_FOG_START, display->near_plane);
+		glFogf(GL_FOG_END, display->far_plane);
+		glEnable(GL_FOG);
+	}
 #endif
 
 #if 1
 #ifndef GL_ARB_multisample
-	glHint(GL_MULTISAMPLE_FILTER_HINT_NV,GL_NICEST); 
+	glHint(GL_MULTISAMPLE_FILTER_HINT_NV,GL_NICEST);
 #endif
 	glEnable(GL_MULTISAMPLE_ARB);
 #endif
@@ -78,7 +80,7 @@ void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp)
 void cave_model(Cave *cave)
 {
 	int i, j;
-	glEnable(GL_BLEND); 
+	glEnable(GL_BLEND);
 	for( j = 0; j < CAVE_DEPTH-1; ++j ) {
 		int j0 = (cave->i + j)%CAVE_DEPTH;
 		int j1 = (j0 + 1)%CAVE_DEPTH;
@@ -89,13 +91,13 @@ void cave_model(Cave *cave)
 
 			glColor4f(.4, .6*i0/N_SEGS, .9*j1/CAVE_DEPTH, 1);
 			glVertex3fv(cave->segs[j0][i0]);
-                                     
+
 			glColor4f(.6, .6*i0/N_SEGS, .9*(1-j0/CAVE_DEPTH), 1);
 			glVertex3fv(cave->segs[j1][i0]);
 		}
 		glEnd();
 	}
-	glDisable(GL_BLEND); 
+	glDisable(GL_BLEND);
 
 }
 
@@ -105,27 +107,29 @@ void ship_model(Ship *ship)
 
 void render_text(Display *display, const char *text, float x, float y)
 {
+#ifdef USE_TTF
 	SDL_Color color = {0xff,0xff,0xff,0xff};
 	SDL_Surface *label = TTF_RenderText_Blended(display->font, text, color);
 	assert(label != NULL);
 
 	display->rect[display->rect_n].w = label->w;
 	display->rect[display->rect_n].h = label->h;
-	display->rect[display->rect_n].x = x*display->screen->w - .5*label->w;
-	display->rect[display->rect_n].y = y*display->screen->h - .5*label->h;
+	display->rect[display->rect_n].x = (int)(x*display->screen->w - .5*label->w);
+	display->rect[display->rect_n].y = (int)(y*display->screen->h - .5*label->h);
 
-	SDL_FillRect(display->screen, &display->rect[display->rect_n], 
+	SDL_FillRect(display->screen, &display->rect[display->rect_n],
 		SDL_MapRGBA(display->screen->format, 0x00,0x00,0x80,0xff));
 	SDL_BlitSurface(label, NULL, display->screen, &display->rect[display->rect_n]);
 
 	SDL_FreeSurface(label);
 	++display->rect_n;
+#endif
 }
 
 void display_hud(Display *display, Ship *player)
 {
 	char buf[80];
-	sprintf(buf, "collision %.1f  velocity %.3fKm/s  score %.1f", 
+	sprintf(buf, "collision %.1f  velocity %.3fKm/s  score %.1f",
 			player->dist, LEN(player->vel), player->pos[2]);
 	render_text(display, buf, .5, .9);
 }
@@ -184,6 +188,7 @@ void display_init(Display *display)
 
 	viewport(display,640,480,16);
 
+#ifdef USE_TTF
 	if(TTF_Init() != 0) {
 		fprintf(stderr, "TTF_Init(): %s\n", TTF_GetError());
 		exit(1);
@@ -195,6 +200,7 @@ void display_init(Display *display)
 		fprintf(stderr, "TTF_OpenFont(): %s\n", TTF_GetError());
 		exit(1);
 	}
+#endif
 }
 
 // vim600:fdm=syntax:fdn=1:

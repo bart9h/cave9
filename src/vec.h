@@ -1,7 +1,7 @@
 #ifndef math_h_included
 #define math_h_included
 
-#include <SDL_OpenGL.h>
+#include <SDL_opengl.h>
 #include <GL/gl.h>
 
 typedef GLfloat Vec3[3];

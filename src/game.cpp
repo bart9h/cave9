@@ -7,9 +7,9 @@
 #include "vec.h"
 #include "game.h"
 
-#define GRAVITY .8
+#define GRAVITY 3.8
 #define THRUST (GRAVITY * 2)
-float velocity = 16;
+float velocity = 30;
 
 void cave_gen(Cave *cave, Ship *digger)
 {
@@ -97,8 +97,8 @@ void digger_control(Ship *ship)
 	int dir = ship->lefton || ship->righton ? -1: 1;
 	float velocity_change_rate = 1./3.;
 	if(
-		(RAND < abs(velocity_change_rate*ship->vel[1]/skill) && ship->vel[1]*dir < 0)
-		|| (RAND < abs(repeat * skill) && repeat*dir < 0)
+		(RAND < fabs(velocity_change_rate*ship->vel[1]/skill) && ship->vel[1]*dir < 0)
+		|| (RAND < fabs(repeat * skill) && repeat*dir < 0)
 	) {
 		ship->lefton  = !ship->lefton;
 		ship->righton = !ship->righton;
@@ -131,11 +131,10 @@ float collision(Cave *cave, Ship *ship)
 {
 	int j = cave->i;
 	float min = FLT_MAX;
-	int i;;
+	int i;
 	for( i = 0; i < N_SEGS; ++i ) {
 		int i0 = (i+0)%N_SEGS;
 		int i1 = (i+1)%N_SEGS;
-#if 1
 		Vec3 seg;
 		SUB2(seg, cave->segs[j][i1], cave->segs[j][i0]);
 		Vec3 front = {0,0,1};
@@ -147,7 +146,6 @@ float collision(Cave *cave, Ship *ship)
 		float len = LEN(dist);
 		if(dir < 0) len = -len;
 		if(len < min) min = len;
-#endif
 	}
 
 	assert(min != FLT_MAX);

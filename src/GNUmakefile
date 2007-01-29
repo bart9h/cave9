@@ -1,14 +1,18 @@
 TARGET=cave9
+TTF_FLAGS=-DUSE_TTF
+TTF_LIBS=-lSDL_ttf
 
 SRCS=\
-	 main.c \
-	 display.c \
-	 game.c \
+	 main.cpp \
+	 display.cpp \
+	 game.cpp \
 
-CFLAGS = -Wall -Werror -ggdb `sdl-config --cflags` -I/usr/include/SDL
-LDFLAGS = `sdl-config --libs` -lSDL_ttf -lm -L/usr/X11/lib -lGL -lGLU
+CXXFLAGS = -Wall -Werror -ggdb `sdl-config --cflags` -I/usr/include/SDL $(TTF_FLAGS)
+LDFLAGS = `sdl-config --libs` -lm -L/usr/X11/lib -lGL -lGLU $(TTF_LIBS)
 
-OBJS = $(subst .c,.o,$(SRCS))
+CXX = gcc
+
+OBJS = $(subst .cpp,.o,$(SRCS))
 
 $(TARGET): $(OBJS)
 	gcc $(LDFLAGS) -o $@ $^
@@ -19,6 +23,7 @@ $(TARGET): $(OBJS)
 clean:
 	rm -f $(TARGET) *.o core*
 
-game.o: game.c game.h vec.h
-display.o: display.c display.h vec.h
-main.o: main.c vec.h display.h game.h
+game.o: game.cpp game.h vec.h
+display.o: display.cpp display.h vec.h
+main.o: main.cpp vec.h display.h game.h
+
