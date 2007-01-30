@@ -1,10 +1,14 @@
+
 #include <SDL_opengl.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <stdlib.h>
 #include <math.h>
+#include <float.h>
 #include <assert.h>
 #include "display.h"
+
+//#define AA //anti-aliasing
 
 void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp)
 {
@@ -17,7 +21,7 @@ void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp)
 	SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, bpp/3 );
 	SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 16 );
 	SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
-#if 1
+#ifdef AA
 	SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1 );
 	SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 4 );
 #endif
@@ -25,7 +29,7 @@ void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp)
 	if(display->screen == NULL) goto error;
 	//printf("%dx%dx%d\n", display->screen->w, display->screen->h, display->screen->format->BitsPerPixel);
 
-#if 1
+#ifdef AA
 	int arg;
 	SDL_GL_GetAttribute( SDL_GL_MULTISAMPLEBUFFERS, &arg );
 	//printf("SDL_GL_MULTISAMPLEBUFFERS %d\n", arg);
@@ -64,7 +68,7 @@ void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp)
 	}
 #endif
 
-#if 1
+#ifdef AA
 #ifndef GL_ARB_multisample
 	glHint(GL_MULTISAMPLE_FILTER_HINT_NV,GL_NICEST);
 #endif
@@ -79,6 +83,9 @@ void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp)
 
 void cave_model(Cave *cave)
 {
+	cave->ymin = FLT_MAX;
+	cave->ymax = FLT_MIN;
+
 	int i, j;
 	glEnable(GL_BLEND);
 	for( j = 0; j < CAVE_DEPTH-1; ++j ) {
@@ -94,6 +101,11 @@ void cave_model(Cave *cave)
 
 			glColor4f(.6, .6*i0/N_SEGS, .9*(1-j0/CAVE_DEPTH), 1);
 			glVertex3fv(cave->segs[j1][i0]);
+
+			if(cave->segs[j][i0][1] < cave->ymin)
+				cave->ymin = cave->segs[j][i0][1];
+			if(cave->segs[j][i0][1] > cave->ymax)
+				cave->ymax = cave->segs[j][i0][1];
 		}
 		glEnd();
 	}
@@ -131,7 +143,7 @@ void display_hud(Display *display, Ship *player)
 	char buf[80];
 	sprintf(buf, "collision %.1f  velocity %.3fKm/s  score %.1f",
 			player->dist, LEN(player->vel), player->pos[2]);
-	render_text(display, buf, .5, .9);
+	render_text(display, buf, .5, .95);
 }
 
 void display_message(Display *display, const char *msg)
@@ -169,7 +181,6 @@ void display_end_frame(Display *display, Ship *player)
 {
 	glFinish();
 
-	display_hud(display, player);
 	SDL_UpdateRects(display->screen, display->rect_n, display->rect); // only update 2D
 
 	SDL_GL_SwapBuffers(); // update 3d
@@ -195,12 +206,64 @@ void display_init(Display *display)
 	}
 	atexit(TTF_Quit);
 
-	display->font = TTF_OpenFont("font.ttf", 16); // FIXME path
+	char* font_filename = "font.ttf";
+	int font_size = 16;
+	display->font = TTF_OpenFont(font_filename, font_size); // FIXME path
 	if(display->font == NULL) {
-		fprintf(stderr, "TTF_OpenFont(): %s\n", TTF_GetError());
+		fprintf(stderr, "TTF_OpenFont(%s): %s\n", font_filename, TTF_GetError());
 		exit(1);
 	}
 #endif
+
+	display->minimap = SDL_CreateRGBSurface( SDL_SWSURFACE,
+			CAVE_DEPTH*2, CAVE_DEPTH*2,
+			display->screen->format->BitsPerPixel,
+			0, 0, 0, 0);
+	assert( display->minimap != NULL );
+}
+
+void display_minimap(Display *display, Cave *cave, Ship *player)
+{
+	SDL_FillRect( display->minimap, 0, 0 );
+
+	// cave
+	int i;
+	for( i = 0; i < CAVE_DEPTH; ++i ) {
+		int j = ((i+cave->i) % CAVE_DEPTH);
+		float y1 = cave->segs[j][1*N_SEGS/4][1];
+		float y0 = cave->segs[j][3*N_SEGS/4][1];
+		SDL_Rect rect;
+		rect.x = i*2;
+		rect.w = 2-1;
+		rect.y = (int)(cave->ymax - y1);
+		rect.h = (int)(y1 - y0);
+		SDL_FillRect( display->minimap, &rect, 0xffffffff );
+	}
+
+	{ // player ship
+		SDL_Rect rect;
+		rect.x = (int)(2*(player->pos[2] - cave->segs[cave->i][0][2]));
+		rect.x = 2; //HACK: smooth. TODO: properly smooth cave and ship.
+		rect.w = 2;
+		rect.y = (int)(cave->ymax - player->pos[1]);
+		rect.h = 2;
+		SDL_FillRect( display->minimap, &rect, 0 );
+	}
+
+
+	// blit minimap to screen
+	SDL_Rect rect;
+	rect.x = 0;
+	rect.w = display->minimap->w;
+	rect.y = 0;
+	rect.h = (int)(cave->ymax - cave->ymin);
+
+	SDL_Rect *d_rect = &display->rect[display->rect_n++];
+	d_rect->x = display->screen->w - display->minimap->w;
+	d_rect->w = display->minimap->w;
+	d_rect->y = 0;
+	d_rect->h = (int)(cave->ymax - cave->ymin);
+	SDL_BlitSurface(display->minimap, &rect, display->screen, d_rect);
 }
 
 // vim600:fdm=syntax:fdn=1:

@@ -4,6 +4,14 @@
 #include <SDL_opengl.h>
 #include <GL/gl.h>
 
+#ifndef __cplusplus
+  #ifndef bool
+    typedef unsigned char bool;
+    #define false 0
+    #define true  1
+  #endif
+#endif
+
 typedef GLfloat Vec3[3];
 
 #define MAX(x,y) ((x)>(y)?(x):(y))

@@ -9,7 +9,7 @@
 
 #define GRAVITY 3.8
 #define THRUST (GRAVITY * 2)
-float velocity = 30;
+float velocity = 30.0;
 
 void cave_gen(Cave *cave, Ship *digger)
 {
@@ -24,7 +24,7 @@ void cave_gen(Cave *cave, Ship *digger)
 		SET(cave->segs[cave->i][i],
 			digger->pos[0] + r*cos(a),
 			digger->pos[1] + r*sin(a),
-			digger->pos[2]
+			((int)(digger->pos[2]/SEGMENT_LEN))*SEGMENT_LEN
 		);
 	}
 
@@ -55,7 +55,7 @@ void ship_move(Ship *ship, float dt)
 {
 #if 1
 	float a = THRUST*dt;
-	
+
 
 	if(ship->lefton) {
 		Vec3 leftup = {-a,a/2,0};
@@ -75,7 +75,7 @@ void ship_move(Ship *ship, float dt)
 		ship->vel[1] += THRUST*dt;
 
 	ship->vel[1] -= GRAVITY*dt;
-	
+
 	ship->pos[1] += ship->vel[1]*dt;
 #endif
 }
@@ -103,10 +103,10 @@ void digger_control(Ship *ship)
 		ship->lefton  = !ship->lefton;
 		ship->righton = !ship->righton;
 	}
-	
+
 	float max_cave_height = 10+30/(1+skill);
 	float min_cave_height = max_cave_height/skill;
-	
+
 	float cave_change_rate = .2;
 	if(RAND > cave_change_rate/skill)
 		 cave_change = !cave_change;
@@ -115,12 +115,12 @@ void digger_control(Ship *ship)
 		cave_change = !cave_change;
 		ship->radius = min_cave_height;
 	}
-		
+
 	if(ship->radius > max_cave_height) {
 		cave_change = !cave_change;
 		ship->radius = max_cave_height;
 	}
-		
+
 	if(cave_change)
 		ship->radius += RAND>.5?-1:1;
 #endif

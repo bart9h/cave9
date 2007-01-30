@@ -112,6 +112,8 @@ int main(int argc, char *argv[])
 
 			cave_model(&cave);
 			ship_model(&player);
+			display_hud(&display, &player);
+			display_minimap(&display, &cave, &player);
 			display_end_frame(&display, &player);
 			break;
 		case Input::WELCOME:

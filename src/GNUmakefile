@@ -7,10 +7,9 @@ SRCS=\
 	 display.cpp \
 	 game.cpp \
 
+CXX = gcc
 CXXFLAGS = -Wall -Werror -ggdb `sdl-config --cflags` -I/usr/include/SDL $(TTF_FLAGS)
 LDFLAGS = `sdl-config --libs` -lm -L/usr/X11/lib -lGL -lGLU $(TTF_LIBS)
-
-CXX = gcc
 
 OBJS = $(subst .cpp,.o,$(SRCS))
 

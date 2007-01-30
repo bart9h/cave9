@@ -7,6 +7,7 @@
 
 typedef struct {
 	SDL_Surface *screen;
+	SDL_Surface *minimap;
 	TTF_Font *font;
 	SDL_Rect rect[16];
 	int rect_n;
@@ -22,6 +23,8 @@ void display_init(Display* display);
 void display_start_frame(Display *display, Ship *player);
 void display_end_frame(Display *display, Ship *player);
 void display_message(Display *display, const char *msg);
+void display_minimap(Display *display, Cave *cave, Ship *player);
+void display_hud(Display *display, Ship *player);
 
 #endif
 
