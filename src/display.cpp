@@ -140,17 +140,33 @@ void render_text(Display *display, const char *text, float x, float y)
 
 void display_hud(Display *display, Ship *player)
 {
-	char buf[80];
-	sprintf(buf, "collision %.1f  velocity %.3fKm/s  score %.1f",
+#define HUD_TEXT_MAX 80
+	char buf[HUD_TEXT_MAX];
+	snprintf(buf, HUD_TEXT_MAX, "collision %.1f  velocity %.3fKm/s  score %.1f",
 			player->dist, LEN(player->vel), player->pos[2]);
+
+#ifdef USE_TTF
 	render_text(display, buf, .5, .95);
+#else
+	static Uint32 last_hud_print = 0;
+	Uint32 now = SDL_GetTicks();
+	if( now - last_hud_print >= 200 ) {
+		last_hud_print = now;
+		printf("\r%s", buf);
+		fflush(stdout);
+	}
+#endif
 }
 
 void display_message(Display *display, const char *msg)
 {
+#ifdef USE_TTF
 	render_text(display, msg, .5, .5);
 	SDL_UpdateRects(display->screen, display->rect_n, display->rect); // only update 2D
 	SDL_GL_SwapBuffers(); // update geral
+#else
+	printf("\n%s\n", msg);
+#endif
 }
 
 void display_start_frame(Display *display, Ship *player)
