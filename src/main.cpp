@@ -130,6 +130,8 @@ int main(int argc, char *argv[])
 		//dt = 1./FPS;
 	}
 
+	display_message(&display, "bye.");
+
 	return 0;
 }
 
