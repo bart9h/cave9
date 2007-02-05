@@ -19,6 +19,7 @@ typedef struct {
 
 typedef struct {
 	Vec3 segs[CAVE_DEPTH][N_SEGS];
+	GLuint gl_list[CAVE_DEPTH];
 	int i; // indice do array circular
 	float ymin, ymax; // aux, for minimap
 } Cave;

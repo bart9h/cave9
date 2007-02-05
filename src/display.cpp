@@ -82,7 +82,7 @@ void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp)
 	exit(1);
 }
 
-void cave_model(Cave *cave)
+void cave_model(Display *display, Cave *cave)
 {
 	cave->ymin = FLT_MAX;
 	cave->ymax = FLT_MIN;
@@ -91,24 +91,34 @@ void cave_model(Cave *cave)
 	glEnable(GL_BLEND);
 	for( j = 0; j < CAVE_DEPTH-1; ++j ) {
 		int j0 = (cave->i + j)%CAVE_DEPTH;
-		int j1 = (j0 + 1)%CAVE_DEPTH;
-		glBegin(GL_TRIANGLE_STRIP);
-		for( i = 0; i <= N_SEGS; ++i ) {
-
-			int i0 = i%N_SEGS;
-
-			glColor4f(.4, .6*i0/N_SEGS, .9*j1/CAVE_DEPTH, 1);
-			glVertex3fv(cave->segs[j0][i0]);
-
-			glColor4f(.6, .6*i0/N_SEGS, .9*(1-j0/CAVE_DEPTH), 1);
-			glVertex3fv(cave->segs[j1][i0]);
-
-			if(cave->segs[j][i0][1] < cave->ymin)
-				cave->ymin = cave->segs[j][i0][1];
-			if(cave->segs[j][i0][1] > cave->ymax)
-				cave->ymax = cave->segs[j][i0][1];
+		if( cave->gl_list[j0] != 0 ) {
+			glCallList( cave->gl_list[j0] );
 		}
-		glEnd();
+		else {
+			cave->gl_list[j0] = j0 + display->list_start;
+			glNewList( cave->gl_list[j0], GL_COMPILE_AND_EXECUTE );
+
+			int j1 = (j0 + 1)%CAVE_DEPTH;
+			glBegin(GL_TRIANGLE_STRIP);
+			for( i = 0; i <= N_SEGS; ++i ) {
+
+				int i0 = i%N_SEGS;
+
+				glColor4f(.4, .6*i0/N_SEGS, .9*j1/CAVE_DEPTH, 1);
+				glVertex3fv(cave->segs[j0][i0]);
+
+				glColor4f(.6, .6*i0/N_SEGS, .9*(1-j0/CAVE_DEPTH), 1);
+				glVertex3fv(cave->segs[j1][i0]);
+
+				if(cave->segs[j][i0][1] < cave->ymin)
+					cave->ymin = cave->segs[j][i0][1];
+				if(cave->segs[j][i0][1] > cave->ymax)
+					cave->ymax = cave->segs[j][i0][1];
+			}
+			glEnd();
+
+			glEndList();
+		}
 	}
 	glDisable(GL_BLEND);
 
@@ -210,7 +220,7 @@ void display_end_frame(Display *display)
 void display_frame(Display *display, Cave *cave, Ship *player)
 {
 	display_start_frame(display, player);
-	cave_model(cave);
+	cave_model(display, cave);
 	ship_model(player);
 	display_hud(display, player);
 	display_minimap(display, cave, player);
@@ -234,6 +244,7 @@ void display_init(Display *display)
 	SET(display->target,0,0,1);
 
 	viewport(display,640,480,16);
+	display->list_start = glGenLists( CAVE_DEPTH );
 
 #ifdef USE_TTF
 	if(TTF_Init() != 0) {

@@ -13,10 +13,11 @@ typedef struct {
 	int rect_n;
 	Vec3 cam, target;
 	GLfloat near_plane, far_plane;
+	GLuint list_start;
 } Display;
 
 void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp);
-void cave_model(Cave *cave);
+void cave_model(Display *display, Cave *cave);
 void ship_model(Ship *ship);
 void render_hud(Display*, Ship *player);
 void display_init(Display* display);

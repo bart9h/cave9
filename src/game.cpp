@@ -13,11 +13,15 @@ float velocity = 30.0;
 
 void cave_gen(Cave *cave, Ship *digger)
 {
+	// check if the digger advanced to the next sector
 	int i = (cave->i-1+CAVE_DEPTH)%CAVE_DEPTH;
-	//printf("[%d/%d] d(%f), c(%f)\n", cave->i, i, digger->pos[2], cave->segs[i][0][2] );
 	if( digger->pos[2] > 1 && digger->pos[2] - SEGMENT_LEN < cave->segs[i][0][2] )
 		return;
-	//puts("gen");
+
+	// invalidate GL list for this sector
+	cave->gl_list[cave->i] = 0;
+
+	// generate new sector
 	for( i = 0; i < N_SEGS; ++i ) {
 		float a = i*M_PI*2/N_SEGS;
 		float r = digger->radius;
@@ -28,6 +32,7 @@ void cave_gen(Cave *cave, Ship *digger)
 		);
 	}
 
+	// increment sector circular pointer
 	cave->i ++;
 	if( cave->i >= CAVE_DEPTH )
 		cave->i = 0;
@@ -35,7 +40,7 @@ void cave_gen(Cave *cave, Ship *digger)
 
 void cave_init(Cave *cave, Ship *digger)
 {
-	cave->i=0;
+	cave->i = 0;
 	do {
 		digger_control(digger);
 		ship_move(digger, 1./FPS);
