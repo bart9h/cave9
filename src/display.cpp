@@ -3,6 +3,7 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 #include <float.h>
 #include <assert.h>
@@ -119,6 +120,8 @@ void ship_model(Ship *ship)
 
 void render_text(Display *display, const char *text, float x, float y)
 {
+	if(text == NULL || text[0] == '\0')
+		return;
 #ifdef USE_TTF
 	SDL_Color color = {0xff,0xff,0xff,0xff};
 	SDL_Surface *label = TTF_RenderText_Blended(display->font, text, color);
@@ -158,19 +161,21 @@ void display_hud(Display *display, Ship *player)
 #endif
 }
 
-void display_message(Display *display, const char *msg)
+char display_message_buf[256];
+void display_message(Display *display, Cave *cave, Ship *player, const char *buf)
 {
+	strncpy(display_message_buf, buf, sizeof(display_message_buf)-1);
+	display_message_buf[sizeof(display_message_buf)-1] = '\0';
 #ifdef USE_TTF
-	render_text(display, msg, .5, .5);
-	SDL_UpdateRects(display->screen, display->rect_n, display->rect); // only update 2D
-	SDL_GL_SwapBuffers(); // update geral
+	display_frame(display, cave, player);
 #else
-	printf("\n%s\n", msg);
+	printf("\n%s\n", display_message_buf);
 #endif
 }
 
 void display_start_frame(Display *display, Ship *player)
 {
+	display->rect_n = 0;
 	COPY(display->cam, player->pos);
 	SET(display->target, player->pos[0], player->pos[1], player->pos[2]+1);
 	//ADD2(display->target, player->pos, player->vel);
@@ -193,7 +198,7 @@ void display_start_frame(Display *display, Ship *player)
 #endif
 }
 
-void display_end_frame(Display *display, Ship *player)
+void display_end_frame(Display *display)
 {
 	glFinish();
 
@@ -202,13 +207,28 @@ void display_end_frame(Display *display, Ship *player)
 	SDL_GL_SwapBuffers(); // update 3d
 }
 
+void display_frame(Display *display, Cave *cave, Ship *player)
+{
+	display_start_frame(display, player);
+	cave_model(cave);
+	ship_model(player);
+	display_hud(display, player);
+	display_minimap(display, cave, player);
+	render_text(display, display_message_buf, .5, .5);
+	display_end_frame(display);
+}
+
 void display_init(Display *display)
 {
-	SDL_Init(SDL_INIT_VIDEO);
+	
+	if(SDL_Init(SDL_INIT_VIDEO) != 0) {
+		fprintf(stderr, "SDL_Init(): %s\n", SDL_GetError());
+		exit(1);
+	}
 	atexit(SDL_Quit);
 
 	display->rect_n = 0;
-	display->near_plane = EPSILON;
+	display->near_plane = SHIP_RADIUS/2.; // was EPSILON;
 	display->far_plane = CAVE_DEPTH * SEGMENT_LEN;
 	SET(display->cam,0,0,0);
 	SET(display->target,0,0,1);
@@ -222,7 +242,7 @@ void display_init(Display *display)
 	}
 	atexit(TTF_Quit);
 
-	char* font_filename = "font.ttf";
+	char* font_filename = "font.pcf";
 	int font_size = 16;
 	display->font = TTF_OpenFont(font_filename, font_size); // FIXME path
 	if(display->font == NULL) {

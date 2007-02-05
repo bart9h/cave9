@@ -89,20 +89,27 @@ void digger_control(Ship *ship)
 	static bool cave_change = true;
 	static float repeat = 0;
 
-	float skill = log((ship->pos[2]+200)/200);
+	float skill_factor = 200;
+	float skill = log((ship->pos[2]+skill_factor)/skill_factor);
 	if(repeat * ship->vel[1] < 0)
 		repeat = 0;
-	repeat += ship->vel[1]/1000.;
+	repeat += ship->vel[1];
 
+	float velocity_change_rate = .01;
+	float repeat_change_rate = .0001;
+	float h_factor = 10;
 	int dir = ship->lefton || ship->righton ? -1: 1;
-	float velocity_change_rate = 1./3.;
 	if(
-		(RAND < fabs(velocity_change_rate*ship->vel[1]/skill) && ship->vel[1]*dir < 0)
-		|| (RAND < fabs(repeat * skill) && repeat*dir < 0)
+		(RAND < fabs(velocity_change_rate*(h_factor*ship->vel[0]+ship->vel[1])/skill) && ship->vel[1]*dir < 0)
+		|| (RAND < fabs(repeat_change_rate*repeat * skill) && repeat*dir < 0)
 	) {
-		ship->lefton  = !ship->lefton;
-		ship->righton = !ship->righton;
+		if(RAND < .5) 
+			ship->lefton  = !ship->lefton;
+		else
+			ship->righton  = !ship->righton;
 	}
+	if(RAND < fabs(velocity_change_rate*(h_factor*ship->vel[0]+ship->vel[1])/skill))
+		ship->righton = ship->lefton;
 
 	float max_cave_height = 10+30/(1+skill);
 	float min_cave_height = max_cave_height/skill;
