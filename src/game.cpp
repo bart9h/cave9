@@ -1,13 +1,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 #include <float.h>
 #include <assert.h>
 #include "vec.h"
 #include "game.h"
 
-#define GRAVITY 3.8
+#define GRAVITY 9.8
 #define THRUST (GRAVITY * 2)
 float velocity = 30.0;
 
@@ -139,11 +140,78 @@ void digger_control(Ship *ship)
 	//printf("l(%d), r(%d)\n", ship->lefton, ship->righton);
 }
 
+static float X(Cave *cave, int j, float xn, float yn, int i0, int i1)
+{
+	float x1 = cave->segs[j][i0][0];
+	float y1 = cave->segs[j][i0][1];
+	float x2 = cave->segs[j][i1][0];
+	float y2 = cave->segs[j][i1][1];
+	float t = (yn - y2)/(y1 - y2);
+	if( t < 0 || t > 1 )
+		return 0;
+	float x = (x1 - xn)*t + (x2 - xn)*(1 - t);
+	//printf("t(%f), x(%f)\n", t, x);
+	return x;
+}
+
+float collision(Cave *cave, Ship *ship)
+{
+	int intersections[4];
+	memset(intersections, 0, sizeof(intersections));
+
+	float min = FLT_MAX;
+	int j = cave->i;
+	int i;
+	for( i = 0; i < N_SEGS; ++i ) {
+		int i0 = (i+0)%N_SEGS;
+		int i1 = (i+1)%N_SEGS;
+
+		Vec3 dist;
+		SUB2(dist, ship->pos, cave->segs[j][i0]);
+		float len = LEN(dist);
+		if(len < min)
+			min = len;
+
+		if(cave->segs[j][i0][0] < ship->pos[0]-ship->radius &&
+				cave->segs[j][i1][0] < ship->pos[0]-ship->radius)
+			continue;
+		if(cave->segs[j][i0][1] > ship->pos[1]+ship->radius &&
+				cave->segs[j][i1][1] > ship->pos[1]+ship->radius)
+			continue;
+		if(cave->segs[j][i0][1] < ship->pos[1]-ship->radius &&
+				cave->segs[j][i1][1] < ship->pos[1]-ship->radius)
+			continue;
+
+		if(X(cave, j, ship->pos[0] - ship->radius, ship->pos[1], i0, i1) > 0)
+			++intersections[0];
+
+		if(X(cave, j, ship->pos[0], ship->pos[1] + ship->radius, i0, i1) > 0)
+			++intersections[1];
+
+		if(X(cave, j, ship->pos[0] + ship->radius, ship->pos[1], i0, i1) > 0)
+			++intersections[2];
+
+		if(X(cave, j, ship->pos[0], ship->pos[1] - ship->radius, i0, i1) > 0)
+			++intersections[3];
+	}
+
+	for(i = 0; i < 4; ++i) {
+		//printf("intersections[%d] = %d\n", i, intersections[i]);
+		if(intersections[i] % 2 == 0) {
+			return ship->dist = 0;
+		}
+	}
+
+	ship->dist = min - 2*ship->radius;
+	return min;
+}
+
+#if 0
 float collision(Cave *cave, Ship *ship)
 {
 	int j = cave->i;
-	float min = FLT_MAX;
 	int i;
+	float min = FLT_MAX;
 	for( i = 0; i < N_SEGS; ++i ) {
 		int i0 = (i+0)%N_SEGS;
 		int i1 = (i+1)%N_SEGS;
@@ -167,10 +235,11 @@ float collision(Cave *cave, Ship *ship)
 	int j1 = (cave->i);
 	int j2 = (cave->i + 1)%CAVE_DEPTH;
 #endif
-	ship->dist = min;
 
+	ship->dist = min;
 	return min;
 }
+#endif
 
 // vim600:fdm=syntax:fdn=1:
 
