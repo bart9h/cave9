@@ -155,8 +155,9 @@ void display_hud(Display *display, Ship *player)
 {
 #define HUD_TEXT_MAX 80
 	char buf[HUD_TEXT_MAX];
-	snprintf(buf, HUD_TEXT_MAX, "collision %.1f  velocity %.3fKm/s  score %.1f",
-			player->dist, LEN(player->vel), player->pos[2]);
+	float wow_factor = 20.0;
+	snprintf(buf, HUD_TEXT_MAX, "collision %.1f  velocity %.2fKm/h  score %.1f",
+			player->dist, wow_factor*LEN(player->vel), player->pos[2]);
 
 #ifdef USE_TTF
 	render_text(display, buf, .5, .95);

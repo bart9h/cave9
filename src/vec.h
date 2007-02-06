@@ -49,6 +49,10 @@ typedef GLfloat Vec3[3];
 	a[0]=b[0]-c[0]; \
 	a[1]=b[1]-c[1]; \
 	a[2]=b[2]-c[2]; 
+#define SCALE(a,k) \
+	a[0]*=k; \
+	a[1]*=k; \
+	a[2]*=k; 
 #define SCALE2(a,b,k) \
 	a[0]=b[0]*k; \
 	a[1]=b[1]*k; \
@@ -60,20 +64,18 @@ typedef GLfloat Vec3[3];
 	a[2]=z; 
 
 #if 1
-#define NORM(a,b) \
-	SCALE(a,b,1.0/sqrt(DOT(b,b))
+#define NORM(a) { \
+	float invlen = 1/LEN(a); \
+	SCALE(a,invlen); }
 #else
-#define NORM(a,b) \
-	SCALE(a,b,InvSqrt(DOT(b,b))
-inline float InvSqrt(float x)
-{
+#define NORM(a) { \
+	float x = DOT(a,a);
 	float xhalf = 0.5f*x;
-	int i = *(int*)&x; // get bits for floating value
-	i = 0x5f3759df - (i>>1); // gives initial guess y0
-	x = *(float*)&i; // convert bits back to float
-	x = x*(1.5f-xhalf*x*x); // Newton step, repeating increases accuracy
-	return x;
-}
+	int i = *(int*)&x;        // get bits for floating value
+	i = 0x5f3759df - (i>>1);  // gives initial guess y0
+	x = *(float*)&i;          // convert bits back to float
+	x = x*(1.5f-xhalf*x*x);   // Newton step, repeating increases accuracy
+	SCALE(a,x); }
 #endif
 
 #endif
