@@ -4,8 +4,8 @@
 #include "vec.h"
 
 #define FPS 30
-#define N_SEGS 30
-#define CAVE_DEPTH 60
+#define SECTOR_COUNT 30
+#define SEGMENT_COUNT 60
 #define SEGMENT_LEN 3.0
 #define SHIP_RADIUS 1.0
 
@@ -18,8 +18,8 @@ typedef struct {
 } Ship;
 
 typedef struct {
-	Vec3 segs[CAVE_DEPTH][N_SEGS];
-	GLuint gl_list[CAVE_DEPTH];
+	Vec3 segs[SEGMENT_COUNT][SECTOR_COUNT];
+	GLuint gl_list[SEGMENT_COUNT];
 	int i; // indice do array circular
 	float ymin, ymax; // aux, for minimap
 } Cave;

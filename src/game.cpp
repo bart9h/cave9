@@ -14,17 +14,17 @@ float velocity = 30.0;
 
 void cave_gen(Cave *cave, Ship *digger)
 {
-	// check if the digger advanced to the next sector
-	int i = (cave->i-1+CAVE_DEPTH)%CAVE_DEPTH;
+	// check if the digger advanced to the next segment
+	int i = (cave->i-1+SEGMENT_COUNT)%SEGMENT_COUNT;
 	if( digger->pos[2] > 1 && digger->pos[2] - SEGMENT_LEN < cave->segs[i][0][2] )
 		return;
 
-	// invalidate GL list for this sector
+	// invalidate GL list for this segment
 	cave->gl_list[cave->i] = 0;
 
-	// generate new sector
-	for( i = 0; i < N_SEGS; ++i ) {
-		float a = i*M_PI*2/N_SEGS;
+	// generate new segment
+	for( i = 0; i < SECTOR_COUNT; ++i ) {
+		float a = i*M_PI*2/SECTOR_COUNT;
 		float r = digger->radius;
 		SET(cave->segs[cave->i][i],
 			digger->pos[0] + r*cos(a),
@@ -33,9 +33,9 @@ void cave_gen(Cave *cave, Ship *digger)
 		);
 	}
 
-	// increment sector circular pointer
+	// increment segment circular pointer
 	cave->i ++;
-	if( cave->i >= CAVE_DEPTH )
+	if( cave->i >= SEGMENT_COUNT )
 		cave->i = 0;
 }
 
@@ -140,12 +140,12 @@ void digger_control(Ship *ship)
 	//printf("l(%d), r(%d)\n", ship->lefton, ship->righton);
 }
 
-static float X(Cave *cave, int j, float xn, float yn, int i0, int i1)
+static float X(Cave *cave, int i, float xn, float yn, int k0, int k1)
 {
-	float x1 = cave->segs[j][i0][0];
-	float y1 = cave->segs[j][i0][1];
-	float x2 = cave->segs[j][i1][0];
-	float y2 = cave->segs[j][i1][1];
+	float x1 = cave->segs[i][k0][0];
+	float y1 = cave->segs[i][k0][1];
+	float x2 = cave->segs[i][k1][0];
+	float y2 = cave->segs[i][k1][1];
 	float t = (yn - y2)/(y1 - y2);
 	if( t < 0 || t > 1 )
 		return 0;
@@ -156,48 +156,58 @@ static float X(Cave *cave, int j, float xn, float yn, int i0, int i1)
 
 float collision(Cave *cave, Ship *ship)
 {
-	int intersections[4];
-	memset(intersections, 0, sizeof(intersections));
-
 	float min = FLT_MAX;
-	int j = cave->i;
-	int i;
-	for( i = 0; i < N_SEGS; ++i ) {
-		int i0 = (i+0)%N_SEGS;
-		int i1 = (i+1)%N_SEGS;
+
+	// This method counts the number of intersections of a semi-line
+	// starting from the point being checked against the poligon,
+	// that in this case is the segment of the cave.
+	// If the number of intersections is odd, the point is inside.
+
+	// In fact we'll check four points around the center of the ship
+	// (to simulate a diamond-shaped bounding box).
+
+	int intersection_count[4];
+	memset(intersection_count, 0, sizeof(intersection_count));
+
+	int i = cave->i;
+	int k;
+	for( k = 0; k < SECTOR_COUNT; ++k ) {
+		int i0 = (k+0)%SECTOR_COUNT;
+		int i1 = (k+1)%SECTOR_COUNT;
 
 		Vec3 dist;
-		SUB2(dist, ship->pos, cave->segs[j][i0]);
+		SUB2(dist, ship->pos, cave->segs[i][i0]);
 		float len = LEN(dist);
 		if(len < min)
 			min = len;
 
-		if(cave->segs[j][i0][0] < ship->pos[0]-ship->radius &&
-				cave->segs[j][i1][0] < ship->pos[0]-ship->radius)
+		// optimize
+		if(cave->segs[i][i0][0] < ship->pos[0]-ship->radius &&
+				cave->segs[i][i1][0] < ship->pos[0]-ship->radius)
 			continue;
-		if(cave->segs[j][i0][1] > ship->pos[1]+ship->radius &&
-				cave->segs[j][i1][1] > ship->pos[1]+ship->radius)
+		if(cave->segs[i][i0][1] > ship->pos[1]+ship->radius &&
+				cave->segs[i][i1][1] > ship->pos[1]+ship->radius)
 			continue;
-		if(cave->segs[j][i0][1] < ship->pos[1]-ship->radius &&
-				cave->segs[j][i1][1] < ship->pos[1]-ship->radius)
+		if(cave->segs[i][i0][1] < ship->pos[1]-ship->radius &&
+				cave->segs[i][i1][1] < ship->pos[1]-ship->radius)
 			continue;
 
-		if(X(cave, j, ship->pos[0] - ship->radius, ship->pos[1], i0, i1) > 0)
-			++intersections[0];
+		if(X(cave, i, ship->pos[0] - ship->radius, ship->pos[1], i0, i1) > 0)
+			++intersection_count[0];
 
-		if(X(cave, j, ship->pos[0], ship->pos[1] + ship->radius, i0, i1) > 0)
-			++intersections[1];
+		if(X(cave, i, ship->pos[0], ship->pos[1] + ship->radius, i0, i1) > 0)
+			++intersection_count[1];
 
-		if(X(cave, j, ship->pos[0] + ship->radius, ship->pos[1], i0, i1) > 0)
-			++intersections[2];
+		if(X(cave, i, ship->pos[0] + ship->radius, ship->pos[1], i0, i1) > 0)
+			++intersection_count[2];
 
-		if(X(cave, j, ship->pos[0], ship->pos[1] - ship->radius, i0, i1) > 0)
-			++intersections[3];
+		if(X(cave, i, ship->pos[0], ship->pos[1] - ship->radius, i0, i1) > 0)
+			++intersection_count[3];
 	}
 
 	for(i = 0; i < 4; ++i) {
-		//printf("intersections[%d] = %d\n", i, intersections[i]);
-		if(intersections[i] % 2 == 0) {
+		//printf("intersection_count[%d] = %d\n", i, intersection_count[i]);
+		if(intersection_count[i] % 2 == 0) {
 			return ship->dist = 0;
 		}
 	}
@@ -205,41 +215,6 @@ float collision(Cave *cave, Ship *ship)
 	ship->dist = min - 2*ship->radius;
 	return min;
 }
-
-#if 0
-float collision(Cave *cave, Ship *ship)
-{
-	int j = cave->i;
-	int i;
-	float min = FLT_MAX;
-	for( i = 0; i < N_SEGS; ++i ) {
-		int i0 = (i+0)%N_SEGS;
-		int i1 = (i+1)%N_SEGS;
-		Vec3 seg;
-		SUB2(seg, cave->segs[j][i1], cave->segs[j][i0]);
-		Vec3 front = {0,0,1};
-		Vec3 normal;
-		CROSS(normal, front, seg);
-		Vec3 dist;
-		SUB2(dist, ship->pos, cave->segs[j][i0]);
-		float dir = DOT(normal, dist);
-		float len = LEN(dist);
-		if(dir < 0) len = -len;
-		if(len < min) min = len;
-	}
-
-	assert(min != FLT_MAX);
-
-#if 0
-	int j0 = (cave->i-1+CAVE_DEPTH)%CAVE_DEPTH;
-	int j1 = (cave->i);
-	int j2 = (cave->i + 1)%CAVE_DEPTH;
-#endif
-
-	ship->dist = min;
-	return min;
-}
-#endif
 
 // vim600:fdm=syntax:fdn=1:
 

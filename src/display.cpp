@@ -87,33 +87,32 @@ void cave_model(Display *display, Cave *cave)
 	cave->ymin = FLT_MAX;
 	cave->ymax = FLT_MIN;
 
-	int i, j;
 	glEnable(GL_BLEND);
-	for( j = 0; j < CAVE_DEPTH-1; ++j ) {
-		int j0 = (cave->i + j)%CAVE_DEPTH;
-		if( cave->gl_list[j0] != 0 ) {
-			glCallList( cave->gl_list[j0] );
+	for( int i = 0; i < SEGMENT_COUNT-1; ++i ) {
+		int i0 = (cave->i + i)%SEGMENT_COUNT;
+		if( cave->gl_list[i0] != 0 ) {
+			glCallList( cave->gl_list[i0] );
 		}
 		else {
-			cave->gl_list[j0] = j0 + display->list_start;
-			glNewList( cave->gl_list[j0], GL_COMPILE_AND_EXECUTE );
+			cave->gl_list[i0] = i0 + display->list_start;
+			glNewList( cave->gl_list[i0], GL_COMPILE_AND_EXECUTE );
 
-			int j1 = (j0 + 1)%CAVE_DEPTH;
+			int i1 = (i0 + 1)%SEGMENT_COUNT;
 			glBegin(GL_TRIANGLE_STRIP);
-			for( i = 0; i <= N_SEGS; ++i ) {
+			for( int k = 0; k <= SECTOR_COUNT; ++k ) {
 
-				int i0 = i%N_SEGS;
+				int k0 = k%SECTOR_COUNT;
 
-				glColor4f(.4, .6*i0/N_SEGS, .9*j1/CAVE_DEPTH, 1);
-				glVertex3fv(cave->segs[j0][i0]);
+				glColor4f(.4, .6*k0/SECTOR_COUNT, .9*i1/SEGMENT_COUNT, 1);
+				glVertex3fv(cave->segs[i0][k0]);
 
-				glColor4f(.6, .6*i0/N_SEGS, .9*(1-j0/CAVE_DEPTH), 1);
-				glVertex3fv(cave->segs[j1][i0]);
+				glColor4f(.6, .6*k0/SECTOR_COUNT, .9*(1-i0/SEGMENT_COUNT), 1);
+				glVertex3fv(cave->segs[i1][k0]);
 
-				if(cave->segs[j][i0][1] < cave->ymin)
-					cave->ymin = cave->segs[j][i0][1];
-				if(cave->segs[j][i0][1] > cave->ymax)
-					cave->ymax = cave->segs[j][i0][1];
+				if(cave->segs[i][k0][1] < cave->ymin)
+					cave->ymin = cave->segs[i][k0][1];
+				if(cave->segs[i][k0][1] > cave->ymax)
+					cave->ymax = cave->segs[i][k0][1];
 			}
 			glEnd();
 
@@ -194,19 +193,11 @@ void display_start_frame(Display *display, Ship *player)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-#if 1
 	gluLookAt(
 		display->cam[0], display->cam[1], display->cam[2],
 		display->target[0], display->target[1], display->target[2],
 		0,1,0
 	);
-#else // de lado
-	gluLookAt(
-		display->cam[0], display->cam[1], display->cam[2],
-		display->target[0], display->target[1], display->target[2],
-		0,1,0
-	);
-#endif
 }
 
 void display_end_frame(Display *display)
@@ -240,12 +231,12 @@ void display_init(Display *display)
 
 	display->rect_n = 0;
 	display->near_plane = SHIP_RADIUS/2.; // was EPSILON;
-	display->far_plane = CAVE_DEPTH * SEGMENT_LEN;
+	display->far_plane = SEGMENT_COUNT * SEGMENT_LEN;
 	SET(display->cam,0,0,0);
 	SET(display->target,0,0,1);
 
 	viewport(display,640,480,16);
-	display->list_start = glGenLists( CAVE_DEPTH );
+	display->list_start = glGenLists( SEGMENT_COUNT );
 
 #ifdef USE_TTF
 	if(TTF_Init() != 0) {
@@ -264,7 +255,7 @@ void display_init(Display *display)
 #endif
 
 	display->minimap = SDL_CreateRGBSurface( SDL_SWSURFACE,
-			CAVE_DEPTH*2, CAVE_DEPTH*2,
+			SEGMENT_COUNT*2, SEGMENT_COUNT*2,
 			display->screen->format->BitsPerPixel,
 			0, 0, 0, 0);
 	assert( display->minimap != NULL );
@@ -276,10 +267,10 @@ void display_minimap(Display *display, Cave *cave, Ship *player)
 
 	// cave
 	int i;
-	for( i = 0; i < CAVE_DEPTH; ++i ) {
-		int j = ((i+cave->i) % CAVE_DEPTH);
-		float y1 = cave->segs[j][1*N_SEGS/4][1];
-		float y0 = cave->segs[j][3*N_SEGS/4][1];
+	for( i = 0; i < SEGMENT_COUNT; ++i ) {
+		int i0 = ((i+cave->i) % SEGMENT_COUNT);
+		float y1 = cave->segs[i0][1*SECTOR_COUNT/4][1];
+		float y0 = cave->segs[i0][3*SECTOR_COUNT/4][1];
 		SDL_Rect rect;
 		rect.x = i*2;
 		rect.w = 2-1;
