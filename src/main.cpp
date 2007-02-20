@@ -36,15 +36,6 @@ void control(Display *display, Cave *cave, Ship *digger, Ship *player, Input *in
 				break;
 			case SDLK_p:
 			case SDLK_PAUSE:
-				if(input->state == Input::PLAY)  {
-					input->state = Input::PAUSE;
-					display_message(display, cave, player, "paused");
-				}
-				else if(input->state == Input::PAUSE) {
-					display_message(display, cave, player, "");
-					input->state = Input::PLAY;
-				}
-				break;
 			case SDLK_SPACE:
 			case SDLK_RETURN:
 				if(input->state == Input::WELCOME 
@@ -52,9 +43,13 @@ void control(Display *display, Cave *cave, Ship *digger, Ship *player, Input *in
 				|| input->state == Input::GAMEOVER) {
 					if(input->state == Input::GAMEOVER)
 						game_init(display, cave, digger, player);
-					else if(input->state == Input::WELCOME)
+					else
 						display_message(display, cave, player, "");
 					input->state = Input::PLAY;
+				}
+				else if(input->state == Input::PLAY)  {
+					input->state = Input::PAUSE;
+					display_message(display, cave, player, "paused");
 				}
 				break;
 			default:
