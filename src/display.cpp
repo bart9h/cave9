@@ -108,16 +108,16 @@ void cave_model(Display *display, Cave *cave)
 
 				glColor4f(.6, .6*k0/SECTOR_COUNT, .9*(1-i0/SEGMENT_COUNT), 1);
 				glVertex3fv(cave->segs[i1][k0]);
-
-				if(cave->segs[i][k0][1] < cave->ymin)
-					cave->ymin = cave->segs[i][k0][1];
-				if(cave->segs[i][k0][1] > cave->ymax)
-					cave->ymax = cave->segs[i][k0][1];
 			}
 			glEnd();
 
 			glEndList();
 		}
+
+		if(cave->seg_y[i][0] < cave->ymin)
+			cave->ymin = cave->seg_y[i][0];
+		if(cave->seg_y[i][1] > cave->ymax)
+			cave->ymax = cave->seg_y[i][1];
 	}
 	glDisable(GL_BLEND);
 

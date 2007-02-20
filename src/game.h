@@ -22,6 +22,7 @@ typedef struct {
 	GLuint gl_list[SEGMENT_COUNT];
 	int i; // indice do array circular
 	float ymin, ymax; // aux, for minimap
+	float seg_y[SEGMENT_COUNT][2]; // ymin, ymax, for minimap
 } Cave;
 
 void cave_gen(Cave *cave, Ship *digger);
