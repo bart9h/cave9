@@ -1,4 +1,5 @@
 
+#include <SDL_image.h>
 #include <SDL_opengl.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
@@ -26,8 +27,10 @@ void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp)
 	SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1 );
 	SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 4 );
 #endif
-	display->screen = SDL_SetVideoMode(w, h, bpp, SDL_HWSURFACE|SDL_OPENGLBLIT|SDL_RESIZABLE);
-	if(display->screen == NULL) goto error;
+	display->screen = SDL_SetVideoMode(w, h, bpp, 
+			SDL_HWSURFACE|SDL_OPENGLBLIT|SDL_RESIZABLE);
+	if(display->screen == NULL) 
+		goto error;
 	//printf("%dx%dx%d\n", display->screen->w, display->screen->h, display->screen->format->BitsPerPixel);
 
 #ifdef AA
@@ -37,6 +40,9 @@ void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp)
 	SDL_GL_GetAttribute( SDL_GL_MULTISAMPLESAMPLES, &arg );
 	//printf("SDL_GL_MULTISAMPLESAMPLES %d\n", arg);
 #endif
+
+	SDL_WM_SetCaption("cave9 -- 9hells.org", "cave9");
+	SDL_ShowCursor(SDL_DISABLE);
 
 	// projection
 	glViewport(0,0,w,h);
@@ -49,16 +55,22 @@ void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp)
 	// settings
 	glClearColor(0,0,0,0);
 	glClearDepth(1);
+
 	glDepthFunc(GL_LEQUAL);
 	glEnable(GL_DEPTH_TEST);
-	//glEnable(GL_CULL_FACE);
-	//glCullFace(GL_BACK);
-	glShadeModel(GL_SMOOTH);
-	//glShadeModel(GL_FLAT);
-	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glPolygonMode( GL_FRONT, GL_FILL );
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_FRONT);
+
+#ifdef TEXTURE
+	glEnable(GL_TEXTURE_2D);
+#endif
 
 #if 1
+	glShadeModel(GL_SMOOTH);
+	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	{
 		glFogi(GL_FOG_MODE, GL_LINEAR);
 		GLfloat fog_color[] = {0,0,0,1};
@@ -67,6 +79,9 @@ void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp)
 		glFogf(GL_FOG_END, display->far_plane);
 		glEnable(GL_FOG);
 	}
+#else
+	glShadeModel(GL_FLAT);
+	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
 #endif
 
 #ifdef AA
@@ -87,39 +102,58 @@ void cave_model(Display *display, Cave *cave)
 	cave->ymin = FLT_MAX;
 	cave->ymax = FLT_MIN;
 
-	glEnable(GL_BLEND);
+//	glEnable(GL_BLEND);
 	for( int i = 0; i < SEGMENT_COUNT-1; ++i ) {
 		int i0 = (cave->i + i)%SEGMENT_COUNT;
-		if( cave->gl_list[i0] != 0 ) {
-			glCallList( cave->gl_list[i0] );
-		}
-		else {
-			cave->gl_list[i0] = i0 + display->list_start;
-			glNewList( cave->gl_list[i0], GL_COMPILE_AND_EXECUTE );
+
+		if( cave->gl_list[i0] == 0 ) {
+			int id = cave->gl_list[i0] = i0 + display->list_start;
+
+			glNewList( id, GL_COMPILE_AND_EXECUTE );
 
 			int i1 = (i0 + 1)%SEGMENT_COUNT;
+#ifdef TEXTURE
+				glBindTexture(GL_TEXTURE_2D, display->texture_id); //already bound
+				float f = 1;
+#endif
 			glBegin(GL_TRIANGLE_STRIP);
 			for( int k = 0; k <= SECTOR_COUNT; ++k ) {
 
 				int k0 = k%SECTOR_COUNT;
 
-				glColor4f(.4, .6*k0/SECTOR_COUNT, .9*i1/SEGMENT_COUNT, 1);
+#ifdef TEXTURE
+					glTexCoord2f( f*i0/SEGMENT_COUNT, f*k0/SECTOR_COUNT);
+#else
+					//glColor4f(.4, .6*k0/SECTOR_COUNT, .9*i1/SEGMENT_COUNT, 1);
+					glColor3f(i0/SEGMENT_COUNT, 1-i0/SEGMENT_COUNT, k0/SECTOR_COUNT);
+printf("(a)%5.2f,%5.2f,%5.2f;",(float)i0/SEGMENT_COUNT, 1-(float)i0/SEGMENT_COUNT, (float)k0/SECTOR_COUNT);
+#endif
 				glVertex3fv(cave->segs[i0][k0]);
 
-				glColor4f(.6, .6*k0/SECTOR_COUNT, .9*(1-i0/SEGMENT_COUNT), 1);
+#ifdef TEXTURE
+					glTexCoord2f( f*(i0+1)/SEGMENT_COUNT, f*(k0+1)/SECTOR_COUNT);
+#else
+					//glColor4f(.6, .6*k0/SECTOR_COUNT, .9*(1-i0/SEGMENT_COUNT), 1);
+					glColor3f((i0+1)/SEGMENT_COUNT, 1-(i0+1)/SEGMENT_COUNT, (k0+1)/SECTOR_COUNT);
+printf("(b)%5.2f,%5.2f,%5.2f;",(float)(i0+1)/SEGMENT_COUNT, 1-((float)i0+1)/SEGMENT_COUNT, (float)(k0+1)/SECTOR_COUNT);
+#endif
 				glVertex3fv(cave->segs[i1][k0]);
 			}
 			glEnd();
 
 			glEndList();
+printf("\n");
+		} else {
+			glCallList( cave->gl_list[i0] );
 		}
+
 
 		if(cave->seg_y[i][0] < cave->ymin)
 			cave->ymin = cave->seg_y[i][0];
 		if(cave->seg_y[i][1] > cave->ymax)
 			cave->ymax = cave->seg_y[i][1];
 	}
-	glDisable(GL_BLEND);
+//	glDisable(GL_BLEND);
 
 }
 
@@ -187,8 +221,9 @@ void display_start_frame(Display *display, Ship *player)
 {
 	display->rect_n = 0;
 	COPY(display->cam, player->pos);
-	SET(display->target, player->pos[0], player->pos[1], player->pos[2]+1);
-	//ADD2(display->target, player->pos, player->vel);
+	ADD2(display->target, player->pos, player->vel);
+	display->target[1]=display->target[1]*.5+player->pos[1]*.5;
+	display->target[2]+=10;
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW);
@@ -211,7 +246,10 @@ void display_end_frame(Display *display)
 
 void display_frame(Display *display, Cave *cave, Ship *player)
 {
+	int hit = player->dist <= 1;
+	glClearColor( (hit?1:0), 0, 0, 0);
 	display_start_frame(display, player);
+	if(!hit) // avoid drawing the cave from outside
 	cave_model(display, cave);
 	ship_model(player);
 	display_hud(display, player);
@@ -259,6 +297,26 @@ void display_init(Display *display)
 			display->screen->format->BitsPerPixel,
 			0, 0, 0, 0);
 	assert( display->minimap != NULL );
+
+#ifdef TEXTURE
+	char* texture_filename = "texture.jpg";
+	display->texture = IMG_Load(texture_filename);
+	if(display->texture == NULL) {
+		fprintf(stderr, "IMG_Load(%s): %s\n", texture_filename, IMG_GetError());
+		exit(1);
+	}
+
+    glGenTextures(1, &display->texture_id);
+
+    glBindTexture(GL_TEXTURE_2D, display->texture_id);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glTexImage2D(GL_TEXTURE_2D, 
+			0, GL_RGB, display->texture->w, display->texture->h,
+			0, GL_RGB, GL_UNSIGNED_BYTE, display->texture->pixels);
+#endif
+
 }
 
 void display_minimap(Display *display, Cave *cave, Ship *player)

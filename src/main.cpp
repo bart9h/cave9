@@ -67,6 +67,8 @@ void control(Display *display, Cave *cave, Ship *digger, Ship *player, Input *in
 		case SDL_VIDEOEXPOSE:
 			display_frame(display, cave, player);
 			break;
+		default:
+			break;
 		}
 	}
 }

@@ -5,6 +5,8 @@
 #include <math.h>
 #include <float.h>
 #include <assert.h>
+#include <SDL_opengl.h>
+#include <GL/gl.h>
 #include "vec.h"
 #include "game.h"
 
@@ -20,6 +22,8 @@ void cave_gen(Cave *cave, Ship *digger)
 		return;
 
 	// invalidate GL list for this segment
+	if(glIsList(cave->gl_list[cave->i]))
+		glDeleteLists(cave->gl_list[cave->i], 1);
 	cave->gl_list[cave->i] = 0;
 
 	// generate new segment

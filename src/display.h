@@ -5,9 +5,15 @@
 #include <SDL_ttf.h>
 #include "game.h"
 
+#define TEXTURE //cave texture
+
 typedef struct {
 	SDL_Surface *screen;
 	SDL_Surface *minimap;
+#ifdef TEXTURE
+	SDL_Surface *texture;
+	GLuint texture_id;
+#endif
 	TTF_Font *font;
 	SDL_Rect rect[16];
 	int rect_n;
