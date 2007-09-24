@@ -10,7 +10,7 @@
 #include <assert.h>
 #include "display.h"
 
-//#define AA //anti-aliasing
+#define AA //anti-aliasing
 
 void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp)
 {
@@ -28,7 +28,7 @@ void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp)
 	SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 4 );
 #endif
 	display->screen = SDL_SetVideoMode(w, h, bpp, 
-			SDL_HWSURFACE|SDL_OPENGLBLIT|SDL_RESIZABLE);
+			SDL_HWSURFACE|SDL_OPENGLBLIT|SDL_RESIZABLE|SDL_FULLSCREEN);
 	if(display->screen == NULL) 
 		goto error;
 	//printf("%dx%dx%d\n", display->screen->w, display->screen->h, display->screen->format->BitsPerPixel);
@@ -113,36 +113,30 @@ void cave_model(Display *display, Cave *cave)
 
 			int i1 = (i0 + 1)%SEGMENT_COUNT;
 #ifdef TEXTURE
-				glBindTexture(GL_TEXTURE_2D, display->texture_id); //already bound
-				float f = 1;
+				glBindTexture(GL_TEXTURE_2D, display->texture_id);
 #endif
-			glBegin(GL_TRIANGLE_STRIP);
+				glBegin(GL_QUAD_STRIP);
 			for( int k = 0; k <= SECTOR_COUNT; ++k ) {
 
 				int k0 = k%SECTOR_COUNT;
 
 #ifdef TEXTURE
-					glTexCoord2f( f*i0/SEGMENT_COUNT, f*k0/SECTOR_COUNT);
+					glTexCoord2f( (float)i0/SEGMENT_COUNT, (float)k/SECTOR_COUNT);
 #else
-					//glColor4f(.4, .6*k0/SECTOR_COUNT, .9*i1/SEGMENT_COUNT, 1);
-					glColor3f(i0/SEGMENT_COUNT, 1-i0/SEGMENT_COUNT, k0/SECTOR_COUNT);
-printf("(a)%5.2f,%5.2f,%5.2f;",(float)i0/SEGMENT_COUNT, 1-(float)i0/SEGMENT_COUNT, (float)k0/SECTOR_COUNT);
+					glColor3f((float)i0/SEGMENT_COUNT, 1-(float)i0/SEGMENT_COUNT, (float)k0/SECTOR_COUNT);
 #endif
 				glVertex3fv(cave->segs[i0][k0]);
 
 #ifdef TEXTURE
-					glTexCoord2f( f*(i0+1)/SEGMENT_COUNT, f*(k0+1)/SECTOR_COUNT);
+					glTexCoord2f( ((float)i0+1)/SEGMENT_COUNT, (float)k/SECTOR_COUNT);
 #else
-					//glColor4f(.6, .6*k0/SECTOR_COUNT, .9*(1-i0/SEGMENT_COUNT), 1);
-					glColor3f((i0+1)/SEGMENT_COUNT, 1-(i0+1)/SEGMENT_COUNT, (k0+1)/SECTOR_COUNT);
-printf("(b)%5.2f,%5.2f,%5.2f;",(float)(i0+1)/SEGMENT_COUNT, 1-((float)i0+1)/SEGMENT_COUNT, (float)(k0+1)/SECTOR_COUNT);
+					glColor3f((float)i1/SEGMENT_COUNT, 1-(float)i1/SEGMENT_COUNT, (float)k0/SECTOR_COUNT);
 #endif
 				glVertex3fv(cave->segs[i1][k0]);
 			}
 			glEnd();
 
 			glEndList();
-printf("\n");
 		} else {
 			glCallList( cave->gl_list[i0] );
 		}
@@ -273,7 +267,7 @@ void display_init(Display *display)
 	SET(display->cam,0,0,0);
 	SET(display->target,0,0,1);
 
-	viewport(display,640,480,16);
+	viewport(display,1024,768,16);
 	display->list_start = glGenLists( SEGMENT_COUNT );
 
 #ifdef USE_TTF
@@ -299,22 +293,28 @@ void display_init(Display *display)
 	assert( display->minimap != NULL );
 
 #ifdef TEXTURE
-	char* texture_filename = "texture.jpg";
-	display->texture = IMG_Load(texture_filename);
-	if(display->texture == NULL) {
+	char* texture_filename = "t4096.jpg";
+
+    glGenTextures(1, &display->texture_id);
+    glBindTexture(GL_TEXTURE_2D, display->texture_id);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	SDL_Surface *texture = IMG_Load(texture_filename);
+	if(texture == NULL) {
 		fprintf(stderr, "IMG_Load(%s): %s\n", texture_filename, IMG_GetError());
 		exit(1);
 	}
 
-    glGenTextures(1, &display->texture_id);
+	GLenum err = gluBuild2DMipmaps(GL_TEXTURE_2D, 
+			GL_RGB, texture->w, texture->h, 
+			GL_RGB, GL_UNSIGNED_BYTE,texture->pixels);
+	if(err) {
+		fprintf(stderr, "gluBuild2DMipmaps(): %s\n", gluErrorString(err));
+		exit(1);
+	}
 
-    glBindTexture(GL_TEXTURE_2D, display->texture_id);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    glTexImage2D(GL_TEXTURE_2D, 
-			0, GL_RGB, display->texture->w, display->texture->h,
-			0, GL_RGB, GL_UNSIGNED_BYTE, display->texture->pixels);
+	SDL_FreeSurface(texture);
 #endif
 
 }

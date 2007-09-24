@@ -30,7 +30,7 @@ void cave_gen(Cave *cave, Ship *digger)
 	cave->seg_y[i][0] = FLT_MAX; // ymin
 	cave->seg_y[i][1] = FLT_MIN; // ymax
 	for( i = 0; i < SECTOR_COUNT; ++i ) {
-		float a = i*M_PI*2/SECTOR_COUNT;
+		float a = M_PI_2+(i-1)*M_PI*2/SECTOR_COUNT;
 		float r = digger->radius;
 		SET(cave->segs[cave->i][i],
 			digger->pos[0] + r*cos(a),

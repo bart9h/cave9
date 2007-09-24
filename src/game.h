@@ -4,9 +4,9 @@
 #include "vec.h"
 
 #define FPS 30
-#define SECTOR_COUNT 30
-#define SEGMENT_COUNT 60
-#define SEGMENT_LEN 3.0
+#define SECTOR_COUNT 32
+#define SEGMENT_COUNT 64
+#define SEGMENT_LEN 8.0
 #define SHIP_RADIUS 1.0
 
 typedef struct {

@@ -11,7 +11,6 @@ typedef struct {
 	SDL_Surface *screen;
 	SDL_Surface *minimap;
 #ifdef TEXTURE
-	SDL_Surface *texture;
 	GLuint texture_id;
 #endif
 	TTF_Font *font;
