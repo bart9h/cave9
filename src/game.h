@@ -20,9 +20,7 @@ typedef struct {
 typedef struct {
 	Vec3 segs[SEGMENT_COUNT][SECTOR_COUNT];
 	GLuint gl_list[SEGMENT_COUNT];
-	int i; // indice do array circular
-	float ymin, ymax; // aux, for minimap
-	float seg_y[SEGMENT_COUNT][2]; // ymin, ymax, for minimap
+	int i; // circular array index
 } Cave;
 
 void cave_gen(Cave *cave, Ship *digger);

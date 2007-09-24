@@ -99,10 +99,6 @@ void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp)
 
 void cave_model(Display *display, Cave *cave)
 {
-	cave->ymin = FLT_MAX;
-	cave->ymax = FLT_MIN;
-
-//	glEnable(GL_BLEND);
 	for( int i = 0; i < SEGMENT_COUNT-1; ++i ) {
 		int i0 = (cave->i + i)%SEGMENT_COUNT;
 
@@ -147,14 +143,7 @@ void cave_model(Display *display, Cave *cave)
 		} else {
 			glCallList( cave->gl_list[i0] );
 		}
-
-
-		if(cave->seg_y[i][0] < cave->ymin)
-			cave->ymin = cave->seg_y[i][0];
-		if(cave->seg_y[i][1] > cave->ymax)
-			cave->ymax = cave->seg_y[i][1];
 	}
-//	glDisable(GL_BLEND);
 
 }
 
@@ -182,7 +171,7 @@ void render_text(Display *display, GLuint id, const char *text,
 
 	glPushMatrix();
 		glColor3f(r,g,b);
-		glTranslatef(0,0,-3);
+		glTranslatef(0,0,-3); // XXX magic number
 		glBegin(GL_QUAD_STRIP);
 			glTexCoord2f(0,1);  glVertex3f(+1-x*2+w,+1-y*2-h,.5);
 			glTexCoord2f(0,0);  glVertex3f(+1-x*2+w,+1-y*2+h,0);
@@ -202,14 +191,14 @@ void display_hud(Display *display, Ship *player)
 #define HUD_TEXT_MAX 80
 	char buf[HUD_TEXT_MAX];
 	float wow_factor = 20.0;
-	snprintf(buf, HUD_TEXT_MAX, " collision %4.1f  velocity %6.2fKm/h  score %9.1f ",
+	snprintf(buf, HUD_TEXT_MAX, " collision %4.1f  velocity %6.2fKm/h  score %9.0f ",
 			player->dist, wow_factor*LEN(player->vel), player->pos[2]);
 
 #ifdef USE_TTF
 	float alert_dist = player->radius*10;
 	float c = player->dist <= 0 || player->dist > alert_dist ? 1 : 
 		1-(alert_dist - player->dist)/alert_dist;
-	render_text(display, display->hud_id, buf, .5,.95,.8,.1, 1,c,c);
+	render_text(display, display->hud_id, buf, .5,.9,.8,.1, 1,c,c);
 #else
 	static Uint32 last_hud_print = 0;
 	Uint32 now = SDL_GetTicks();
@@ -245,8 +234,8 @@ void display_world_transform(Display *display, Ship *player)
 {
 	COPY(display->cam, player->pos);
 	ADD2(display->target, player->pos, player->vel);
-	display->target[1]=display->target[1]*.5+player->pos[1]*.5;
-	display->target[2]+=10;
+	//display->target[1]=display->target[1]*.5+player->pos[1]*.5;
+	//display->target[2]+=10;
 	gluLookAt(
 		display->cam[0], display->cam[1], display->cam[2],
 		display->target[0], display->target[1], display->target[2],
@@ -266,6 +255,7 @@ void display_frame(Display *display, Cave *cave, Ship *player)
 	int hit = player->dist <= 1;
 
 	display_start_frame(display, hit,0,0);
+		
 	ship_model(player);
 		if(!hit) { // avoid drawing the cave from outside
 			glPushMatrix();
@@ -273,11 +263,20 @@ void display_frame(Display *display, Cave *cave, Ship *player)
 				cave_model(display, cave);
 			glPopMatrix();
 		}
+
+		glDisable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
+
+			glBlendFunc(GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR);
 	display_minimap(display, cave, player);
+
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			display_hud(display, player);
 			render_text(display, display->msg_id, display_message_buf, .5,.5,.8,.1, 1,1,1);
+
 		glDisable(GL_BLEND);
+		glEnable(GL_DEPTH_TEST);
+
 	display_end_frame(display);
 }
 
@@ -353,7 +352,15 @@ void display_init(Display *display)
 
 void display_minimap(Display *display, Cave *cave, Ship *player)
 {
-
+	glPushMatrix();
+		glScalef(.005,.003,.001);
+		glRotatef(-90,0,1,0);
+		glTranslatef(
+				-player->pos[0]-1000, // XXX hardcoded
+				-player->pos[1]-100,
+				-player->pos[2]-(SEGMENT_COUNT-1)*SEGMENT_LEN/2);
+		cave_model(display, cave);
+	glPopMatrix();
 }
 
 // vim600:fdm=syntax:fdn=1:

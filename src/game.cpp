@@ -27,8 +27,6 @@ void cave_gen(Cave *cave, Ship *digger)
 	cave->gl_list[cave->i] = 0;
 
 	// generate new segment
-	cave->seg_y[i][0] = FLT_MAX; // ymin
-	cave->seg_y[i][1] = FLT_MIN; // ymax
 	for( i = 0; i < SECTOR_COUNT; ++i ) {
 		float a = M_PI_2+(i-1)*M_PI*2/SECTOR_COUNT;
 		float r = digger->radius;
@@ -37,11 +35,6 @@ void cave_gen(Cave *cave, Ship *digger)
 			digger->pos[1] + r*sin(a),
 			((int)(digger->pos[2]/SEGMENT_LEN))*SEGMENT_LEN
 		);
-
-		if(cave->segs[cave->i][i][1] < cave->seg_y[cave->i][0])
-			cave->seg_y[cave->i][0] = cave->segs[cave->i][i][1];
-		if(cave->segs[cave->i][i][1] > cave->seg_y[cave->i][1])
-			cave->seg_y[cave->i][1] = cave->segs[cave->i][i][1];
 	}
 
 	// increment segment circular pointer
