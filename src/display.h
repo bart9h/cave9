@@ -9,13 +9,12 @@
 
 typedef struct {
 	SDL_Surface *screen;
-	SDL_Surface *minimap;
 #ifdef TEXTURE
 	GLuint texture_id;
 #endif
+	GLuint hud_id;
+	GLuint msg_id;
 	TTF_Font *font;
-	SDL_Rect rect[16];
-	int rect_n;
 	Vec3 cam, target;
 	GLfloat near_plane, far_plane;
 	GLuint list_start;

@@ -10,7 +10,7 @@
 #include <assert.h>
 #include "display.h"
 
-#define AA //anti-aliasing
+//#define AA //anti-aliasing
 
 void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp)
 {
@@ -121,6 +121,13 @@ void cave_model(Display *display, Cave *cave)
 				int k0 = k%SECTOR_COUNT;
 
 #ifdef TEXTURE
+					if(i0==0||i1==0||k==3*SECTOR_COUNT/4) 
+						glColor3f(1, 0, 0); 
+					else 
+						glColor3f(1, 1, 1);
+#endif
+
+#ifdef TEXTURE
 					glTexCoord2f( (float)i0/SEGMENT_COUNT, (float)k/SECTOR_COUNT);
 #else
 					glColor3f((float)i0/SEGMENT_COUNT, 1-(float)i0/SEGMENT_COUNT, (float)k0/SECTOR_COUNT);
@@ -155,7 +162,9 @@ void ship_model(Ship *ship)
 {
 }
 
-void render_text(Display *display, const char *text, float x, float y)
+void render_text(Display *display, GLuint id, const char *text, 
+		float x, float y, float w, float h,
+		float r, float g, float b)
 {
 	if(text == NULL || text[0] == '\0')
 		return;
@@ -164,30 +173,43 @@ void render_text(Display *display, const char *text, float x, float y)
 	SDL_Surface *label = TTF_RenderText_Blended(display->font, text, color);
 	assert(label != NULL);
 
-	display->rect[display->rect_n].w = label->w;
-	display->rect[display->rect_n].h = label->h;
-	display->rect[display->rect_n].x = (int)(x*display->screen->w - .5*label->w);
-	display->rect[display->rect_n].y = (int)(y*display->screen->h - .5*label->h);
-
-	SDL_FillRect(display->screen, &display->rect[display->rect_n],
-		SDL_MapRGBA(display->screen->format, 0x00,0x00,0x80,0xff));
-	SDL_BlitSurface(label, NULL, display->screen, &display->rect[display->rect_n]);
+    glBindTexture(GL_TEXTURE_2D, id);
+	gluBuild2DMipmaps(GL_TEXTURE_2D, 
+			GL_RGBA, label->w, label->h, 
+			GL_RGBA, GL_UNSIGNED_BYTE, label->pixels);
 
 	SDL_FreeSurface(label);
-	++display->rect_n;
+
+	glPushMatrix();
+		glColor3f(r,g,b);
+		glTranslatef(0,0,-3);
+		glBegin(GL_QUAD_STRIP);
+			glTexCoord2f(0,1);  glVertex3f(+1-x*2+w,+1-y*2-h,.5);
+			glTexCoord2f(0,0);  glVertex3f(+1-x*2+w,+1-y*2+h,0);
+
+			glTexCoord2f(1,1);  glVertex3f(+1-x*2-w,+1-y*2-h,.5);
+			glTexCoord2f(1,0);  glVertex3f(+1-x*2-w,+1-y*2+h,0);
+		glEnd();
+	glPopMatrix();
+
 #endif
 }
 
 void display_hud(Display *display, Ship *player)
 {
+	if(player->dist == FLT_MAX)
+		return;
 #define HUD_TEXT_MAX 80
 	char buf[HUD_TEXT_MAX];
 	float wow_factor = 20.0;
-	snprintf(buf, HUD_TEXT_MAX, "collision %.1f  velocity %.2fKm/h  score %.1f",
+	snprintf(buf, HUD_TEXT_MAX, " collision %4.1f  velocity %6.2fKm/h  score %9.1f ",
 			player->dist, wow_factor*LEN(player->vel), player->pos[2]);
 
 #ifdef USE_TTF
-	render_text(display, buf, .5, .95);
+	float alert_dist = player->radius*10;
+	float c = player->dist <= 0 || player->dist > alert_dist ? 1 : 
+		1-(alert_dist - player->dist)/alert_dist;
+	render_text(display, display->hud_id, buf, .5,.95,.8,.1, 1,c,c);
 #else
 	static Uint32 last_hud_print = 0;
 	Uint32 now = SDL_GetTicks();
@@ -211,17 +233,20 @@ void display_message(Display *display, Cave *cave, Ship *player, const char *buf
 #endif
 }
 
-void display_start_frame(Display *display, Ship *player)
+void display_start_frame(Display *display, float r, float g, float b)
 {
-	display->rect_n = 0;
+	glClearColor(r,g,b,1);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+}
+
+void display_world_transform(Display *display, Ship *player)
+{
 	COPY(display->cam, player->pos);
 	ADD2(display->target, player->pos, player->vel);
 	display->target[1]=display->target[1]*.5+player->pos[1]*.5;
 	display->target[2]+=10;
-
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
 	gluLookAt(
 		display->cam[0], display->cam[1], display->cam[2],
 		display->target[0], display->target[1], display->target[2],
@@ -233,22 +258,26 @@ void display_end_frame(Display *display)
 {
 	glFinish();
 
-	SDL_UpdateRects(display->screen, display->rect_n, display->rect); // only update 2D
-
-	SDL_GL_SwapBuffers(); // update 3d
+	SDL_GL_SwapBuffers();
 }
 
 void display_frame(Display *display, Cave *cave, Ship *player)
 {
 	int hit = player->dist <= 1;
-	glClearColor( (hit?1:0), 0, 0, 0);
-	display_start_frame(display, player);
-	if(!hit) // avoid drawing the cave from outside
-	cave_model(display, cave);
+
+	display_start_frame(display, hit,0,0);
 	ship_model(player);
-	display_hud(display, player);
+		if(!hit) { // avoid drawing the cave from outside
+			glPushMatrix();
+				display_world_transform(display, player);
+				cave_model(display, cave);
+			glPopMatrix();
+		}
+		glEnable(GL_BLEND);
 	display_minimap(display, cave, player);
-	render_text(display, display_message_buf, .5, .5);
+			display_hud(display, player);
+			render_text(display, display->msg_id, display_message_buf, .5,.5,.8,.1, 1,1,1);
+		glDisable(GL_BLEND);
 	display_end_frame(display);
 }
 
@@ -261,13 +290,12 @@ void display_init(Display *display)
 	}
 	atexit(SDL_Quit);
 
-	display->rect_n = 0;
 	display->near_plane = SHIP_RADIUS/2.; // was EPSILON;
 	display->far_plane = SEGMENT_COUNT * SEGMENT_LEN;
 	SET(display->cam,0,0,0);
 	SET(display->target,0,0,1);
 
-	viewport(display,1024,768,16);
+	viewport(display,640,480,16);
 	display->list_start = glGenLists( SEGMENT_COUNT );
 
 #ifdef USE_TTF
@@ -286,14 +314,18 @@ void display_init(Display *display)
 	}
 #endif
 
-	display->minimap = SDL_CreateRGBSurface( SDL_SWSURFACE,
-			SEGMENT_COUNT*2, SEGMENT_COUNT*2,
-			display->screen->format->BitsPerPixel,
-			0, 0, 0, 0);
-	assert( display->minimap != NULL );
+    glGenTextures(1, &display->hud_id);
+    glBindTexture(GL_TEXTURE_2D, display->hud_id);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glGenTextures(1, &display->msg_id);
+    glBindTexture(GL_TEXTURE_2D, display->msg_id);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 #ifdef TEXTURE
-	char* texture_filename = "t4096.jpg";
+	char* texture_filename = "texture.jpg";
 
     glGenTextures(1, &display->texture_id);
     glBindTexture(GL_TEXTURE_2D, display->texture_id);
@@ -321,46 +353,7 @@ void display_init(Display *display)
 
 void display_minimap(Display *display, Cave *cave, Ship *player)
 {
-	SDL_FillRect( display->minimap, 0, 0 );
 
-	// cave
-	int i;
-	for( i = 0; i < SEGMENT_COUNT; ++i ) {
-		int i0 = ((i+cave->i) % SEGMENT_COUNT);
-		float y1 = cave->segs[i0][1*SECTOR_COUNT/4][1];
-		float y0 = cave->segs[i0][3*SECTOR_COUNT/4][1];
-		SDL_Rect rect;
-		rect.x = i*2;
-		rect.w = 2-1;
-		rect.y = (int)(cave->ymax - y1);
-		rect.h = (int)(y1 - y0);
-		SDL_FillRect( display->minimap, &rect, 0xffffffff );
-	}
-
-	{ // player ship
-		SDL_Rect rect;
-		rect.x = (int)(2*(player->pos[2] - cave->segs[cave->i][0][2]));
-		rect.x = 2; //HACK: smooth. TODO: properly smooth cave and ship.
-		rect.w = 2;
-		rect.y = (int)(cave->ymax - player->pos[1]);
-		rect.h = 2;
-		SDL_FillRect( display->minimap, &rect, 0 );
-	}
-
-
-	// blit minimap to screen
-	SDL_Rect rect;
-	rect.x = 0;
-	rect.w = display->minimap->w;
-	rect.y = 0;
-	rect.h = (int)(cave->ymax - cave->ymin);
-
-	SDL_Rect *d_rect = &display->rect[display->rect_n++];
-	d_rect->x = display->screen->w - display->minimap->w;
-	d_rect->w = display->minimap->w;
-	d_rect->y = 0;
-	d_rect->h = (int)(cave->ymax - cave->ymin);
-	SDL_BlitSurface(display->minimap, &rect, display->screen, d_rect);
 }
 
 // vim600:fdm=syntax:fdn=1:

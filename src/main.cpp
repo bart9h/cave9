@@ -100,7 +100,6 @@ int main(int argc, char *argv[])
 	float dt = 0;
 	while(input.state != Input::QUIT) {
 		int t0 = SDL_GetTicks();
-		display.rect_n = 0;
 
 		control(&display, &cave, &digger, &player, &input);
 

@@ -66,6 +66,7 @@ void ship_init(Ship* ship, float radius)
 	SET(ship->pos,0,0,0);
 	SET(ship->vel,0,0,velocity);
 	ship->radius = radius;
+	ship->dist = FLT_MAX;
 }
 
 void ship_move(Ship *ship, float dt)
