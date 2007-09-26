@@ -1,12 +1,12 @@
 #{{{1  setup
 
 TARGET=cave9
-TTF_FLAGS=-DUSE_TTF
-TTF_LIBS=-lSDL_ttf -lSDL_image
+#TTF_FLAGS=-DUSE_TTF
+#TTF_LIBS=-lSDL_ttf
 
 CXX = gcc
 CXXFLAGS = -Wall -Werror -ggdb `sdl-config --cflags` -I/usr/include/SDL $(TTF_FLAGS)
-LDFLAGS = `sdl-config --libs` -lm -L/usr/X11/lib -lGL -lGLU $(TTF_LIBS)
+LDFLAGS = `sdl-config --libs` -lm -L/usr/X11/lib -lGL -lGLU $(TTF_LIBS) -lSDL_image
 
 
 #{{{1  build rules

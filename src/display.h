@@ -20,11 +20,18 @@ typedef struct {
 	GLuint list_start;
 } Display;
 
-void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp);
+typedef struct {
+	int width;
+	int height;
+	int bpp;
+	int fullscreen;
+} Args;
+
+void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp, bool fullscreen);
 void cave_model(Display *display, Cave *cave);
 void ship_model(Ship *ship);
 void render_hud(Display*, Ship *player);
-void display_init(Display* display);
+void display_init(Display* display, Args* args);
 void display_start_frame(Display *display, Ship *player);
 void display_end_frame(Display *display);
 void display_minimap(Display *display, Cave *cave, Ship *player);

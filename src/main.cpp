@@ -37,7 +37,6 @@ void control(Display *display, Cave *cave, Ship *digger, Ship *player, Input *in
 			case SDLK_p:
 			case SDLK_PAUSE:
 			case SDLK_SPACE:
-			case SDLK_RETURN:
 				if(input->state == Input::WELCOME 
 				|| input->state == Input::PAUSE
 				|| input->state == Input::GAMEOVER) {
@@ -52,6 +51,10 @@ void control(Display *display, Cave *cave, Ship *digger, Ship *player, Input *in
 					display_message(display, cave, player, "paused");
 				}
 				break;
+			case SDLK_RETURN:
+				if(SDL_GetModState() & KMOD_ALT)
+					SDL_WM_ToggleFullScreen(display->screen);
+				break;
 			default:
 				break;
 			}
@@ -62,7 +65,7 @@ void control(Display *display, Cave *cave, Ship *digger, Ship *player, Input *in
 			input->state = Input::QUIT;
 			break;
 		case SDL_VIDEORESIZE:
-			viewport(display, event.resize.w, event.resize.h, 0);
+			viewport(display, event.resize.w, event.resize.h, 0, display->screen->flags & SDL_FULLSCREEN);
 			break;
 		case SDL_VIDEOEXPOSE:
 			display_frame(display, cave, player);
@@ -79,8 +82,65 @@ void player_control(Ship *player, Input *input)
 	player->righton = input->pressed[SDLK_RIGHT];
 }
 
+void args_init(Args *args, int argc, char *argv[])
+{
+	args->width = 640;
+	args->height = 480;
+	args->bpp = 0;
+	args->fullscreen = 0;
+	int help_called = 0;
+
+	struct {
+		bool has_arg;
+		int *val;
+		char *short_name;
+		char *long_name;
+	} options[] = {
+		{ 0, &help_called, "-h", "--help" },
+		{ 1, &args->width, "-W", "--width" },
+		{ 1, &args->height, "-H", "--height" },
+		{ 1, &args->bpp, "-B", "--bpp" },
+		{ 0, &args->fullscreen, "-F", "--fullscreen" },
+		{ 0, NULL, NULL, NULL }
+	};
+
+	for(int i = 1; i < argc; ++i) {
+		for(int opt = 0; ; ++opt) {
+			if(options[opt].val == NULL) {
+				fprintf(stderr, "invalid argument %s\n", argv[i]);
+				help_called = 1;
+				break;
+			}
+			if(!strcmp(argv[i], options[opt].short_name) || !strcmp(argv[i], options[opt].long_name)) {
+				int value = 1;
+				if(options[opt].has_arg) {
+					if(++i == argc) {
+						fprintf(stderr, "argument required for %s\n", argv[i-1]);
+						exit(1);
+					}
+					value = atoi(argv[i]);
+				}
+				*(options[opt].val) = value;
+				break;
+			}
+		}
+	}
+
+	if(help_called) {
+		printf("command-line options:\n");
+		for(int opt = 0; options[opt].val; ++opt) {
+			printf("%s  or  %s", options[opt].short_name, options[opt].long_name);
+			if(options[opt].has_arg)
+				printf("  <num>");
+			printf("\n");
+		}
+		exit(1);
+	}
+}
+
 int main(int argc, char *argv[])
 {
+	Args args;
 	Display display;
 	Input input;
 	memset( input.pressed, 0, sizeof(input.pressed) );
@@ -91,7 +151,8 @@ int main(int argc, char *argv[])
 	Ship digger;
 	Ship player;
 
-	display_init(&display);
+	args_init(&args, argc, argv);
+	display_init(&display, &args);
 
 	game_init(&display, &cave, &digger, &player);
 	input.state = Input::WELCOME;

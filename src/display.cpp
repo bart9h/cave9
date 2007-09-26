@@ -12,10 +12,20 @@
 
 //#define AA //anti-aliasing
 
-void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp)
+void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp, bool fullscreen)
 {
-	if( bpp == 0 )
-		bpp = display->screen->format->BitsPerPixel;
+	if( bpp == 0 ) {
+		if( display->screen == NULL ) {
+			const SDL_VideoInfo* info = SDL_GetVideoInfo();
+			assert(info != NULL);
+			bpp = info->vfmt->BitsPerPixel;
+			if(bpp == 32)
+				bpp = 24; //FIXME: is this necessary? on the machine I'm at now, 32 won't work
+		}
+		else {
+			 bpp = display->screen->format->BitsPerPixel;
+		}
+	}
 
 	// video mode
 	SDL_GL_SetAttribute( SDL_GL_RED_SIZE, bpp/3 );
@@ -27,8 +37,10 @@ void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp)
 	SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1 );
 	SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 4 );
 #endif
-	display->screen = SDL_SetVideoMode(w, h, bpp, 
-			SDL_HWSURFACE|SDL_OPENGLBLIT|SDL_RESIZABLE|SDL_FULLSCREEN);
+	int flags = SDL_HWSURFACE|SDL_OPENGLBLIT|SDL_RESIZABLE;
+	if(fullscreen)
+		flags |= SDL_FULLSCREEN;
+	display->screen = SDL_SetVideoMode(w, h, bpp, flags);
 	if(display->screen == NULL) 
 		goto error;
 	//printf("%dx%dx%d\n", display->screen->w, display->screen->h, display->screen->format->BitsPerPixel);
@@ -255,34 +267,36 @@ void display_frame(Display *display, Cave *cave, Ship *player)
 	int hit = player->dist <= 1;
 
 	display_start_frame(display, hit,0,0);
-		
+
 	ship_model(player);
-		if(!hit) { // avoid drawing the cave from outside
-			glPushMatrix();
-				display_world_transform(display, player);
-				cave_model(display, cave);
-			glPopMatrix();
-		}
+	if(!hit) { // avoid drawing the cave from outside
+		glPushMatrix();
+		display_world_transform(display, player);
+		cave_model(display, cave);
+		glPopMatrix();
+	}
 
-		glDisable(GL_DEPTH_TEST);
-		glEnable(GL_BLEND);
+	glDisable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
 
-			glBlendFunc(GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR);
-	display_minimap(display, cave, player);
+		glBlendFunc(GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR);
+		display_minimap(display, cave, player);
 
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			display_hud(display, player);
-			render_text(display, display->msg_id, display_message_buf, .5,.5,.8,.1, 1,1,1);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		display_hud(display, player);
+		render_text(display, display->msg_id, display_message_buf, .5,.5,.8,.1, 1,1,1);
 
-		glDisable(GL_BLEND);
-		glEnable(GL_DEPTH_TEST);
+	glDisable(GL_BLEND);
+	glEnable(GL_DEPTH_TEST);
 
 	display_end_frame(display);
 }
 
-void display_init(Display *display)
+void display_init(Display *display, Args *args)
 {
-	
+
+	memset(display, 0, sizeof(Display));
+
 	if(SDL_Init(SDL_INIT_VIDEO) != 0) {
 		fprintf(stderr, "SDL_Init(): %s\n", SDL_GetError());
 		exit(1);
@@ -291,10 +305,10 @@ void display_init(Display *display)
 
 	display->near_plane = SHIP_RADIUS/2.; // was EPSILON;
 	display->far_plane = SEGMENT_COUNT * SEGMENT_LEN;
-	SET(display->cam,0,0,0);
-	SET(display->target,0,0,1);
+	SET(display->cam, 0,0,0);
+	SET(display->target, 0,0,1);
 
-	viewport(display,640,480,16);
+	viewport(display, args->width, args->height, args->bpp, args->fullscreen);
 	display->list_start = glGenLists( SEGMENT_COUNT );
 
 #ifdef USE_TTF
