@@ -88,6 +88,7 @@ void args_init(Args *args, int argc, char *argv[])
 	args->height = 480;
 	args->bpp = 0;
 	args->fullscreen = 0;
+	args->highres = 0;
 	int help_called = 0;
 
 	struct {
@@ -101,6 +102,7 @@ void args_init(Args *args, int argc, char *argv[])
 		{ 1, &args->height, "-H", "--height" },
 		{ 1, &args->bpp, "-B", "--bpp" },
 		{ 0, &args->fullscreen, "-F", "--fullscreen" },
+		{ 0, &args->highres, "-R", "--highres" },
 		{ 0, NULL, NULL, NULL }
 	};
 

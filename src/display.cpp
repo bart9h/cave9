@@ -14,18 +14,15 @@
 
 void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp, bool fullscreen)
 {
-	if( bpp == 0 ) {
-		if( display->screen == NULL ) {
-			const SDL_VideoInfo* info = SDL_GetVideoInfo();
-			assert(info != NULL);
-			bpp = info->vfmt->BitsPerPixel;
-			if(bpp == 32)
-				bpp = 24; //FIXME: is this necessary? on the machine I'm at now, 32 won't work
-		}
-		else {
-			 bpp = display->screen->format->BitsPerPixel;
-		}
-	}
+	int flags = SDL_HWSURFACE|SDL_OPENGLBLIT|SDL_RESIZABLE;
+	if(fullscreen)
+		flags |= SDL_FULLSCREEN;
+	display->screen = SDL_SetVideoMode(w, h, bpp, flags);
+	if(display->screen == NULL) 
+		goto error;
+
+	bpp = display->screen->format->BitsPerPixel;
+	//printf("%dx%dx%d\n", display->screen->w, display->screen->h, display->screen->format->BitsPerPixel);
 
 	// video mode
 	SDL_GL_SetAttribute( SDL_GL_RED_SIZE, bpp/3 );
@@ -37,14 +34,6 @@ void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp, bool fullscre
 	SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1 );
 	SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 4 );
 #endif
-	int flags = SDL_HWSURFACE|SDL_OPENGLBLIT|SDL_RESIZABLE;
-	if(fullscreen)
-		flags |= SDL_FULLSCREEN;
-	display->screen = SDL_SetVideoMode(w, h, bpp, flags);
-	if(display->screen == NULL) 
-		goto error;
-	//printf("%dx%dx%d\n", display->screen->w, display->screen->h, display->screen->format->BitsPerPixel);
-
 #ifdef AA
 	int arg;
 	SDL_GL_GetAttribute( SDL_GL_MULTISAMPLEBUFFERS, &arg );
@@ -308,7 +297,17 @@ void display_init(Display *display, Args *args)
 	SET(display->cam, 0,0,0);
 	SET(display->target, 0,0,1);
 
-	viewport(display, args->width, args->height, args->bpp, args->fullscreen);
+	int w = args->width;
+	int h = args->height;
+	int f = args->fullscreen;
+	if(args->highres) {
+		const SDL_VideoInfo* info = SDL_GetVideoInfo();
+		assert(info != NULL);
+		w = info->current_w;
+		h = info->current_h;
+		f = 1;
+	}
+	viewport(display, w, h, args->bpp, f);
 	display->list_start = glGenLists( SEGMENT_COUNT );
 
 #ifdef USE_TTF

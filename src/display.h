@@ -25,6 +25,7 @@ typedef struct {
 	int height;
 	int bpp;
 	int fullscreen;
+	int highres;
 } Args;
 
 void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp, bool fullscreen);
