@@ -39,8 +39,14 @@ void cave_gen(Cave *cave, Ship *digger)
 
 	// increment segment circular pointer
 	cave->i ++;
-	if( cave->i >= SEGMENT_COUNT )
+	if( cave->i >= SEGMENT_COUNT ) {
 		cave->i = 0;
+
+		// place monolith
+		cave->monolith_x = digger->pos[0] + (2*RAND-1)*(digger->radius-MONOLITH_WIDTH);
+		cave->monolith_y = digger->pos[1] + (2*RAND-1)*(digger->radius-MONOLITH_HEIGHT);
+		cave->monolith_yaw   = atan2(digger->vel[0], digger->vel[2]);
+	}
 }
 
 void cave_init(Cave *cave, Ship *digger)
@@ -146,7 +152,8 @@ void digger_control(Ship *ship)
 }
 
 static float X(Cave *cave, int i, float xn, float yn, int k0, int k1)
-{
+{// used by collision()
+
 	float x1 = cave->segs[i][k0][0];
 	float y1 = cave->segs[i][k0][1];
 	float x2 = cave->segs[i][k1][0];

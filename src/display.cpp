@@ -110,31 +110,31 @@ void cave_model(Display *display, Cave *cave)
 
 			int i1 = (i0 + 1)%SEGMENT_COUNT;
 #ifdef TEXTURE
-				glBindTexture(GL_TEXTURE_2D, display->texture_id);
+			glBindTexture(GL_TEXTURE_2D, display->texture_id);
 #endif
-				glBegin(GL_QUAD_STRIP);
+			glBegin(GL_QUAD_STRIP);
 			for( int k = 0; k <= SECTOR_COUNT; ++k ) {
 
 				int k0 = k%SECTOR_COUNT;
 
 #ifdef TEXTURE
-					if(i0==0||i1==0||k==3*SECTOR_COUNT/4) 
-						glColor3f(1, 0, 0); 
-					else 
-						glColor3f(1, 1, 1);
+				if(i0==0||i1==0||k==3*SECTOR_COUNT/4) 
+					glColor3f(1, 0, 0); 
+				else 
+					glColor3f(1, 1, 1);
 #endif
 
 #ifdef TEXTURE
-					glTexCoord2f( (float)i0/SEGMENT_COUNT, (float)k/SECTOR_COUNT);
+				glTexCoord2f( (float)i0/SEGMENT_COUNT, (float)k/SECTOR_COUNT);
 #else
-					glColor3f((float)i0/SEGMENT_COUNT, 1-(float)i0/SEGMENT_COUNT, (float)k0/SECTOR_COUNT);
+				glColor3f((float)i0/SEGMENT_COUNT, 1-(float)i0/SEGMENT_COUNT, (float)k0/SECTOR_COUNT);
 #endif
 				glVertex3fv(cave->segs[i0][k0]);
 
 #ifdef TEXTURE
-					glTexCoord2f( ((float)i0+1)/SEGMENT_COUNT, (float)k/SECTOR_COUNT);
+				glTexCoord2f( ((float)i0+1)/SEGMENT_COUNT, (float)k/SECTOR_COUNT);
 #else
-					glColor3f((float)i1/SEGMENT_COUNT, 1-(float)i1/SEGMENT_COUNT, (float)k0/SECTOR_COUNT);
+				glColor3f((float)i1/SEGMENT_COUNT, 1-(float)i1/SEGMENT_COUNT, (float)k0/SECTOR_COUNT);
 #endif
 				glVertex3fv(cave->segs[i1][k0]);
 			}
@@ -146,6 +146,37 @@ void cave_model(Display *display, Cave *cave)
 		}
 	}
 
+}
+
+void monolith_model(Display *display, Cave *cave, Ship *player)
+{
+	glColor3f(.2,.2,.2);
+
+	float w = MONOLITH_WIDTH/2;
+	float h = MONOLITH_HEIGHT/2;
+	float d = MONOLITH_DEPTH;
+
+	glPushMatrix();
+
+		glTranslatef( cave->monolith_x, cave->monolith_y, cave->segs[0][0][2] );
+		glRotatef( cave->monolith_yaw,   1, 0, 0 );
+
+		glBegin( GL_QUAD_STRIP );
+			glVertex3f( +w, -h, d );  glVertex3f( -w, -h, d );
+			glVertex3f( +w, -h, 0 );  glVertex3f( -w, -h, 0 );
+			glVertex3f( +w, +h, 0 );  glVertex3f( -w, +h, 0 );
+			glVertex3f( +w, +h, d );  glVertex3f( -w, +h, d );
+		glEnd();
+
+		glBegin( GL_QUADS );
+			glVertex3f( -w, -h, d );  glVertex3f( -w, +h, d );
+			glVertex3f( -w, +h, 0 );  glVertex3f( -w, -h, 0 );
+									 
+			glVertex3f( +w, +h, d );  glVertex3f( +w, -h, d );
+			glVertex3f( +w, -h, 0 );  glVertex3f( +w, +h, 0 );
+		glEnd();
+
+	glPopMatrix();
 }
 
 void ship_model(Ship *ship)
@@ -262,6 +293,7 @@ void display_frame(Display *display, Cave *cave, Ship *player)
 		glPushMatrix();
 		display_world_transform(display, player);
 		cave_model(display, cave);
+		monolith_model(display, cave, player);
 		glPopMatrix();
 	}
 
