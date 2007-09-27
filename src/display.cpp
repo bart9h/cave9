@@ -14,6 +14,18 @@
 
 void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp, bool fullscreen)
 {
+	// video mode
+	SDL_GL_SetAttribute( SDL_GL_RED_SIZE, bpp/3 );
+	SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, bpp/3 );
+	SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, bpp/3 );
+	SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 16 );
+	SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
+
+#ifdef AA
+	SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1 );
+	SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 4 );
+#endif
+
 	int flags = SDL_HWSURFACE|SDL_OPENGLBLIT|SDL_RESIZABLE;
 	if(fullscreen)
 		flags |= SDL_FULLSCREEN;
@@ -24,16 +36,6 @@ void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp, bool fullscre
 	bpp = display->screen->format->BitsPerPixel;
 	//printf("%dx%dx%d\n", display->screen->w, display->screen->h, display->screen->format->BitsPerPixel);
 
-	// video mode
-	SDL_GL_SetAttribute( SDL_GL_RED_SIZE, bpp/3 );
-	SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, bpp/3 );
-	SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, bpp/3 );
-	SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 16 );
-	SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
-#ifdef AA
-	SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1 );
-	SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 4 );
-#endif
 #ifdef AA
 	int arg;
 	SDL_GL_GetAttribute( SDL_GL_MULTISAMPLEBUFFERS, &arg );
@@ -309,7 +311,6 @@ void display_frame(Display *display, Cave *cave, Ship *player)
 
 	glDisable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST);
-
 	display_end_frame(display);
 }
 
