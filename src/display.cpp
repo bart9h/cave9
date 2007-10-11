@@ -10,9 +10,8 @@
 #include <assert.h>
 #include "display.h"
 
-//#define AA //anti-aliasing
-
-void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp, bool fullscreen)
+void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp, 
+		bool fullscreen, int aa=0)
 {
 	// video mode
 	SDL_GL_SetAttribute( SDL_GL_RED_SIZE, bpp/3 );
@@ -21,10 +20,10 @@ void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp, bool fullscre
 	SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 16 );
 	SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
 
-#ifdef AA
-	SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1 );
-	SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 4 );
-#endif
+	if(aa) {
+		SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1 );
+		SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, aa );
+	}
 
 	int flags = SDL_HWSURFACE|SDL_OPENGLBLIT|SDL_RESIZABLE;
 	if(fullscreen)
@@ -36,12 +35,14 @@ void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp, bool fullscre
 	bpp = display->screen->format->BitsPerPixel;
 	//printf("%dx%dx%d\n", display->screen->w, display->screen->h, display->screen->format->BitsPerPixel);
 
-#ifdef AA
-	int arg;
-	SDL_GL_GetAttribute( SDL_GL_MULTISAMPLEBUFFERS, &arg );
-	//printf("SDL_GL_MULTISAMPLEBUFFERS %d\n", arg);
-	SDL_GL_GetAttribute( SDL_GL_MULTISAMPLESAMPLES, &arg );
-	//printf("SDL_GL_MULTISAMPLESAMPLES %d\n", arg);
+#if 0
+	if(aa) {
+		int arg;
+		SDL_GL_GetAttribute( SDL_GL_MULTISAMPLEBUFFERS, &arg );
+		printf("SDL_GL_MULTISAMPLEBUFFERS %d\n", arg);
+		SDL_GL_GetAttribute( SDL_GL_MULTISAMPLESAMPLES, &arg );
+		printf("SDL_GL_MULTISAMPLESAMPLES %d\n", arg);
+	}
 #endif
 
 	SDL_WM_SetCaption("cave9 -- 9hells.org", "cave9");
@@ -88,10 +89,10 @@ void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp, bool fullscre
 #endif
 
 #ifdef AA
-#ifndef GL_ARB_multisample
-	glHint(GL_MULTISAMPLE_FILTER_HINT_NV,GL_NICEST);
-#endif
+#ifdef GL_ARB_multisample
 	glEnable(GL_MULTISAMPLE_ARB);
+#endif
+	glHint(GL_MULTISAMPLE_FILTER_HINT_NV,GL_NICEST);
 #endif
 
 	return;
@@ -152,6 +153,9 @@ void cave_model(Display *display, Cave *cave)
 
 void monolith_model(Display *display, Cave *cave, Ship *player)
 {
+	if(!display->monoliths)
+		return;
+
 	glColor3f(.2,.2,.2);
 
 	float w = MONOLITH_WIDTH/2;
@@ -224,9 +228,8 @@ void display_hud(Display *display, Ship *player)
 		return;
 #define HUD_TEXT_MAX 80
 	char buf[HUD_TEXT_MAX];
-	float wow_factor = 20.0;
-	snprintf(buf, HUD_TEXT_MAX, " collision %4.1f  velocity %6.2fKm/h  score %9.0f ",
-			player->dist, wow_factor*LEN(player->vel), player->pos[2]);
+	snprintf(buf, HUD_TEXT_MAX, " collision %4.1f  velocity %5.2f  score %9.0f ",
+			player->dist, LEN(player->vel), player->pos[2]);
 
 #ifdef USE_TTF
 	float alert_dist = player->radius*10;
@@ -286,16 +289,16 @@ void display_end_frame(Display *display)
 
 void display_frame(Display *display, Cave *cave, Ship *player)
 {
-	int hit = player->dist <= 1;
+	int hit = player->dist <= SHIP_RADIUS*1.1;
 
 	display_start_frame(display, hit,0,0);
 
 	ship_model(player);
 	if(!hit) { // avoid drawing the cave from outside
 		glPushMatrix();
-		display_world_transform(display, player);
-		cave_model(display, cave);
-		monolith_model(display, cave, player);
+			display_world_transform(display, player);
+			cave_model(display, cave);
+			monolith_model(display, cave, player);
 		glPopMatrix();
 	}
 
@@ -334,13 +337,18 @@ void display_init(Display *display, Args *args)
 	int h = args->height;
 	int f = args->fullscreen;
 	if(args->highres) {
+#if SDL_VERSION_ATLEAST(1,2,11)
 		const SDL_VideoInfo* info = SDL_GetVideoInfo();
 		assert(info != NULL);
 		w = info->current_w;
 		h = info->current_h;
+#else
+		w = 1024;
+		h = 768;
+#endif
 		f = 1;
 	}
-	viewport(display, w, h, args->bpp, f);
+	viewport(display, w, h, args->bpp, f, args->antialiasing);
 	display->list_start = glGenLists( SEGMENT_COUNT );
 
 #ifdef USE_TTF
@@ -394,6 +402,7 @@ void display_init(Display *display, Args *args)
 	SDL_FreeSurface(texture);
 #endif
 
+	display->monoliths = args->monoliths;
 }
 
 void display_minimap(Display *display, Cave *cave, Ship *player)
@@ -407,6 +416,7 @@ void display_minimap(Display *display, Cave *cave, Ship *player)
 				-player->pos[2]-(SEGMENT_COUNT-1)*SEGMENT_LEN/2);
 		cave_model(display, cave);
 	glPopMatrix();
+
 }
 
 // vim600:fdm=syntax:fdn=1:

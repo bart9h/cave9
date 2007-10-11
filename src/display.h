@@ -18,6 +18,7 @@ typedef struct {
 	Vec3 cam, target;
 	GLfloat near_plane, far_plane;
 	GLuint list_start;
+	int monoliths;
 } Display;
 
 typedef struct {
@@ -26,9 +27,12 @@ typedef struct {
 	int bpp;
 	int fullscreen;
 	int highres;
+	int antialiasing;
+	int monoliths;
 } Args;
 
-void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp, bool fullscreen);
+void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp, 
+		bool fullscreen, int aa);
 void cave_model(Display *display, Cave *cave);
 void ship_model(Ship *ship);
 void render_hud(Display*, Ship *player);

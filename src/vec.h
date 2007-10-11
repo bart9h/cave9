@@ -20,7 +20,7 @@ typedef GLfloat Vec3[3];
 
 // FIXME parenthize
 
-#define RAND (rand()*1./RAND_MAX)
+#define RAND (rand()/(float)RAND_MAX)
 
 #define COPY(a,b) \
 	a[0]=b[0]; \

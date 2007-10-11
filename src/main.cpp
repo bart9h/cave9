@@ -65,7 +65,12 @@ void control(Display *display, Cave *cave, Ship *digger, Ship *player, Input *in
 			input->state = Input::QUIT;
 			break;
 		case SDL_VIDEORESIZE:
-			viewport(display, event.resize.w, event.resize.h, 0, display->screen->flags & SDL_FULLSCREEN);
+			{
+				int aa;
+				SDL_GL_GetAttribute( SDL_GL_MULTISAMPLESAMPLES, &aa );
+				viewport(display, event.resize.w, event.resize.h, 0, 
+						display->screen->flags & SDL_FULLSCREEN, aa);
+			}
 			break;
 		case SDL_VIDEOEXPOSE:
 			display_frame(display, cave, player);
@@ -89,6 +94,8 @@ void args_init(Args *args, int argc, char *argv[])
 	args->bpp = 0;
 	args->fullscreen = 0;
 	args->highres = 0;
+	args->antialiasing = 0;
+	args->monoliths = 0;
 	int help_called = 0;
 
 	struct {
@@ -103,6 +110,8 @@ void args_init(Args *args, int argc, char *argv[])
 		{ 1, &args->bpp, "-B", "--bpp" },
 		{ 0, &args->fullscreen, "-F", "--fullscreen" },
 		{ 0, &args->highres, "-R", "--highres" },
+		{ 1, &args->antialiasing, "-A", "--antialiasing" },
+		{ 0, &args->monoliths, "-M", "--monoliths" },
 		{ 0, NULL, NULL, NULL }
 	};
 

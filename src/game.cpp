@@ -99,56 +99,38 @@ void ship_move(Ship *ship, float dt)
 
 void digger_control(Ship *ship)
 {
-#if 0
-	ship->lefton  = rand()%2 ? true : false;
-	ship->righton = rand()%2 ? true : false;
-#else
-	static bool cave_change = true;
-	static float repeat = 0;
+	float start = 0;
+	float depth = 10;
+	float noise = .1;
+	float skill = 1-1/(1+ (start+ship->pos[2])/depth );
+	float max_vel[3] = { 
+		GRAVITY*skill, 
+		GRAVITY*skill*4, 
+		velocity 
+	};
 
-	float skill_factor = 200;
-	float skill = log((ship->pos[2]+skill_factor)/skill_factor);
-	if(repeat * ship->vel[1] < 0)
-		repeat = 0;
-	repeat += ship->vel[1];
+	if( 
+			ship->vel[1] >  max_vel[1] || 
+			ship->vel[1] < -max_vel[1] || 
+			ship->vel[0] >  max_vel[0] ||
+			ship->vel[0] < -max_vel[0] ||
+			RAND<skill*noise
+		) 
+	{
+		if(RAND>skill/2)
+			ship->lefton = RAND<skill*noise ? rand()%2 :
+				ship->vel[1] < 0 || ship->vel[0] > +max_vel[0]; 
 
-	float velocity_change_rate = .01;
-	float repeat_change_rate = .0001;
-	float h_factor = 10;
-	int dir = ship->lefton || ship->righton ? -1: 1;
-	if(
-		(RAND < fabs(velocity_change_rate*(h_factor*ship->vel[0]+ship->vel[1])/skill) && ship->vel[1]*dir < 0)
-		|| (RAND < fabs(repeat_change_rate*repeat * skill) && repeat*dir < 0)
-	) {
-		if(RAND < .5) 
-			ship->lefton  = !ship->lefton;
-		else
-			ship->righton  = !ship->righton;
-	}
-	if(RAND < fabs(velocity_change_rate*(h_factor*ship->vel[0]+ship->vel[1])/skill))
-		ship->righton = ship->lefton;
-
-	float max_cave_height = 10+30/(1+skill);
-	float min_cave_height = max_cave_height/skill;
-
-	float cave_change_rate = .2;
-	if(RAND > cave_change_rate/skill)
-		 cave_change = !cave_change;
-
-	if(ship->radius < min_cave_height) {
-		cave_change = !cave_change;
-		ship->radius = min_cave_height;
+		if(RAND>skill/2)
+			ship->righton = RAND<skill*noise ? rand()%2 :
+				ship->vel[1] < 0 || ship->vel[0] < -max_vel[0];
 	}
 
-	if(ship->radius > max_cave_height) {
-		cave_change = !cave_change;
-		ship->radius = max_cave_height;
-	}
-
-	if(cave_change)
-		ship->radius += RAND>.5?-1:1;
-#endif
-	//printf("l(%d), r(%d)\n", ship->lefton, ship->righton);
+	float min_radius = SHIP_RADIUS*5;
+	float max_radius = SHIP_RADIUS*30;
+	float factor = 10000;
+	float scale = log(1+(1-skill)*factor)/log(1+depth*factor);
+	ship->radius = MAX(min_radius, max_radius*scale+RAND);
 }
 
 static float X(Cave *cave, int i, float xn, float yn, int k0, int k1)
