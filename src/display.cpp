@@ -187,6 +187,19 @@ void monolith_model(Display *display, Cave *cave, Ship *player)
 
 void ship_model(Ship *ship)
 {
+	// TODO use call-list
+	glDisable(GL_TEXTURE_2D);
+	glPushMatrix();
+		glTranslatef(ship->pos[0],ship->pos[1],ship->pos[2]);
+		glBegin(GL_QUADS);
+			glColor4f(1,1,1,.25); 
+				glVertex3f(+.75,+.01,SHIP_RADIUS*3);
+				glVertex3f(+.75,-.01,SHIP_RADIUS*3);
+				glVertex3f(-.75,-.01,SHIP_RADIUS*3);
+				glVertex3f(-.75,+.01,SHIP_RADIUS*3);
+		glEnd();
+	glPopMatrix();
+	glEnable(GL_TEXTURE_2D);
 }
 
 void render_text(Display *display, GLuint id, const char *text, 
@@ -211,11 +224,11 @@ void render_text(Display *display, GLuint id, const char *text,
 		glColor3f(r,g,b);
 		glTranslatef(0,0,-3); // XXX magic number
 		glBegin(GL_QUAD_STRIP);
-			glTexCoord2f(0,1);  glVertex3f(+1-x*2+w,+1-y*2-h,.5);
-			glTexCoord2f(0,0);  glVertex3f(+1-x*2+w,+1-y*2+h,0);
+			glTexCoord2f(0,1);  glVertex3f(1-x*2+w,1-y*2-h,.5);
+			glTexCoord2f(0,0);  glVertex3f(1-x*2+w,1-y*2+h,0);
 
-			glTexCoord2f(1,1);  glVertex3f(+1-x*2-w,+1-y*2-h,.5);
-			glTexCoord2f(1,0);  glVertex3f(+1-x*2-w,+1-y*2+h,0);
+			glTexCoord2f(1,1);  glVertex3f(1-x*2-w,1-y*2-h,.5);
+			glTexCoord2f(1,0);  glVertex3f(1-x*2-w,1-y*2+h,0);
 		glEnd();
 	glPopMatrix();
 
@@ -293,7 +306,6 @@ void display_frame(Display *display, Cave *cave, Ship *player)
 
 	display_start_frame(display, hit,0,0);
 
-	ship_model(player);
 	if(!hit) { // avoid drawing the cave from outside
 		glPushMatrix();
 			display_world_transform(display, player);
@@ -304,6 +316,12 @@ void display_frame(Display *display, Cave *cave, Ship *player)
 
 	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
+
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glPushMatrix();
+			display_world_transform(display, player);
+			ship_model(player);
+		glPopMatrix();
 
 		glBlendFunc(GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR);
 		display_minimap(display, cave, player);

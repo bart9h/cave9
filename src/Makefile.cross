@@ -5,7 +5,7 @@ SRCS=\
 	 display.cpp \
 	 game.cpp \
 
-MING=/old/opt/mingw
+MING=/opt/mingw
 CXX=$(MING)/bin/i586-mingw32msvc-gcc
 CXXFLAGS=-Wall -Werror -ggdb -I$(MING)/include \
 	 -I$(MING)/include/SDL -D_REENTRANT -DUSE_TTF
