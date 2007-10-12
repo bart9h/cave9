@@ -23,6 +23,7 @@ typedef struct {
 typedef struct {
 	Vec3 segs[SEGMENT_COUNT][SECTOR_COUNT];
 	GLuint gl_list[SEGMENT_COUNT];
+	GLuint gl_wire_list[SEGMENT_COUNT];
 	int i; // circular array index
 
 	float monolith_x;

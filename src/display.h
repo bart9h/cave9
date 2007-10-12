@@ -5,19 +5,18 @@
 #include <SDL_ttf.h>
 #include "game.h"
 
-#define TEXTURE //cave texture
-
 typedef struct {
 	SDL_Surface *screen;
-#ifdef TEXTURE
 	GLuint texture_id;
-#endif
 	GLuint hud_id;
 	GLuint msg_id;
 	TTF_Font *font;
 	Vec3 cam, target;
 	GLfloat near_plane, far_plane;
+	
 	GLuint list_start;
+	GLuint wire_list_start;
+	GLuint ship_list;
 	int monoliths;
 } Display;
 
@@ -33,8 +32,8 @@ typedef struct {
 
 void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp, 
 		bool fullscreen, int aa);
-void cave_model(Display *display, Cave *cave);
-void ship_model(Ship *ship);
+void cave_model(Display *display, Cave *cave, int wire);
+void ship_model(Display *display, Ship *ship);
 void render_hud(Display*, Ship *player);
 void display_init(Display* display, Args* args);
 void display_start_frame(Display *display, Ship *player);

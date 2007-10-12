@@ -67,14 +67,14 @@ void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp,
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_FRONT);
 
-#ifdef TEXTURE
 	glEnable(GL_TEXTURE_2D);
-#endif
 
 #if 1
 	glShadeModel(GL_SMOOTH);
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glLineWidth(16);
+	glEnable(GL_LINE_SMOOTH);
 	{
 		glFogi(GL_FOG_MODE, GL_LINEAR);
 		GLfloat fog_color[] = {0,0,0,1};
@@ -88,12 +88,12 @@ void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp,
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
 #endif
 
-#ifdef AA
+	if(aa) {
 #ifdef GL_ARB_multisample
-	glEnable(GL_MULTISAMPLE_ARB);
+		glEnable(GL_MULTISAMPLE_ARB);
 #endif
-	glHint(GL_MULTISAMPLE_FILTER_HINT_NV,GL_NICEST);
-#endif
+		glHint(GL_MULTISAMPLE_FILTER_HINT_NV,GL_NICEST);
+	}
 
 	return;
 	error:
@@ -101,52 +101,78 @@ void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp,
 	exit(1);
 }
 
-void cave_model(Display *display, Cave *cave)
+void display_world_transform(Display *display, Ship *player)
+{
+	COPY(display->cam, player->pos);
+	ADD2(display->target, player->pos, player->vel);
+	//display->target[1]=display->target[1]*.5+player->pos[1]*.5;
+	//display->target[2]+=10;
+	gluLookAt(
+		display->cam[0], display->cam[1], display->cam[2],
+		display->target[0], display->target[1], display->target[2],
+		0,1,0
+	);
+}
+
+void cave_model(Display *display, Cave *cave, int wire)
 {
 	for( int i = 0; i < SEGMENT_COUNT-1; ++i ) {
 		int i0 = (cave->i + i)%SEGMENT_COUNT;
 
-		if( cave->gl_list[i0] == 0 ) {
-			int id = cave->gl_list[i0] = i0 + display->list_start;
+		if( (wire ? cave->gl_wire_list : cave->gl_list)[i0] == 0 ) {
+			int id = wire ?
+				(cave->gl_wire_list[i0] = i0 + display->wire_list_start) :
+				(cave->gl_list[i0]      = i0 + display->list_start) ;
 
-			glNewList( id, GL_COMPILE_AND_EXECUTE );
+			glNewList( id, GL_COMPILE );
 
 			int i1 = (i0 + 1)%SEGMENT_COUNT;
-#ifdef TEXTURE
-			glBindTexture(GL_TEXTURE_2D, display->texture_id);
-#endif
+			if(!wire)
+				glBindTexture(GL_TEXTURE_2D, display->texture_id);
 			glBegin(GL_QUAD_STRIP);
 			for( int k = 0; k <= SECTOR_COUNT; ++k ) {
 
 				int k0 = k%SECTOR_COUNT;
 
-#ifdef TEXTURE
-				if(i0==0||i1==0||k==3*SECTOR_COUNT/4) 
-					glColor3f(1, 0, 0); 
-				else 
-					glColor3f(1, 1, 1);
-#endif
+				if(!wire) {
+					if(i0==0||i1==0||k==3*SECTOR_COUNT/4) 
+						glColor4f(1, 0, 0, 0.5); 
+					else 
+						glColor4f(1, 1, 1, 0.5);
+				}
 
-#ifdef TEXTURE
-				glTexCoord2f( (float)i0/SEGMENT_COUNT, (float)k/SECTOR_COUNT);
-#else
-				glColor3f((float)i0/SEGMENT_COUNT, 1-(float)i0/SEGMENT_COUNT, (float)k0/SECTOR_COUNT);
-#endif
+				if(!wire) {
+					glTexCoord2f( 
+							(float)i0/SEGMENT_COUNT, 
+							(float)k/SECTOR_COUNT);
+				} else {
+					glColor4f(
+							(float)i0/SEGMENT_COUNT, 
+							1-(float)i0/SEGMENT_COUNT, 
+							(float)k0/SECTOR_COUNT, 
+							0.5);
+				}
 				glVertex3fv(cave->segs[i0][k0]);
 
-#ifdef TEXTURE
-				glTexCoord2f( ((float)i0+1)/SEGMENT_COUNT, (float)k/SECTOR_COUNT);
-#else
-				glColor3f((float)i1/SEGMENT_COUNT, 1-(float)i1/SEGMENT_COUNT, (float)k0/SECTOR_COUNT);
-#endif
+				if(!wire) {
+					glTexCoord2f( 
+							((float)i0+1)/SEGMENT_COUNT, 
+							(float)k/SECTOR_COUNT);
+				} else {
+					glColor4f(
+							(float)i1/SEGMENT_COUNT, 
+							1-(float)i1/SEGMENT_COUNT, 
+							(float)k0/SECTOR_COUNT, 
+							0.5);
+				}
 				glVertex3fv(cave->segs[i1][k0]);
 			}
 			glEnd();
 
 			glEndList();
-		} else {
-			glCallList( cave->gl_list[i0] );
 		}
+
+		glCallList( (wire ? cave->gl_wire_list : cave->gl_list)[i0] );
 	}
 
 }
@@ -185,21 +211,19 @@ void monolith_model(Display *display, Cave *cave, Ship *player)
 	glPopMatrix();
 }
 
-void ship_model(Ship *ship)
+void ship_model(Display *display, Ship *ship)
 {
-	// TODO use call-list
-	glDisable(GL_TEXTURE_2D);
 	glPushMatrix();
-		glTranslatef(ship->pos[0],ship->pos[1],ship->pos[2]);
-		glBegin(GL_QUADS);
-			glColor4f(1,1,1,.25); 
-				glVertex3f(+.75,+.01,SHIP_RADIUS*3);
-				glVertex3f(+.75,-.01,SHIP_RADIUS*3);
-				glVertex3f(-.75,-.01,SHIP_RADIUS*3);
-				glVertex3f(-.75,+.01,SHIP_RADIUS*3);
-		glEnd();
+		float alert_dist = ship->radius*10;
+		float c = ship->dist <= 0 || ship->dist > alert_dist ? 1 : 
+			1-(alert_dist - ship->dist)/alert_dist;
+		glColor4f(1,c,c,.05); 
+		glTranslatef(0,0,-SHIP_RADIUS);
+		glCallList( display->ship_list );
+		display_world_transform(display, ship);
+		glTranslatef(ship->pos[0],ship->pos[1],ship->pos[2]+SHIP_RADIUS);
+		glCallList( display->ship_list );
 	glPopMatrix();
-	glEnable(GL_TEXTURE_2D);
 }
 
 void render_text(Display *display, GLuint id, const char *text, 
@@ -245,10 +269,7 @@ void display_hud(Display *display, Ship *player)
 			player->dist, LEN(player->vel), player->pos[2]);
 
 #ifdef USE_TTF
-	float alert_dist = player->radius*10;
-	float c = player->dist <= 0 || player->dist > alert_dist ? 1 : 
-		1-(alert_dist - player->dist)/alert_dist;
-	render_text(display, display->hud_id, buf, .5,.9,.8,.1, 1,c,c);
+	render_text(display, display->hud_id, buf, .5,.9,.8,.1, 1,1,1);
 #else
 	static Uint32 last_hud_print = 0;
 	Uint32 now = SDL_GetTicks();
@@ -280,19 +301,6 @@ void display_start_frame(Display *display, float r, float g, float b)
 	glLoadIdentity();
 }
 
-void display_world_transform(Display *display, Ship *player)
-{
-	COPY(display->cam, player->pos);
-	ADD2(display->target, player->pos, player->vel);
-	//display->target[1]=display->target[1]*.5+player->pos[1]*.5;
-	//display->target[2]+=10;
-	gluLookAt(
-		display->cam[0], display->cam[1], display->cam[2],
-		display->target[0], display->target[1], display->target[2],
-		0,1,0
-	);
-}
-
 void display_end_frame(Display *display)
 {
 	glFinish();
@@ -309,27 +317,19 @@ void display_frame(Display *display, Cave *cave, Ship *player)
 	if(!hit) { // avoid drawing the cave from outside
 		glPushMatrix();
 			display_world_transform(display, player);
-			cave_model(display, cave);
+			cave_model(display, cave, 0);
 			monolith_model(display, cave, player);
 		glPopMatrix();
 	}
 
 	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
-
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glPushMatrix();
-			display_world_transform(display, player);
-			ship_model(player);
-		glPopMatrix();
-
-		glBlendFunc(GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR);
-		display_minimap(display, cave, player);
-
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glDisable(GL_TEXTURE_2D);
+			ship_model(display, player);
+			display_minimap(display, cave, player);
+		glEnable(GL_TEXTURE_2D);
 		display_hud(display, player);
 		render_text(display, display->msg_id, display_message_buf, .5,.5,.8,.1, 1,1,1);
-
 	glDisable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST);
 	display_end_frame(display);
@@ -368,6 +368,7 @@ void display_init(Display *display, Args *args)
 	}
 	viewport(display, w, h, args->bpp, f, args->antialiasing);
 	display->list_start = glGenLists( SEGMENT_COUNT );
+	display->wire_list_start = glGenLists( SEGMENT_COUNT );
 
 #ifdef USE_TTF
 	if(TTF_Init() != 0) {
@@ -389,13 +390,16 @@ void display_init(Display *display, Args *args)
     glBindTexture(GL_TEXTURE_2D, display->hud_id);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 
     glGenTextures(1, &display->msg_id);
     glBindTexture(GL_TEXTURE_2D, display->msg_id);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 
-#ifdef TEXTURE
 	char* texture_filename = "texture.jpg";
 
     glGenTextures(1, &display->texture_id);
@@ -418,7 +422,29 @@ void display_init(Display *display, Args *args)
 	}
 
 	SDL_FreeSurface(texture);
-#endif
+
+	display->ship_list = glGenLists( SEGMENT_COUNT );
+	glNewList( display->ship_list, GL_COMPILE );
+		/* Magic Numbers: It is possible to create a dodecahedron by attaching two pentagons 
+		 * to each face of a cube. The coordinates of the points are:
+		 * (+-x,0, z); (+-1, 1, 1); (0, z, x )
+		 * where x = 0.61803398875 and z = 1.61803398875.
+		 */
+		glBegin( GL_LINE_LOOP ); glNormal3d( 0.0, 0.525731112119, 0.850650808354 ); glVertex3d( 0.0, 1.61803398875, 0.61803398875 ); glVertex3d( -1.0, 1.0, 1.0 ); glVertex3d( -0.61803398875, 0.0, 1.61803398875 ); glVertex3d( 0.61803398875, 0.0, 1.61803398875 ); glVertex3d( 1.0, 1.0, 1.0 ); glEnd();
+		glBegin( GL_LINE_LOOP ); glNormal3d( 0.0, 0.525731112119, -0.850650808354 ); glVertex3d( 0.0, 1.61803398875, -0.61803398875 ); glVertex3d( 1.0, 1.0, -1.0 ); glVertex3d( 0.61803398875, 0.0, -1.61803398875 ); glVertex3d( -0.61803398875, 0.0, -1.61803398875 ); glVertex3d( -1.0, 1.0, -1.0 ); glEnd();
+		glBegin( GL_LINE_LOOP ); glNormal3d( 0.0, -0.525731112119, 0.850650808354 ); glVertex3d( 0.0, -1.61803398875, 0.61803398875 ); glVertex3d( 1.0, -1.0, 1.0 ); glVertex3d( 0.61803398875, 0.0, 1.61803398875 ); glVertex3d( -0.61803398875, 0.0, 1.61803398875 ); glVertex3d( -1.0, -1.0, 1.0 ); glEnd();
+		glBegin( GL_LINE_LOOP ); glNormal3d( 0.0, -0.525731112119, -0.850650808354 ); glVertex3d( 0.0, -1.61803398875, -0.61803398875 ); glVertex3d( -1.0, -1.0, -1.0 ); glVertex3d( -0.61803398875, 0.0, -1.61803398875 ); glVertex3d( 0.61803398875, 0.0, -1.61803398875 ); glVertex3d( 1.0, -1.0, -1.0 ); glEnd();
+
+		glBegin( GL_LINE_LOOP ); glNormal3d( 0.850650808354, 0.0, 0.525731112119 ); glVertex3d( 0.61803398875, 0.0, 1.61803398875 ); glVertex3d( 1.0, -1.0, 1.0 ); glVertex3d( 1.61803398875, -0.61803398875, 0.0 ); glVertex3d( 1.61803398875, 0.61803398875, 0.0 ); glVertex3d( 1.0, 1.0, 1.0 ); glEnd();
+		glBegin( GL_LINE_LOOP ); glNormal3d( -0.850650808354, 0.0, 0.525731112119 ); glVertex3d( -0.61803398875, 0.0, 1.61803398875 ); glVertex3d( -1.0, 1.0, 1.0 ); glVertex3d( -1.61803398875, 0.61803398875, 0.0 ); glVertex3d( -1.61803398875, -0.61803398875, 0.0 ); glVertex3d( -1.0, -1.0, 1.0 ); glEnd();
+		glBegin( GL_LINE_LOOP ); glNormal3d( 0.850650808354, 0.0, -0.525731112119 ); glVertex3d( 0.61803398875, 0.0, -1.61803398875 ); glVertex3d( 1.0, 1.0, -1.0 ); glVertex3d( 1.61803398875, 0.61803398875, 0.0 ); glVertex3d( 1.61803398875, -0.61803398875, 0.0 ); glVertex3d( 1.0, -1.0, -1.0 ); glEnd();
+		glBegin( GL_LINE_LOOP ); glNormal3d( -0.850650808354, 0.0, -0.525731112119 ); glVertex3d( -0.61803398875, 0.0, -1.61803398875 ); glVertex3d( -1.0, -1.0, -1.0 ); glVertex3d( -1.61803398875, -0.61803398875, 0.0 ); glVertex3d( -1.61803398875, 0.61803398875, 0.0 ); glVertex3d( -1.0, 1.0, -1.0 ); glEnd();
+
+		glBegin( GL_LINE_LOOP ); glNormal3d( 0.525731112119, 0.850650808354, 0.0 ); glVertex3d( 1.61803398875, 0.61803398875, 0.0 ); glVertex3d( 1.0, 1.0, -1.0 ); glVertex3d( 0.0, 1.61803398875, -0.61803398875 ); glVertex3d( 0.0, 1.61803398875, 0.61803398875 ); glVertex3d( 1.0, 1.0, 1.0 ); glEnd();
+		glBegin( GL_LINE_LOOP ); glNormal3d( 0.525731112119, -0.850650808354, 0.0 ); glVertex3d( 1.61803398875, -0.61803398875, 0.0 ); glVertex3d( 1.0, -1.0, 1.0 ); glVertex3d( 0.0, -1.61803398875, 0.61803398875 ); glVertex3d( 0.0, -1.61803398875, -0.61803398875 ); glVertex3d( 1.0, -1.0, -1.0 ); glEnd();
+		glBegin( GL_LINE_LOOP ); glNormal3d( -0.525731112119, 0.850650808354, 0.0 ); glVertex3d( -1.61803398875, 0.61803398875, 0.0 ); glVertex3d( -1.0, 1.0, 1.0 ); glVertex3d( 0.0, 1.61803398875, 0.61803398875 ); glVertex3d( 0.0, 1.61803398875, -0.61803398875 ); glVertex3d( -1.0, 1.0, -1.0 ); glEnd();
+		glBegin( GL_LINE_LOOP ); glNormal3d( -0.525731112119, -0.850650808354, 0.0 ); glVertex3d( -1.61803398875, -0.61803398875, 0.0 ); glVertex3d( -1.0, -1.0, -1.0 ); glVertex3d( 0.0, -1.61803398875, -0.61803398875 ); glVertex3d( 0.0, -1.61803398875, 0.61803398875 ); glVertex3d( -1.0, -1.0, 1.0 ); glEnd();
+	glEndList();
 
 	display->monoliths = args->monoliths;
 }
@@ -432,7 +458,7 @@ void display_minimap(Display *display, Cave *cave, Ship *player)
 				-player->pos[0]-1000, // XXX hardcoded
 				-player->pos[1]-100,
 				-player->pos[2]-(SEGMENT_COUNT-1)*SEGMENT_LEN/2);
-		cave_model(display, cave);
+		cave_model(display, cave, 1);
 	glPopMatrix();
 
 }
