@@ -67,14 +67,19 @@ void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp,
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_FRONT);
 
-	glEnable(GL_TEXTURE_2D);
-
-#if 1
-	glShadeModel(GL_SMOOTH);
-	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	if(aa) {
+		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+		glShadeModel(GL_SMOOTH);
+		glEnable(GL_LINE_SMOOTH);
+	} else {
+		glShadeModel(GL_FLAT);
+		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
+	}
+	
 	glLineWidth(16);
-	glEnable(GL_LINE_SMOOTH);
+	
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	
 	{
 		glFogi(GL_FOG_MODE, GL_LINEAR);
 		GLfloat fog_color[] = {0,0,0,1};
@@ -83,10 +88,6 @@ void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp,
 		glFogf(GL_FOG_END, display->far_plane);
 		glEnable(GL_FOG);
 	}
-#else
-	glShadeModel(GL_FLAT);
-	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
-#endif
 
 	if(aa) {
 #ifdef GL_ARB_multisample
@@ -172,6 +173,16 @@ void cave_model(Display *display, Cave *cave, int wire)
 			glEndList();
 		}
 
+		if(wire) {
+			glDisable(GL_DEPTH_TEST);
+			glEnable(GL_BLEND);
+			glDisable(GL_TEXTURE_2D);
+		} else {
+			glEnable(GL_DEPTH_TEST);
+			glDisable(GL_BLEND);
+			glEnable(GL_TEXTURE_2D);
+		}
+
 		glCallList( (wire ? cave->gl_wire_list : cave->gl_list)[i0] );
 	}
 
@@ -187,6 +198,10 @@ void monolith_model(Display *display, Cave *cave, Ship *player)
 	float w = MONOLITH_WIDTH/2;
 	float h = MONOLITH_HEIGHT/2;
 	float d = MONOLITH_DEPTH;
+
+	glEnable(GL_DEPTH_TEST);
+	glDisable(GL_BLEND);
+	glDisable(GL_TEXTURE_2D);
 
 	glPushMatrix();
 
@@ -213,15 +228,39 @@ void monolith_model(Display *display, Cave *cave, Ship *player)
 
 void ship_model(Display *display, Ship *ship)
 {
+	if(!display->cockpit)
+		return;
+
+	if(ship->dist <= 0)
+		return;
+
+	float alpha = (1-MIN(1,(ship->pos[2]/MIN_CAVE_RADIUS_DEPTH)))/8.;
+	if(alpha == 0)
+		return;
+
+	float alert_dist = ship->radius*10;
+	float white = ship->dist <= 0 || ship->dist > alert_dist ? 1 : 
+		1-(alert_dist - ship->dist)/alert_dist;
+
+	float f =1.8;
+
+	glDisable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+	glDisable(GL_TEXTURE_2D);
+
+	glColor4f(1,white,white,alpha); 
 	glPushMatrix();
-		float alert_dist = ship->radius*10;
-		float c = ship->dist <= 0 || ship->dist > alert_dist ? 1 : 
-			1-(alert_dist - ship->dist)/alert_dist;
-		glColor4f(1,c,c,.05); 
-		glTranslatef(0,0,-SHIP_RADIUS);
+		glTranslatef(0,0,-SHIP_RADIUS*f);
 		glCallList( display->ship_list );
+	glPopMatrix();
+
+	glPushMatrix();
 		display_world_transform(display, ship);
-		glTranslatef(ship->pos[0],ship->pos[1],ship->pos[2]+SHIP_RADIUS);
+		glTranslatef(
+				ship->pos[0],
+				ship->pos[1],
+				ship->pos[2]+SHIP_RADIUS*f
+		);
 		glCallList( display->ship_list );
 	glPopMatrix();
 }
@@ -232,10 +271,13 @@ void render_text(Display *display, GLuint id, const char *text,
 {
 	if(text == NULL || text[0] == '\0')
 		return;
-#ifdef USE_TTF
 	SDL_Color color = {0xff,0xff,0xff,0xff};
 	SDL_Surface *label = TTF_RenderText_Blended(display->font, text, color);
 	assert(label != NULL);
+
+	glDisable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+	glEnable(GL_TEXTURE_2D);
 
     glBindTexture(GL_TEXTURE_2D, id);
 	gluBuild2DMipmaps(GL_TEXTURE_2D, 
@@ -246,7 +288,7 @@ void render_text(Display *display, GLuint id, const char *text,
 
 	glPushMatrix();
 		glColor3f(r,g,b);
-		glTranslatef(0,0,-3); // XXX magic number
+		glTranslatef(0,0,-2.65); // XXX magic number
 		glBegin(GL_QUAD_STRIP);
 			glTexCoord2f(0,1);  glVertex3f(1-x*2+w,1-y*2-h,.5);
 			glTexCoord2f(0,0);  glVertex3f(1-x*2+w,1-y*2+h,0);
@@ -255,30 +297,65 @@ void render_text(Display *display, GLuint id, const char *text,
 			glTexCoord2f(1,0);  glVertex3f(1-x*2-w,1-y*2+h,0);
 		glEnd();
 	glPopMatrix();
-
-#endif
 }
 
 void display_hud(Display *display, Ship *player)
 {
 	if(player->dist == FLT_MAX)
 		return;
+
+	float max_vel[3] = { MAX_VEL_X, MAX_VEL_Y, MAX_VEL_Z };
+	float vel = MIN(1,
+			log(1+LEN(player->vel)-MAX_VEL_Z) /
+			log(1+LEN(max_vel)-MAX_VEL_Z));
+	char gauge[11];
+	int i = int(vel*10);
+	memset(gauge,'/',i);
+	gauge[i] = '\0';
+
+	int score = (int)player->pos[2];
+
 #define HUD_TEXT_MAX 80
 	char buf[HUD_TEXT_MAX];
-	snprintf(buf, HUD_TEXT_MAX, " collision %4.1f  velocity %5.2f  score %9.0f ",
-			player->dist, LEN(player->vel), player->pos[2]);
-
-#ifdef USE_TTF
-	render_text(display, display->hud_id, buf, .5,.9,.8,.1, 1,1,1);
-#else
-	static Uint32 last_hud_print = 0;
-	Uint32 now = SDL_GetTicks();
-	if( now - last_hud_print >= 200 ) {
-		last_hud_print = now;
-		printf("\r%s", buf);
-		fflush(stdout);
+	if(player->dist > 0) {
+		snprintf(buf, HUD_TEXT_MAX, "velocity %-10s  score %9d",
+			gauge, score
+		);
+	} else {
+		if(score > display->session_score) 
+			display->session_score = score;
+		if(player->start) {
+			snprintf(buf, HUD_TEXT_MAX, "velocity %s  score %d (%d) - %d",
+				gauge, score,
+				display->session_score, 
+				(int)player->start
+			);
+		} else {
+			if(score > display->local_score) {
+				display->local_score = score;
+				FILE *fp = fopen(SCORE_FILE, "w");
+				if(fp == NULL) {
+					perror("failed to open score file");
+				} else {
+					fprintf(fp, "%d", display->local_score);
+					fclose(fp);
+				}
+			}
+			if(score > display->global_score) {
+				display->global_score = score;
+				display_net_update(display);
+			}
+			snprintf(buf, HUD_TEXT_MAX, "velocity %s  score %d (%d/%d/%d)",
+				gauge, score,
+				display->session_score, 
+				display->local_score, 
+				display->global_score
+			);
+		}
 	}
-#endif
+
+	float white = player->dist <= 0 ? 1 : 1-vel;
+	render_text(display, display->hud_id, buf, .5,.9,1,.2, 1,white,white);
 }
 
 char display_message_buf[256];
@@ -286,11 +363,7 @@ void display_message(Display *display, Cave *cave, Ship *player, const char *buf
 {
 	strncpy(display_message_buf, buf, sizeof(display_message_buf)-1);
 	display_message_buf[sizeof(display_message_buf)-1] = '\0';
-#ifdef USE_TTF
 	display_frame(display, cave, player);
-#else
-	printf("\n%s\n", display_message_buf);
-#endif
 }
 
 void display_start_frame(Display *display, float r, float g, float b)
@@ -322,16 +395,11 @@ void display_frame(Display *display, Cave *cave, Ship *player)
 		glPopMatrix();
 	}
 
-	glDisable(GL_DEPTH_TEST);
-	glEnable(GL_BLEND);
-		glDisable(GL_TEXTURE_2D);
-			ship_model(display, player);
-			display_minimap(display, cave, player);
-		glEnable(GL_TEXTURE_2D);
-		display_hud(display, player);
-		render_text(display, display->msg_id, display_message_buf, .5,.5,.8,.1, 1,1,1);
-	glDisable(GL_BLEND);
-	glEnable(GL_DEPTH_TEST);
+	ship_model(display, player);
+	display_minimap(display, cave, player);
+	display_hud(display, player);
+	render_text(display, display->msg_id, display_message_buf, .5,.5,1,.25, 1,1,1);
+
 	display_end_frame(display);
 }
 
@@ -346,7 +414,7 @@ void display_init(Display *display, Args *args)
 	}
 	atexit(SDL_Quit);
 
-	display->near_plane = SHIP_RADIUS/2.; // was EPSILON;
+	display->near_plane = MIN(SEGMENT_LEN,SHIP_RADIUS)/4.; // was EPSILON;
 	display->far_plane = SEGMENT_COUNT * SEGMENT_LEN;
 	SET(display->cam, 0,0,0);
 	SET(display->target, 0,0,1);
@@ -367,24 +435,23 @@ void display_init(Display *display, Args *args)
 		f = 1;
 	}
 	viewport(display, w, h, args->bpp, f, args->antialiasing);
+
 	display->list_start = glGenLists( SEGMENT_COUNT );
 	display->wire_list_start = glGenLists( SEGMENT_COUNT );
 
-#ifdef USE_TTF
 	if(TTF_Init() != 0) {
 		fprintf(stderr, "TTF_Init(): %s\n", TTF_GetError());
 		exit(1);
 	}
 	atexit(TTF_Quit);
 
-	char* font_filename = "font.pcf";
-	int font_size = 16;
+	char* font_filename = FONT_FILE;
+	int font_size = args->antialiasing ? 96 : 48;
 	display->font = TTF_OpenFont(font_filename, font_size); // FIXME path
 	if(display->font == NULL) {
 		fprintf(stderr, "TTF_OpenFont(%s): %s\n", font_filename, TTF_GetError());
 		exit(1);
 	}
-#endif
 
     glGenTextures(1, &display->hud_id);
     glBindTexture(GL_TEXTURE_2D, display->hud_id);
@@ -400,7 +467,11 @@ void display_init(Display *display, Args *args)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 
-	char* texture_filename = "texture.jpg";
+	display_start_frame(display, 0,0,0);
+	render_text(display, display->msg_id, "loading cave9", .5,.5,1,.25, 1,1,1);
+	display_end_frame(display);
+
+	char* texture_filename = TEXTURE_FILE;
 
     glGenTextures(1, &display->texture_id);
     glBindTexture(GL_TEXTURE_2D, display->texture_id);
@@ -447,12 +518,88 @@ void display_init(Display *display, Args *args)
 	glEndList();
 
 	display->monoliths = args->monoliths;
+	display->cockpit = args->cockpit;
+
+	display->session_score = 0;
+
+	display->local_score = 0;
+	FILE *fp = fopen(SCORE_FILE, "r");
+	if(fp == NULL) {
+		perror("failed to open score file");
+	} else {
+		fscanf(fp, "%d", &display->local_score);
+		fclose(fp);
+	}
+
+	display->global_score = 0;
+
+	if(SDLNet_Init()==-1)
+	{
+		fprintf(stderr, "SDLNet_Init(): %s\n",SDLNet_GetError());
+		exit(1);
+	}
+	atexit(SDLNet_Quit);
+
+	IPaddress addr;
+	display->udp_sock = 0;
+	display->udp_pkt = NULL;
+	if(SDLNet_ResolveHost(&addr,GLOBAL_SCORE_HOST, GLOBAL_SCORE_PORT) == -1) {
+		fprintf(stderr, "SDLNet_ResolveHost(): %s\n", SDLNet_GetError());
+	} else {
+		display->udp_sock=SDLNet_UDP_Open(0);
+		if(display->udp_sock == 0) {
+			fprintf(stderr, "SDLNet_UDP_Open(): %s\n", SDLNet_GetError());
+			display_net_finish(display);
+		} else {
+			if(SDLNet_UDP_Bind(display->udp_sock, 0, &addr) == -1) {
+				fprintf(stderr, "SDLNet_UDP_Bind(): %s\n", SDLNet_GetError());
+				display_net_finish(display);
+			} else {
+				display->udp_pkt = SDLNet_AllocPacket(GLOBAL_SCORE_LEN);
+				if(display->udp_pkt == NULL) {
+					display_net_finish(display);
+				}
+			}
+		}
+	}
+
+}
+
+void display_net_update(Display *display)
+{
+	if(display->udp_sock == 0)
+		return;
+
+	snprintf((char*)display->udp_pkt->data,GLOBAL_SCORE_LEN,"%d",display->global_score);
+	display->udp_pkt->len = GLOBAL_SCORE_LEN;
+	if(SDLNet_UDP_Send(display->udp_sock,0,display->udp_pkt) == 0) {
+		fprintf(stderr, "SDLNet_UDP_Send(): %s\n", SDLNet_GetError());
+	} else {
+		SDL_Delay(666); // XXX only wait 666ms for hiscores
+		if(SDLNet_UDP_Recv(display->udp_sock,display->udp_pkt) == 0) {
+			fprintf(stderr, "SDLNet_UDP_Recv(): %s\n", SDLNet_GetError());
+		} else {
+			sscanf((char*)display->udp_pkt->data,"%d",&display->global_score);
+		}
+	}
+}
+
+void display_net_finish(Display *display)
+{
+	if(display->udp_pkt != NULL){ 
+		SDLNet_FreePacket(display->udp_pkt);
+		display->udp_pkt = NULL;
+	}
+	if(display->udp_sock != 0) {
+		SDLNet_UDP_Close(display->udp_sock);
+		display->udp_sock = 0;
+	}
 }
 
 void display_minimap(Display *display, Cave *cave, Ship *player)
 {
 	glPushMatrix();
-		glScalef(.005,.003,.001);
+		glScalef(.0065,.003,.001);
 		glRotatef(-90,0,1,0);
 		glTranslatef(
 				-player->pos[0]-1000, // XXX hardcoded

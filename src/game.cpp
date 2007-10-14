@@ -10,15 +10,11 @@
 #include "vec.h"
 #include "game.h"
 
-#define GRAVITY 9.8
-#define THRUST (GRAVITY * 2)
-float velocity = 30.0;
-
 void cave_gen(Cave *cave, Ship *digger)
 {
 	// check if the digger advanced to the next segment
 	int i = (cave->i-1+SEGMENT_COUNT)%SEGMENT_COUNT;
-	if( digger->pos[2] > 1 && digger->pos[2] - SEGMENT_LEN < cave->segs[i][0][2] )
+	if( digger->pos[2] > digger->start+1 && digger->pos[2] - SEGMENT_LEN < cave->segs[i][0][2] )
 		return;
 
 	// invalidate GL list for this segment
@@ -66,8 +62,8 @@ void cave_init(Cave *cave, Ship *digger)
 
 void ship_init(Ship* ship, float radius)
 {
-	SET(ship->pos,0,0,0);
-	SET(ship->vel,0,0,velocity);
+	SET(ship->pos,0,0,ship->start);
+	SET(ship->vel,0,0,VELOCITY);
 	ship->radius = radius;
 	ship->dist = FLT_MAX;
 }
@@ -103,14 +99,13 @@ void ship_move(Ship *ship, float dt)
 
 void digger_control(Ship *ship)
 {
-	float start = 0;
-	float depth = 10;
+	float twist_factor = 500;
 	float noise = .1;
-	float skill = 1-1/(1+ (start+ship->pos[2])/depth );
+	float twist = 1-1/(1+ ship->pos[2]/twist_factor );
 	float max_vel[3] = { 
-		GRAVITY*skill, 
-		GRAVITY*skill*4, 
-		velocity 
+		MAX_VEL_X * twist, 
+		MAX_VEL_Y * twist, 
+		MAX_VEL_Z
 	};
 
 	if( 
@@ -118,23 +113,20 @@ void digger_control(Ship *ship)
 			ship->vel[1] < -max_vel[1] || 
 			ship->vel[0] >  max_vel[0] ||
 			ship->vel[0] < -max_vel[0] ||
-			RAND<skill*noise
+			RAND<twist*noise
 		) 
 	{
-		if(RAND>skill/2)
-			ship->lefton = RAND<skill*noise ? rand()%2 :
+		if(RAND>twist/2)
+			ship->lefton = RAND<twist*noise ? rand()%2 :
 				ship->vel[1] < 0 || ship->vel[0] > +max_vel[0]; 
 
-		if(RAND>skill/2)
-			ship->righton = RAND<skill*noise ? rand()%2 :
+		if(RAND>twist/2)
+			ship->righton = RAND<twist*noise ? rand()%2 :
 				ship->vel[1] < 0 || ship->vel[0] < -max_vel[0];
 	}
 
-	float min_radius = SHIP_RADIUS*5;
-	float max_radius = SHIP_RADIUS*30;
-	float factor = 10000;
-	float scale = log(1+(1-skill)*factor)/log(1+depth*factor);
-	ship->radius = MAX(min_radius, max_radius*scale+RAND);
+	float scale = 1-MIN(1,log(1+ship->pos[2])/log(1+MIN_CAVE_RADIUS_DEPTH));
+	ship->radius = MIN_CAVE_RADIUS+(MAX_CAVE_RADIUS-MIN_CAVE_RADIUS)*scale+RAND;
 }
 
 static float X(Cave *cave, int i, float xn, float yn, int k0, int k1)

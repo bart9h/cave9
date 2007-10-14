@@ -7,16 +7,18 @@ SRCS=\
 
 MING=/opt/mingw
 CXX=$(MING)/bin/i586-mingw32msvc-gcc
+STRIP=$(MING)/bin/i586-mingw32msvc-strip
 CXXFLAGS=-Wall -Werror -ggdb -I$(MING)/include \
 	 -I$(MING)/include/SDL -D_REENTRANT -DUSE_TTF
-LDFLAGS=-L$(MING)/lib -lSDL_ttf -lSDL_image -lSDL -ljpeg -lpng -lz \
-	  -lm -mwindows -lwinmm -lgdi32 -lmingw32 -lSDLmain -lglu32 -lopengl32 \
+LDFLAGS=-L$(MING)/lib -lSDL_net -lSDL_ttf -lSDL_image -lSDL -ljpeg -lpng -lz \
+	  -lm -mwindows -lwinmm -lgdi32 -lmingw32 -lwsock32 -lSDLmain -lglu32 -lopengl32 \
 	  -lstdc++
 
 OBJS=$(subst .cpp,.o,$(SRCS))
 
 $(TARGET): $(OBJS)
 	$(CXX) -static $^ $(LDFLAGS) -o $@
+	$(STRIP) -s $@
 
 clean:
 	rm -f $(TARGET) *.o core*

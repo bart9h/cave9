@@ -3,7 +3,16 @@
 
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include <SDL_net.h>
 #include "game.h"
+
+#define TEXTURE_FILE "cave9.jpg"
+#define FONT_FILE "cave9.ttf"
+#define SCORE_FILE "cave9.hi"
+#define GLOBAL_SCORE_PORT 31559
+#define GLOBAL_SCORE_HOST "cave9.9hells.org"
+#define GLOBAL_SCORE_LEN 16
+#define GLOBAL_SCORE_WAIT 666
 
 typedef struct {
 	SDL_Surface *screen;
@@ -17,7 +26,16 @@ typedef struct {
 	GLuint list_start;
 	GLuint wire_list_start;
 	GLuint ship_list;
+	
 	int monoliths;
+	int cockpit;
+	
+	int session_score;
+	int local_score;
+	int global_score;
+
+	UDPsocket udp_sock;
+	UDPpacket *udp_pkt;
 } Display;
 
 typedef struct {
@@ -28,6 +46,8 @@ typedef struct {
 	int highres;
 	int antialiasing;
 	int monoliths;
+	int start;
+	int cockpit;
 } Args;
 
 void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp, 
@@ -42,6 +62,8 @@ void display_minimap(Display *display, Cave *cave, Ship *player);
 void display_hud(Display *display, Ship *player);
 void display_message(Display *display, Cave *cave, Ship *player, const char *buf);
 void display_frame(Display *display, Cave *cave, Ship *player);
+void display_net_update(Display *display);
+void display_net_finish(Display *display);
 
 #endif
 

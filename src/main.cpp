@@ -14,7 +14,7 @@ typedef struct {
 void game_init(Display *display, Cave *cave, Ship *digger, Ship *player)
 {
 	ship_init(player, SHIP_RADIUS);
-	ship_init(digger, SHIP_RADIUS*20);
+	ship_init(digger, MAX_CAVE_RADIUS);
 	cave_init(cave,digger);
 	display_message(display, cave, player, "");
 }
@@ -96,6 +96,8 @@ void args_init(Args *args, int argc, char *argv[])
 	args->highres = 0;
 	args->antialiasing = 0;
 	args->monoliths = 0;
+	args->start = 0;
+	args->cockpit = 0;
 	int help_called = 0;
 
 	struct {
@@ -112,6 +114,8 @@ void args_init(Args *args, int argc, char *argv[])
 		{ 0, &args->highres, "-R", "--highres" },
 		{ 1, &args->antialiasing, "-A", "--antialiasing" },
 		{ 0, &args->monoliths, "-M", "--monoliths" },
+		{ 1, &args->start, "-S", "--start" },
+		{ 0, &args->cockpit, "-C", "--cockpit" },
 		{ 0, NULL, NULL, NULL }
 	};
 
@@ -165,6 +169,7 @@ int main(int argc, char *argv[])
 	args_init(&args, argc, argv);
 	display_init(&display, &args);
 
+	player.start = digger.start = (float)args.start;
 	game_init(&display, &cave, &digger, &player);
 	input.state = Input::WELCOME;
 	display_message(&display, &cave, &player, "welcome!  left+right for control.  [press space]");
@@ -203,6 +208,7 @@ int main(int argc, char *argv[])
 		//dt = 1./FPS;
 	}
 
+	display_net_finish(&display);
 	display_message(&display, &cave, &player, "bye.");
 
 	return 0;
