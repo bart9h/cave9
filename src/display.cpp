@@ -144,7 +144,7 @@ void cave_model(Display *display, Cave *cave, int wire)
 
 				if(!wire) {
 					glTexCoord2f( 
-							(float)i0/SEGMENT_COUNT, 
+							(float)(cave->i+i)/SEGMENT_COUNT, 
 							(float)k/SECTOR_COUNT);
 				} else {
 					glColor4f(
@@ -157,7 +157,7 @@ void cave_model(Display *display, Cave *cave, int wire)
 
 				if(!wire) {
 					glTexCoord2f( 
-							((float)i0+1)/SEGMENT_COUNT, 
+							((float)(cave->i+i+1))/SEGMENT_COUNT, 
 							(float)k/SECTOR_COUNT);
 				} else {
 					glColor4f(
@@ -577,7 +577,8 @@ void display_net_update(Display *display)
 	} else {
 		SDL_Delay(666); // XXX only wait 666ms for hiscores
 		if(SDLNet_UDP_Recv(display->udp_sock,display->udp_pkt) == 0) {
-			fprintf(stderr, "SDLNet_UDP_Recv(): %s\n", SDLNet_GetError());
+			fprintf(stderr, "SDLNet_UDP_Recv(%s,%d): %s\n", 
+					GLOBAL_SCORE_HOST, GLOBAL_SCORE_PORT, SDLNet_GetError());
 		} else {
 			sscanf((char*)display->udp_pkt->data,"%d",&display->global_score);
 		}

@@ -6,15 +6,16 @@ use IO::Socket;
 my $port = 31559;
 my $score_len = 16;
 my $score_file = 'cave9-global.hi';
+$|=1;
 
 my $hiscore = eval { do $score_file } || "0";
-print "hiscore:$hiscore\n";
+print time.":hiscore:$hiscore\n";
 
 my $sock = IO::Socket::INET->new(
 	LocalPort => $port,
 	Proto     => "udp",
 	) or die "Couldn't be a udp server on port $port : $@\n";
-print "udp:".$sock->sockport."\n";
+print time.":udp:".$sock->sockport."\n";
 
 my $score;
 while ($sock->recv($score, $score_len)) {
@@ -24,16 +25,16 @@ while ($sock->recv($score, $score_len)) {
 		$score = $&;
 		if($& > $hiscore) {
 			$hiscore = $&;
-			print "$host:$score!\n";
+			print time.":$host:$score!\n";
 			open SCORE, ">$score_file" 
 				or die "open $score_file: $!";
 			print SCORE $hiscore;
 			close SCORE;
 		} else {
-			print "$host:$score<$hiscore\n";
+			print time.":$host:$score<$hiscore\n";
 		}
 	} else {
-		print "$host<$hiscore\n";
+		print time.":$host<$hiscore\n";
 	}
 	$sock->send($hiscore);
 } 
