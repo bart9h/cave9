@@ -10,7 +10,7 @@
 #include "vec.h"
 #include "game.h"
 
-void cave_gen(Cave *cave, Ship *digger)
+void cave_gen(Cave* cave, Ship* digger)
 {
 	// check if the digger advanced to the next segment
 	int i = (cave->i-1+SEGMENT_COUNT)%SEGMENT_COUNT;
@@ -49,7 +49,7 @@ void cave_gen(Cave *cave, Ship *digger)
 	}
 }
 
-void cave_init(Cave *cave, Ship *digger)
+void cave_init(Cave* cave, Ship* digger)
 {
 	cave->i = 0;
 	do {
@@ -68,7 +68,7 @@ void ship_init(Ship* ship, float radius)
 	ship->dist = FLT_MAX;
 }
 
-void ship_move(Ship *ship, float dt)
+void ship_move(Ship* ship, float dt)
 {
 #if 1
 	float a = THRUST*dt;
@@ -97,7 +97,7 @@ void ship_move(Ship *ship, float dt)
 #endif
 }
 
-void digger_control(Ship *ship)
+void digger_control(Ship* ship)
 {
 	float twist_factor = 500;
 	float noise = .1;
@@ -129,7 +129,7 @@ void digger_control(Ship *ship)
 	ship->radius = MIN_CAVE_RADIUS+(MAX_CAVE_RADIUS-MIN_CAVE_RADIUS)*scale+RAND;
 }
 
-static float X(Cave *cave, int i, float xn, float yn, int k0, int k1)
+static float X(Cave* cave, int i, float xn, float yn, int k0, int k1)
 {// used by collision()
 
 	float x1 = cave->segs[i][k0][0];
@@ -144,7 +144,7 @@ static float X(Cave *cave, int i, float xn, float yn, int k0, int k1)
 	return x;
 }
 
-float collision(Cave *cave, Ship *ship)
+float collision(Cave* cave, Ship* ship)
 {
 	float min = FLT_MAX;
 
@@ -155,6 +155,8 @@ float collision(Cave *cave, Ship *ship)
 
 	// In fact we'll check four points around the center of the ship
 	// (to simulate a diamond-shaped bounding box).
+
+	// The return value is the distance from the ship to the cave.
 
 	int intersection_count[4];
 	memset(intersection_count, 0, sizeof(intersection_count));
@@ -196,14 +198,13 @@ float collision(Cave *cave, Ship *ship)
 	}
 
 	for(i = 0; i < 4; ++i) {
-		//printf("intersection_count[%d] = %d\n", i, intersection_count[i]);
 		if(intersection_count[i] % 2 == 0) {
-			return ship->dist = 0;
+			return ship->dist = 0;  // hit
 		}
 	}
 
 	ship->dist = min - 2*ship->radius;
-	return min;
+	return min;  // miss
 }
 
 // vim600:fdm=syntax:fdn=1:

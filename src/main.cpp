@@ -6,12 +6,13 @@
 #include "display.h"
 #include "game.h"
 
-typedef struct {
+typedef struct Input_struct
+{
 	bool pressed[SDLK_LAST];
 	enum {WELCOME, PLAY, PAUSE, GAMEOVER, QUIT} state;
 } Input;
 
-void game_init(Display *display, Cave *cave, Ship *digger, Ship *player)
+void game_init(Display* display, Cave* cave, Ship* digger, Ship* player)
 {
 	ship_init(player, SHIP_RADIUS);
 	ship_init(digger, MAX_CAVE_RADIUS);
@@ -19,7 +20,7 @@ void game_init(Display *display, Cave *cave, Ship *digger, Ship *player)
 	display_message(display, cave, player, "");
 }
 
-void control(Display *display, Cave *cave, Ship *digger, Ship *player, Input *input)
+void control(Display* display, Cave* cave, Ship* digger, Ship* player, Input* input)
 {
 	SDL_Event event;
 
@@ -32,6 +33,10 @@ void control(Display *display, Cave *cave, Ship *digger, Ship *player, Input *in
 				input->state = Input::QUIT;
 				break;
 			case SDLK_f:
+				if(input->state == Input::PLAY)  {
+					input->state = Input::PAUSE;
+					display_message(display, cave, player, "paused");
+				}
 				SDL_WM_ToggleFullScreen(display->screen);
 				break;
 			case SDLK_p:
@@ -81,13 +86,13 @@ void control(Display *display, Cave *cave, Ship *digger, Ship *player, Input *in
 	}
 }
 
-void player_control(Ship *player, Input *input)
+void player_control(Ship* player, Input* input)
 {
 	player->lefton  = input->pressed[SDLK_LEFT];
 	player->righton = input->pressed[SDLK_RIGHT];
 }
 
-void args_init(Args *args, int argc, char *argv[])
+void args_init(Args* args, int argc, char* argv[])
 {
 	args->width = 640;
 	args->height = 480;
@@ -102,9 +107,9 @@ void args_init(Args *args, int argc, char *argv[])
 
 	struct {
 		bool has_arg;
-		int *val;
-		char *short_name;
-		char *long_name;
+		int* val;
+		char* short_name;
+		char* long_name;
 	} options[] = {
 		{ 0, &help_called, "-h", "--help" },
 		{ 1, &args->width, "-W", "--width" },
@@ -153,7 +158,7 @@ void args_init(Args *args, int argc, char *argv[])
 	}
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
 	Args args;
 	Display display;

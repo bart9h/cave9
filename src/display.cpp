@@ -10,7 +10,7 @@
 #include <assert.h>
 #include "display.h"
 
-void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp, 
+void viewport(Display* display, GLsizei w, GLsizei h, GLsizei bpp, 
 		bool fullscreen, int aa=0)
 {
 	// video mode
@@ -102,7 +102,7 @@ void viewport(Display *display, GLsizei w, GLsizei h, GLsizei bpp,
 	exit(1);
 }
 
-void display_world_transform(Display *display, Ship *player)
+void display_world_transform(Display* display, Ship* player)
 {
 	COPY(display->cam, player->pos);
 	ADD2(display->target, player->pos, player->vel);
@@ -115,7 +115,7 @@ void display_world_transform(Display *display, Ship *player)
 	);
 }
 
-void cave_model(Display *display, Cave *cave, int wire)
+void cave_model(Display* display, Cave* cave, int wire)
 {
 	for( int i = 0; i < SEGMENT_COUNT-1; ++i ) {
 		int i0 = (cave->i + i)%SEGMENT_COUNT;
@@ -188,7 +188,7 @@ void cave_model(Display *display, Cave *cave, int wire)
 
 }
 
-void monolith_model(Display *display, Cave *cave, Ship *player)
+void monolith_model(Display* display, Cave* cave, Ship* player)
 {
 	if(!display->monoliths)
 		return;
@@ -226,7 +226,7 @@ void monolith_model(Display *display, Cave *cave, Ship *player)
 	glPopMatrix();
 }
 
-void ship_model(Display *display, Ship *ship)
+void ship_model(Display* display, Ship* ship)
 {
 	if(!display->cockpit)
 		return;
@@ -265,14 +265,14 @@ void ship_model(Display *display, Ship *ship)
 	glPopMatrix();
 }
 
-void render_text(Display *display, GLuint id, const char *text, 
+void render_text(Display* display, GLuint id, const char* text, 
 		float x, float y, float w, float h,
 		float r, float g, float b)
 {
 	if(text == NULL || text[0] == '\0')
 		return;
 	SDL_Color color = {0xff,0xff,0xff,0xff};
-	SDL_Surface *label = TTF_RenderText_Blended(display->font, text, color);
+	SDL_Surface* label = TTF_RenderText_Blended(display->font, text, color);
 	assert(label != NULL);
 
 	glDisable(GL_DEPTH_TEST);
@@ -299,7 +299,7 @@ void render_text(Display *display, GLuint id, const char *text,
 	glPopMatrix();
 }
 
-void display_hud(Display *display, Ship *player)
+void display_hud(Display* display, Ship* player)
 {
 	if(player->dist == FLT_MAX)
 		return;
@@ -333,7 +333,7 @@ void display_hud(Display *display, Ship *player)
 		} else {
 			if(score > display->local_score) {
 				display->local_score = score;
-				FILE *fp = fopen(SCORE_FILE, "w");
+				FILE* fp = fopen(SCORE_FILE, "w");
 				if(fp == NULL) {
 					perror("failed to open score file");
 				} else {
@@ -359,14 +359,14 @@ void display_hud(Display *display, Ship *player)
 }
 
 char display_message_buf[256];
-void display_message(Display *display, Cave *cave, Ship *player, const char *buf)
+void display_message(Display* display, Cave* cave, Ship* player, const char* buf)
 {
 	strncpy(display_message_buf, buf, sizeof(display_message_buf)-1);
 	display_message_buf[sizeof(display_message_buf)-1] = '\0';
 	display_frame(display, cave, player);
 }
 
-void display_start_frame(Display *display, float r, float g, float b)
+void display_start_frame(Display* display, float r, float g, float b)
 {
 	glClearColor(r,g,b,1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -374,14 +374,14 @@ void display_start_frame(Display *display, float r, float g, float b)
 	glLoadIdentity();
 }
 
-void display_end_frame(Display *display)
+void display_end_frame(Display* display)
 {
 	glFinish();
 
 	SDL_GL_SwapBuffers();
 }
 
-void display_frame(Display *display, Cave *cave, Ship *player)
+void display_frame(Display* display, Cave* cave, Ship* player)
 {
 	int hit = player->dist <= SHIP_RADIUS*1.1;
 
@@ -403,7 +403,7 @@ void display_frame(Display *display, Cave *cave, Ship *player)
 	display_end_frame(display);
 }
 
-void display_init(Display *display, Args *args)
+void display_init(Display* display, Args* args)
 {
 
 	memset(display, 0, sizeof(Display));
@@ -478,7 +478,7 @@ void display_init(Display *display, Args *args)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	SDL_Surface *texture = IMG_Load(texture_filename);
+	SDL_Surface* texture = IMG_Load(texture_filename);
 	if(texture == NULL) {
 		fprintf(stderr, "IMG_Load(%s): %s\n", texture_filename, IMG_GetError());
 		exit(1);
@@ -523,7 +523,7 @@ void display_init(Display *display, Args *args)
 	display->session_score = 0;
 
 	display->local_score = 0;
-	FILE *fp = fopen(SCORE_FILE, "r");
+	FILE* fp = fopen(SCORE_FILE, "r");
 	if(fp == NULL) {
 		perror("failed to open score file");
 	} else {
@@ -565,7 +565,7 @@ void display_init(Display *display, Args *args)
 
 }
 
-void display_net_update(Display *display)
+void display_net_update(Display* display)
 {
 	if(display->udp_sock == 0)
 		return;
@@ -585,7 +585,7 @@ void display_net_update(Display *display)
 	}
 }
 
-void display_net_finish(Display *display)
+void display_net_finish(Display* display)
 {
 	if(display->udp_pkt != NULL){ 
 		SDLNet_FreePacket(display->udp_pkt);
@@ -597,7 +597,7 @@ void display_net_finish(Display *display)
 	}
 }
 
-void display_minimap(Display *display, Cave *cave, Ship *player)
+void display_minimap(Display* display, Cave* cave, Ship* player)
 {
 	glPushMatrix();
 		glScalef(.0065,.003,.001);
