@@ -12,6 +12,8 @@
   #endif
 #endif
 
+#define EPSILON 0.000001
+
 typedef GLfloat Vec3[3];
 
 #define MAX(x,y) ((x)>(y)?(x):(y))
@@ -27,37 +29,47 @@ typedef GLfloat Vec3[3];
 	a[1]=b[1]; \
 	a[2]=b[2]; 
 
-#define EPSILON 0.000001
 #define CROSS(a,b,c) \
 	a[0]=b[1]*c[2]-b[2]*c[1]; \
 	a[1]=b[2]*c[0]-b[0]*c[2]; \
 	a[2]=b[0]*c[1]-b[1]*c[0];
-#define DOT(a,b) (a[0]*b[0]+a[1]*b[1]+a[2]*b[2])
+
+#define DOT(a,b) \
+	(a[0]*b[0]+a[1]*b[1]+a[2]*b[2])
+
 #define ADD2(a,b,c) \
 	a[0]=b[0]+c[0]; \
 	a[1]=b[1]+c[1]; \
 	a[2]=b[2]+c[2]; 
+
 #define ADD(a,b) \
 	a[0]+=b[0]; \
 	a[1]+=b[1]; \
 	a[2]+=b[2]; 
+
 #define ADDSCALE(a,b,x) \
 	a[0]+=b[0]*x; \
 	a[1]+=b[1]*x; \
 	a[2]+=b[2]*x; 
+
 #define SUB2(a,b,c) \
 	a[0]=b[0]-c[0]; \
 	a[1]=b[1]-c[1]; \
 	a[2]=b[2]-c[2]; 
+
 #define SCALE(a,k) \
 	a[0]*=k; \
 	a[1]*=k; \
 	a[2]*=k; 
+
 #define SCALE2(a,b,k) \
 	a[0]=b[0]*k; \
 	a[1]=b[1]*k; \
 	a[2]=b[2]*k; 
-#define LEN(a) sqrt(DOT(a,a))
+
+#define LEN(a) \
+	sqrt(DOT(a,a))
+
 #define SET(a,x,y,z) \
 	a[0]=x; \
 	a[1]=y; \

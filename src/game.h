@@ -44,12 +44,12 @@ typedef struct {
 	float monolith_yaw;
 } Cave;
 
-void cave_gen(Cave *cave, Ship *digger);
-void cave_init(Cave *cave, Ship *digger);
-void ship_init(Ship* ship, float radius);
-void ship_move(Ship *ship, float dt);
-void digger_control(Ship *ship);
-float collision(Cave *, Ship *);
+void cave_gen(Cave*, Ship* digger);
+void cave_init(Cave*, Ship* digger);
+void ship_init(Ship*, float radius);
+void ship_move(Ship*, float dt);
+void digger_control(Ship*);
+float collision(Cave*, Ship*);
 
 #endif
 
