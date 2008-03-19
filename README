@@ -14,3 +14,5 @@ If this don't work, please report to cave9@googlegroups.com
 You also need to download the cave9_data file from the game homepage,
 and extract it under the cave9 dir.  It containts the font and texture.
 
+Use the --help option to check for startup options.
+
