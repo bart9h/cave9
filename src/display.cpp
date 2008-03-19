@@ -403,6 +403,125 @@ void display_frame(Display* display, Cave* cave, Ship* player)
 	display_end_frame(display);
 }
 
+GLuint display_make_ship_list()
+{
+	/* Magic Numbers: It is possible to create a dodecahedron by attaching two pentagons 
+	 * to each face of a cube. The coordinates of the points are:
+	 * (+-x,0, z); (+-1, 1, 1); (0, z, x )
+	 * where x = 0.61803398875 and z = 1.61803398875.
+	 */
+
+	const double x = 0.61803398875;
+	const double z = 1.61803398875;
+	const double n1 = 0.525731112119;
+	const double n2 = 0.850650808354;
+
+	GLuint ship_list = glGenLists( SEGMENT_COUNT );
+	glNewList( ship_list, GL_COMPILE );
+		glBegin( GL_LINE_LOOP );
+			glNormal3d(  0, n1, n2 );
+			glVertex3d(  0,  z,  x );
+			glVertex3d( -1,  1,  1 );
+			glVertex3d( -x,  0,  z );
+			glVertex3d(  x,  0,  z );
+			glVertex3d(  1,  1,  1 );
+		glEnd();
+		glBegin( GL_LINE_LOOP );
+			glNormal3d(  0, n1, -n2 );
+			glVertex3d(  0,  z,  -x );
+			glVertex3d(  1,  1,  -1 );
+			glVertex3d(  x,  0,  -z );
+			glVertex3d( -x,  0,  -z );
+			glVertex3d( -1,  1,  -1 );
+		glEnd();
+		glBegin( GL_LINE_LOOP );
+			glNormal3d(  0, -n1, n2 );
+			glVertex3d(  0,  -z,  x );
+			glVertex3d(  1,  -1,  1 );
+			glVertex3d(  x,   0,  z );
+			glVertex3d( -x,   0,  z );
+			glVertex3d( -1,  -1,  1 );
+		glEnd();
+		glBegin( GL_LINE_LOOP );
+			glNormal3d(  0, -n1, -n2 );
+			glVertex3d(  0,  -z,  -x );
+			glVertex3d( -1,  -1,  -1 );
+			glVertex3d( -x,   0,  -z );
+			glVertex3d(  x,   0,  -z );
+			glVertex3d(  1,  -1,  -1 );
+		glEnd();
+
+		glBegin( GL_LINE_LOOP );
+			glNormal3d( n2,  0, n1 );
+			glVertex3d(  x,  0,  z );
+			glVertex3d(  1, -1,  1 );
+			glVertex3d(  z, -x,  0 );
+			glVertex3d(  z,  x,  0 );
+			glVertex3d(  1,  1,  1 );
+		glEnd();
+		glBegin( GL_LINE_LOOP );
+			glNormal3d( -n2,  0, n1 );
+			glVertex3d(  -x,  0,  z );
+			glVertex3d(  -1,  1,  1 );
+			glVertex3d(  -z,  x,  0 );
+			glVertex3d(  -z, -x,  0 );
+			glVertex3d(  -1, -1,  1 );
+		glEnd();
+		glBegin( GL_LINE_LOOP );
+			glNormal3d( n2,  0, -n1 );
+			glVertex3d(  x,  0,  -z );
+			glVertex3d(  1,  1,  -1 );
+			glVertex3d(  z,  x,   0 );
+			glVertex3d(  z, -x,   0 );
+			glVertex3d(  1, -1,  -1 );
+		glEnd();
+		glBegin( GL_LINE_LOOP );
+			glNormal3d( -n2,  0, -n1 );
+			glVertex3d(  -x,  0,  -z );
+			glVertex3d(  -1, -1,  -1 );
+			glVertex3d(  -z, -x,   0 );
+			glVertex3d(  -z,  x,   0 );
+			glVertex3d(  -1,  1,  -1 );
+		glEnd();
+
+		glBegin( GL_LINE_LOOP );
+			glNormal3d( n1, n2,  0 );
+			glVertex3d(  z,  x,  0 );
+			glVertex3d(  1,  1, -1 );
+			glVertex3d(  0,  z, -x );
+			glVertex3d(  0,  z,  x );
+			glVertex3d(  1,  1,  1 );
+		glEnd();
+		glBegin( GL_LINE_LOOP );
+			glNormal3d( n1, -n2,  0 );
+			glVertex3d(  z,  -x,  0 );
+			glVertex3d(  1,  -1,  1 );
+			glVertex3d(  0,  -z,  x );
+			glVertex3d(  0,  -z, -x );
+			glVertex3d(  1,  -1, -1 );
+		glEnd();
+		glBegin( GL_LINE_LOOP );
+			glNormal3d( -n1, n2,  0 );
+			glVertex3d(  -z,  x,  0 );
+			glVertex3d(  -1,  1,  1 );
+			glVertex3d(   0,  z,  x );
+			glVertex3d(   0,  z, -x );
+			glVertex3d(  -1,  1, -1 );
+		glEnd();
+		glBegin( GL_LINE_LOOP );
+			glNormal3d( -n1, -n2,  0 );
+			glVertex3d(  -z,  -x,  0 );
+			glVertex3d(  -1,  -1, -1 );
+			glVertex3d(   0,  -z, -x );
+			glVertex3d(   0,  -z,  x );
+			glVertex3d(  -1,  -1,  1 );
+		glEnd();
+
+	glEndList();
+
+	return ship_list;
+}
+
 void display_init(Display* display, Args* args)
 {
 
@@ -494,28 +613,7 @@ void display_init(Display* display, Args* args)
 
 	SDL_FreeSurface(texture);
 
-	display->ship_list = glGenLists( SEGMENT_COUNT );
-	glNewList( display->ship_list, GL_COMPILE );
-		/* Magic Numbers: It is possible to create a dodecahedron by attaching two pentagons 
-		 * to each face of a cube. The coordinates of the points are:
-		 * (+-x,0, z); (+-1, 1, 1); (0, z, x )
-		 * where x = 0.61803398875 and z = 1.61803398875.
-		 */
-		glBegin( GL_LINE_LOOP ); glNormal3d( 0.0, 0.525731112119, 0.850650808354 ); glVertex3d( 0.0, 1.61803398875, 0.61803398875 ); glVertex3d( -1.0, 1.0, 1.0 ); glVertex3d( -0.61803398875, 0.0, 1.61803398875 ); glVertex3d( 0.61803398875, 0.0, 1.61803398875 ); glVertex3d( 1.0, 1.0, 1.0 ); glEnd();
-		glBegin( GL_LINE_LOOP ); glNormal3d( 0.0, 0.525731112119, -0.850650808354 ); glVertex3d( 0.0, 1.61803398875, -0.61803398875 ); glVertex3d( 1.0, 1.0, -1.0 ); glVertex3d( 0.61803398875, 0.0, -1.61803398875 ); glVertex3d( -0.61803398875, 0.0, -1.61803398875 ); glVertex3d( -1.0, 1.0, -1.0 ); glEnd();
-		glBegin( GL_LINE_LOOP ); glNormal3d( 0.0, -0.525731112119, 0.850650808354 ); glVertex3d( 0.0, -1.61803398875, 0.61803398875 ); glVertex3d( 1.0, -1.0, 1.0 ); glVertex3d( 0.61803398875, 0.0, 1.61803398875 ); glVertex3d( -0.61803398875, 0.0, 1.61803398875 ); glVertex3d( -1.0, -1.0, 1.0 ); glEnd();
-		glBegin( GL_LINE_LOOP ); glNormal3d( 0.0, -0.525731112119, -0.850650808354 ); glVertex3d( 0.0, -1.61803398875, -0.61803398875 ); glVertex3d( -1.0, -1.0, -1.0 ); glVertex3d( -0.61803398875, 0.0, -1.61803398875 ); glVertex3d( 0.61803398875, 0.0, -1.61803398875 ); glVertex3d( 1.0, -1.0, -1.0 ); glEnd();
-
-		glBegin( GL_LINE_LOOP ); glNormal3d( 0.850650808354, 0.0, 0.525731112119 ); glVertex3d( 0.61803398875, 0.0, 1.61803398875 ); glVertex3d( 1.0, -1.0, 1.0 ); glVertex3d( 1.61803398875, -0.61803398875, 0.0 ); glVertex3d( 1.61803398875, 0.61803398875, 0.0 ); glVertex3d( 1.0, 1.0, 1.0 ); glEnd();
-		glBegin( GL_LINE_LOOP ); glNormal3d( -0.850650808354, 0.0, 0.525731112119 ); glVertex3d( -0.61803398875, 0.0, 1.61803398875 ); glVertex3d( -1.0, 1.0, 1.0 ); glVertex3d( -1.61803398875, 0.61803398875, 0.0 ); glVertex3d( -1.61803398875, -0.61803398875, 0.0 ); glVertex3d( -1.0, -1.0, 1.0 ); glEnd();
-		glBegin( GL_LINE_LOOP ); glNormal3d( 0.850650808354, 0.0, -0.525731112119 ); glVertex3d( 0.61803398875, 0.0, -1.61803398875 ); glVertex3d( 1.0, 1.0, -1.0 ); glVertex3d( 1.61803398875, 0.61803398875, 0.0 ); glVertex3d( 1.61803398875, -0.61803398875, 0.0 ); glVertex3d( 1.0, -1.0, -1.0 ); glEnd();
-		glBegin( GL_LINE_LOOP ); glNormal3d( -0.850650808354, 0.0, -0.525731112119 ); glVertex3d( -0.61803398875, 0.0, -1.61803398875 ); glVertex3d( -1.0, -1.0, -1.0 ); glVertex3d( -1.61803398875, -0.61803398875, 0.0 ); glVertex3d( -1.61803398875, 0.61803398875, 0.0 ); glVertex3d( -1.0, 1.0, -1.0 ); glEnd();
-
-		glBegin( GL_LINE_LOOP ); glNormal3d( 0.525731112119, 0.850650808354, 0.0 ); glVertex3d( 1.61803398875, 0.61803398875, 0.0 ); glVertex3d( 1.0, 1.0, -1.0 ); glVertex3d( 0.0, 1.61803398875, -0.61803398875 ); glVertex3d( 0.0, 1.61803398875, 0.61803398875 ); glVertex3d( 1.0, 1.0, 1.0 ); glEnd();
-		glBegin( GL_LINE_LOOP ); glNormal3d( 0.525731112119, -0.850650808354, 0.0 ); glVertex3d( 1.61803398875, -0.61803398875, 0.0 ); glVertex3d( 1.0, -1.0, 1.0 ); glVertex3d( 0.0, -1.61803398875, 0.61803398875 ); glVertex3d( 0.0, -1.61803398875, -0.61803398875 ); glVertex3d( 1.0, -1.0, -1.0 ); glEnd();
-		glBegin( GL_LINE_LOOP ); glNormal3d( -0.525731112119, 0.850650808354, 0.0 ); glVertex3d( -1.61803398875, 0.61803398875, 0.0 ); glVertex3d( -1.0, 1.0, 1.0 ); glVertex3d( 0.0, 1.61803398875, 0.61803398875 ); glVertex3d( 0.0, 1.61803398875, -0.61803398875 ); glVertex3d( -1.0, 1.0, -1.0 ); glEnd();
-		glBegin( GL_LINE_LOOP ); glNormal3d( -0.525731112119, -0.850650808354, 0.0 ); glVertex3d( -1.61803398875, -0.61803398875, 0.0 ); glVertex3d( -1.0, -1.0, -1.0 ); glVertex3d( 0.0, -1.61803398875, -0.61803398875 ); glVertex3d( 0.0, -1.61803398875, 0.61803398875 ); glVertex3d( -1.0, -1.0, 1.0 ); glEnd();
-	glEndList();
+	display->ship_list = display_make_ship_list();
 
 	display->monoliths = args->monoliths;
 	display->cockpit = args->cockpit;
