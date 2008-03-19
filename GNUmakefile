@@ -6,7 +6,8 @@ clean:
 
 release:
 	@set -e; \
-	dir=cave9.`date +%Y-%m-%d`; \
+	date=`date +%Y-%m-%d`; \
+	dir=cave9.$$date; \
 	rm -rf $$dir; mkdir $$dir; \
 	tar -cf - \
 	{AUTHORS,README,GNUmakefile} \
@@ -14,7 +15,8 @@ release:
 	src/{main,display,game}.cpp src/{display,game,vec}.h \
 	src/{Makefile.cross,sfcave9.pl,cave9-global.pl} \
 	| tar -C $$dir -xf -; \
-	tar -cvzf $$dir.tgz $$dir; \
+	archive=cave9_src.$$date.tgz; \
+	tar -cvzf $$archive $$dir; \
 	rm -rf $$dir; \
-	ls -sh $$dir.tgz
+	ls -sh $$archive
 
