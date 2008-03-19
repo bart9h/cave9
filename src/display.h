@@ -6,9 +6,9 @@
 #include <SDL_net.h>
 #include "game.h"
 
-#define TEXTURE_FILE "cave9.jpg"
-#define FONT_FILE "cave9.ttf"
-#define SCORE_FILE "cave9.hi"
+#define TEXTURE_FILE "data/cave9.jpg"
+#define FONT_FILE "data/cave9.ttf"
+#define SCORE_FILE "data/cave9.hi"
 #define GLOBAL_SCORE_PORT 31559
 #define GLOBAL_SCORE_HOST "cave9.9hells.org"
 #define GLOBAL_SCORE_LEN 16

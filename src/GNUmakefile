@@ -1,6 +1,6 @@
 #{{{1  setup
 
-TARGET=cave9
+TARGET = ../cave9
 
 CXX = gcc
 CXXFLAGS = -Wall -Werror -ggdb `sdl-config --cflags` -I/usr/include/SDL
@@ -9,7 +9,7 @@ LDFLAGS = `sdl-config --libs` -lm -L/usr/X11/lib -lGL -lGLU -lSDL_ttf -lSDL_imag
 
 #{{{1  build rules
 
-SRCS=\
+SRCS = \
 	 main.cpp \
 	 display.cpp \
 	 game.cpp \
