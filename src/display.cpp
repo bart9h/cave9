@@ -10,7 +10,7 @@
 #include <assert.h>
 #include "display.h"
 
-void viewport(Display* display, GLsizei w, GLsizei h, GLsizei bpp, 
+void viewport(Display* display, GLsizei w, GLsizei h, GLsizei bpp,
 		bool fullscreen, int aa=0)
 {
 	// video mode
@@ -29,7 +29,7 @@ void viewport(Display* display, GLsizei w, GLsizei h, GLsizei bpp,
 	if(fullscreen)
 		flags |= SDL_FULLSCREEN;
 	display->screen = SDL_SetVideoMode(w, h, bpp, flags);
-	if(display->screen == NULL) 
+	if(display->screen == NULL)
 		goto error;
 
 	bpp = display->screen->format->BitsPerPixel;
@@ -75,11 +75,11 @@ void viewport(Display* display, GLsizei w, GLsizei h, GLsizei bpp,
 		glShadeModel(GL_FLAT);
 		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
 	}
-	
+
 	glLineWidth(16);
-	
+
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
+
 	{
 		glFogi(GL_FOG_MODE, GL_LINEAR);
 		GLfloat fog_color[] = {0,0,0,1};
@@ -136,34 +136,34 @@ void cave_model(Display* display, Cave* cave, int wire)
 				int k0 = k%SECTOR_COUNT;
 
 				if(!wire) {
-					if(i0==0||i1==0||k==3*SECTOR_COUNT/4) 
-						glColor4f(1, 0, 0, 0.5); 
-					else 
+					if(i0==0||i1==0||k==3*SECTOR_COUNT/4)
+						glColor4f(1, 0, 0, 0.5);
+					else
 						glColor4f(1, 1, 1, 0.5);
 				}
 
 				if(!wire) {
-					glTexCoord2f( 
-							(float)(cave->i+i)/SEGMENT_COUNT, 
+					glTexCoord2f(
+							(float)(cave->i+i)/SEGMENT_COUNT,
 							(float)k/SECTOR_COUNT);
 				} else {
 					glColor4f(
-							(float)i0/SEGMENT_COUNT, 
-							1-(float)i0/SEGMENT_COUNT, 
-							(float)k0/SECTOR_COUNT, 
+							(float)i0/SEGMENT_COUNT,
+							1-(float)i0/SEGMENT_COUNT,
+							(float)k0/SECTOR_COUNT,
 							0.5);
 				}
 				glVertex3fv(cave->segs[i0][k0]);
 
 				if(!wire) {
-					glTexCoord2f( 
-							((float)(cave->i+i+1))/SEGMENT_COUNT, 
+					glTexCoord2f(
+							((float)(cave->i+i+1))/SEGMENT_COUNT,
 							(float)k/SECTOR_COUNT);
 				} else {
 					glColor4f(
-							(float)i1/SEGMENT_COUNT, 
-							1-(float)i1/SEGMENT_COUNT, 
-							(float)k0/SECTOR_COUNT, 
+							(float)i1/SEGMENT_COUNT,
+							1-(float)i1/SEGMENT_COUNT,
+							(float)k0/SECTOR_COUNT,
 							0.5);
 				}
 				glVertex3fv(cave->segs[i1][k0]);
@@ -218,7 +218,7 @@ void monolith_model(Display* display, Cave* cave, Ship* player)
 		glBegin( GL_QUADS );
 			glVertex3f( -w, -h, d );  glVertex3f( -w, +h, d );
 			glVertex3f( -w, +h, 0 );  glVertex3f( -w, -h, 0 );
-									 
+
 			glVertex3f( +w, +h, d );  glVertex3f( +w, -h, d );
 			glVertex3f( +w, -h, 0 );  glVertex3f( +w, +h, 0 );
 		glEnd();
@@ -239,7 +239,7 @@ void ship_model(Display* display, Ship* ship)
 		return;
 
 	float alert_dist = ship->radius*10;
-	float white = ship->dist <= 0 || ship->dist > alert_dist ? 1 : 
+	float white = ship->dist <= 0 || ship->dist > alert_dist ? 1 :
 		1-(alert_dist - ship->dist)/alert_dist;
 
 	float f =1.8;
@@ -248,7 +248,7 @@ void ship_model(Display* display, Ship* ship)
 	glEnable(GL_BLEND);
 	glDisable(GL_TEXTURE_2D);
 
-	glColor4f(1,white,white,alpha); 
+	glColor4f(1,white,white,alpha);
 	glPushMatrix();
 		glTranslatef(0,0,-SHIP_RADIUS*f);
 		glCallList( display->ship_list );
@@ -265,7 +265,7 @@ void ship_model(Display* display, Ship* ship)
 	glPopMatrix();
 }
 
-void render_text(Display* display, GLuint id, const char* text, 
+void render_text(Display* display, GLuint id, const char* text,
 		float x, float y, float w, float h,
 		float r, float g, float b)
 {
@@ -280,8 +280,8 @@ void render_text(Display* display, GLuint id, const char* text,
 	glEnable(GL_TEXTURE_2D);
 
     glBindTexture(GL_TEXTURE_2D, id);
-	gluBuild2DMipmaps(GL_TEXTURE_2D, 
-			GL_RGBA, label->w, label->h, 
+	gluBuild2DMipmaps(GL_TEXTURE_2D,
+			GL_RGBA, label->w, label->h,
 			GL_RGBA, GL_UNSIGNED_BYTE, label->pixels);
 
 	SDL_FreeSurface(label);
@@ -322,12 +322,12 @@ void display_hud(Display* display, Ship* player)
 			gauge, score
 		);
 	} else {
-		if(score > display->session_score) 
+		if(score > display->session_score)
 			display->session_score = score;
 		if(player->start) {
 			snprintf(buf, HUD_TEXT_MAX, "velocity %s  score %d (%d) - %d",
 				gauge, score,
-				display->session_score, 
+				display->session_score,
 				(int)player->start
 			);
 		} else {
@@ -347,8 +347,8 @@ void display_hud(Display* display, Ship* player)
 			}
 			snprintf(buf, HUD_TEXT_MAX, "velocity %s  score %d (%d/%d/%d)",
 				gauge, score,
-				display->session_score, 
-				display->local_score, 
+				display->session_score,
+				display->local_score,
 				display->global_score
 			);
 		}
@@ -405,118 +405,41 @@ void display_frame(Display* display, Cave* cave, Ship* player)
 
 GLuint display_make_ship_list()
 {
-	/* Magic Numbers: It is possible to create a dodecahedron by attaching two pentagons 
+	/* Magic Numbers: It is possible to create a dodecahedron by attaching two pentagons
 	 * to each face of a cube. The coordinates of the points are:
 	 * (+-x,0, z); (+-1, 1, 1); (0, z, x )
 	 * where x = 0.61803398875 and z = 1.61803398875.
 	 */
+	const float x = 0.61803398875;
+	const float z = 1.61803398875;
+	const float a = 0.525731112119;
+	const float b = 0.850650808354;
+	const float p[12][6][3] = {
+		{ {  0,  a,  b }, {  0,  z,  x }, { -1,  1,  1 }, { -x,  0,  z }, {  x,  0,  z }, {  1,  1,  1 } },
+		{ {  0,  a, -b }, {  0,  z, -x }, {  1,  1, -1 }, {  x,  0, -z }, { -x,  0, -z }, { -1,  1, -1 } },
+		{ {  0, -a,  b }, {  0, -z,  x }, {  1, -1,  1 }, {  x,  0,  z }, { -x,  0,  z }, { -1, -1,  1 } },
+		{ {  0, -a, -b }, {  0, -z, -x }, { -1, -1, -1 }, { -x,  0, -z }, {  x,  0, -z }, {  1, -1, -1 } },
 
-	const double x = 0.61803398875;
-	const double z = 1.61803398875;
-	const double n1 = 0.525731112119;
-	const double n2 = 0.850650808354;
+		{ {  b,  0,  a }, {  x,  0,  z }, {  1, -1,  1 }, {  z, -x,  0 }, {  z,  x,  0 }, {  1,  1,  1 } },
+		{ { -b,  0,  a }, { -x,  0,  z }, { -1,  1,  1 }, { -z,  x,  0 }, { -z, -x,  0 }, { -1, -1,  1 } },
+		{ {  b,  0, -a }, {  x,  0, -z }, {  1,  1, -1 }, {  z,  x,  0 }, {  z, -x,  0 }, {  1, -1, -1 } },
+		{ { -b,  0, -a }, { -x,  0, -z }, { -1, -1, -1 }, { -z, -x,  0 }, { -z,  x,  0 }, { -1,  1, -1 } },
 
-	GLuint ship_list = glGenLists( SEGMENT_COUNT );
-	glNewList( ship_list, GL_COMPILE );
-		glBegin( GL_LINE_LOOP );
-			glNormal3d(  0, n1, n2 );
-			glVertex3d(  0,  z,  x );
-			glVertex3d( -1,  1,  1 );
-			glVertex3d( -x,  0,  z );
-			glVertex3d(  x,  0,  z );
-			glVertex3d(  1,  1,  1 );
-		glEnd();
-		glBegin( GL_LINE_LOOP );
-			glNormal3d(  0, n1, -n2 );
-			glVertex3d(  0,  z,  -x );
-			glVertex3d(  1,  1,  -1 );
-			glVertex3d(  x,  0,  -z );
-			glVertex3d( -x,  0,  -z );
-			glVertex3d( -1,  1,  -1 );
-		glEnd();
-		glBegin( GL_LINE_LOOP );
-			glNormal3d(  0, -n1, n2 );
-			glVertex3d(  0,  -z,  x );
-			glVertex3d(  1,  -1,  1 );
-			glVertex3d(  x,   0,  z );
-			glVertex3d( -x,   0,  z );
-			glVertex3d( -1,  -1,  1 );
-		glEnd();
-		glBegin( GL_LINE_LOOP );
-			glNormal3d(  0, -n1, -n2 );
-			glVertex3d(  0,  -z,  -x );
-			glVertex3d( -1,  -1,  -1 );
-			glVertex3d( -x,   0,  -z );
-			glVertex3d(  x,   0,  -z );
-			glVertex3d(  1,  -1,  -1 );
-		glEnd();
+		{ {  a,  b,  0 }, {  z,  x,  0 }, {  1,  1, -1 }, {  0,  z, -x }, {  0,  z,  x }, {  1,  1,  1 } },
+		{ {  a, -b,  0 }, {  z, -x,  0 }, {  1, -1,  1 }, {  0, -z,  x }, {  0, -z, -x }, {  1, -1, -1 } },
+		{ { -a,  b,  0 }, { -z,  x,  0 }, { -1,  1,  1 }, {  0,  z,  x }, {  0,  z, -x }, { -1,  1, -1 } },
+		{ { -a, -b,  0 }, { -z, -x,  0 }, { -1, -1, -1 }, {  0, -z, -x }, {  0, -z,  x }, { -1, -1,  1 } }
+	};
 
-		glBegin( GL_LINE_LOOP );
-			glNormal3d( n2,  0, n1 );
-			glVertex3d(  x,  0,  z );
-			glVertex3d(  1, -1,  1 );
-			glVertex3d(  z, -x,  0 );
-			glVertex3d(  z,  x,  0 );
-			glVertex3d(  1,  1,  1 );
+	GLuint ship_list = glGenLists (SEGMENT_COUNT);
+	glNewList (ship_list, GL_COMPILE);
+	for (int j = 0;  j < 12;  j++) {
+		glBegin (GL_LINE_LOOP);
+			glNormal3fv (p[j][0]);
+			for (int i = 1;  i < 6;  i++)
+				glVertex3fv (p[j][i]);
 		glEnd();
-		glBegin( GL_LINE_LOOP );
-			glNormal3d( -n2,  0, n1 );
-			glVertex3d(  -x,  0,  z );
-			glVertex3d(  -1,  1,  1 );
-			glVertex3d(  -z,  x,  0 );
-			glVertex3d(  -z, -x,  0 );
-			glVertex3d(  -1, -1,  1 );
-		glEnd();
-		glBegin( GL_LINE_LOOP );
-			glNormal3d( n2,  0, -n1 );
-			glVertex3d(  x,  0,  -z );
-			glVertex3d(  1,  1,  -1 );
-			glVertex3d(  z,  x,   0 );
-			glVertex3d(  z, -x,   0 );
-			glVertex3d(  1, -1,  -1 );
-		glEnd();
-		glBegin( GL_LINE_LOOP );
-			glNormal3d( -n2,  0, -n1 );
-			glVertex3d(  -x,  0,  -z );
-			glVertex3d(  -1, -1,  -1 );
-			glVertex3d(  -z, -x,   0 );
-			glVertex3d(  -z,  x,   0 );
-			glVertex3d(  -1,  1,  -1 );
-		glEnd();
-
-		glBegin( GL_LINE_LOOP );
-			glNormal3d( n1, n2,  0 );
-			glVertex3d(  z,  x,  0 );
-			glVertex3d(  1,  1, -1 );
-			glVertex3d(  0,  z, -x );
-			glVertex3d(  0,  z,  x );
-			glVertex3d(  1,  1,  1 );
-		glEnd();
-		glBegin( GL_LINE_LOOP );
-			glNormal3d( n1, -n2,  0 );
-			glVertex3d(  z,  -x,  0 );
-			glVertex3d(  1,  -1,  1 );
-			glVertex3d(  0,  -z,  x );
-			glVertex3d(  0,  -z, -x );
-			glVertex3d(  1,  -1, -1 );
-		glEnd();
-		glBegin( GL_LINE_LOOP );
-			glNormal3d( -n1, n2,  0 );
-			glVertex3d(  -z,  x,  0 );
-			glVertex3d(  -1,  1,  1 );
-			glVertex3d(   0,  z,  x );
-			glVertex3d(   0,  z, -x );
-			glVertex3d(  -1,  1, -1 );
-		glEnd();
-		glBegin( GL_LINE_LOOP );
-			glNormal3d( -n1, -n2,  0 );
-			glVertex3d(  -z,  -x,  0 );
-			glVertex3d(  -1,  -1, -1 );
-			glVertex3d(   0,  -z, -x );
-			glVertex3d(   0,  -z,  x );
-			glVertex3d(  -1,  -1,  1 );
-		glEnd();
-
+	}
 	glEndList();
 
 	return ship_list;
@@ -603,8 +526,8 @@ void display_init(Display* display, Args* args)
 		exit(1);
 	}
 
-	GLenum err = gluBuild2DMipmaps(GL_TEXTURE_2D, 
-			GL_RGB, texture->w, texture->h, 
+	GLenum err = gluBuild2DMipmaps(GL_TEXTURE_2D,
+			GL_RGB, texture->w, texture->h,
 			GL_RGB, GL_UNSIGNED_BYTE,texture->pixels);
 	if(err) {
 		fprintf(stderr, "gluBuild2DMipmaps(): %s\n", gluErrorString(err));
@@ -675,7 +598,7 @@ void display_net_update(Display* display)
 	} else {
 		SDL_Delay(666); // XXX only wait 666ms for hiscores
 		if(SDLNet_UDP_Recv(display->udp_sock,display->udp_pkt) == 0) {
-			fprintf(stderr, "SDLNet_UDP_Recv(%s,%d): %s\n", 
+			fprintf(stderr, "SDLNet_UDP_Recv(%s,%d): %s\n",
 					GLOBAL_SCORE_HOST, GLOBAL_SCORE_PORT, SDLNet_GetError());
 		} else {
 			sscanf((char*)display->udp_pkt->data,"%d",&display->global_score);
@@ -685,7 +608,7 @@ void display_net_update(Display* display)
 
 void display_net_finish(Display* display)
 {
-	if(display->udp_pkt != NULL){ 
+	if(display->udp_pkt != NULL) {
 		SDLNet_FreePacket(display->udp_pkt);
 		display->udp_pkt = NULL;
 	}
