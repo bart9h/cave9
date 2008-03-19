@@ -64,6 +64,7 @@ void ship_init(Ship* ship, float radius)
 {
 	SET(ship->pos,0,0,ship->start);
 	SET(ship->vel,0,0,VELOCITY);
+	SET(ship->lookAt,0,0,VELOCITY);
 	ship->radius = radius;
 	ship->dist = FLT_MAX;
 }
@@ -72,7 +73,6 @@ void ship_move(Ship* ship, float dt)
 {
 #if 1
 	float a = THRUST*dt;
-
 
 	if(ship->lefton) {
 		Vec3 leftup = {-a,a/2,0};
@@ -87,6 +87,14 @@ void ship_move(Ship* ship, float dt)
 	ship->vel[1] -= GRAVITY*dt;
 
 	ADDSCALE(ship->pos, ship->vel, dt);
+
+	{
+		Vec3 d;
+		float smoothness = 0.2;
+		SUB2 (d, ship->vel, ship->lookAt);
+		ADDSCALE (ship->lookAt, d, smoothness);
+	}
+
 #else
 	if(ship->lefton)
 		ship->vel[1] += THRUST*dt;

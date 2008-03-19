@@ -105,7 +105,7 @@ void viewport(Display* display, GLsizei w, GLsizei h, GLsizei bpp,
 void display_world_transform(Display* display, Ship* player)
 {
 	COPY(display->cam, player->pos);
-	ADD2(display->target, player->pos, player->vel);
+	ADD2(display->target, player->pos, player->lookAt);
 	//display->target[1]=display->target[1]*.5+player->pos[1]*.5;
 	//display->target[2]+=10;
 	gluLookAt(

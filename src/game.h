@@ -27,9 +27,9 @@
 
 typedef struct {
 	float radius;
-	Vec3 pos, vel;
+	Vec3 pos, vel, lookAt;
 	bool lefton, righton;
-	float dist;
+	float dist;  // distance to cave wall
 	float start;
 } Ship;
 
@@ -37,7 +37,7 @@ typedef struct {
 	Vec3 segs[SEGMENT_COUNT][SECTOR_COUNT];
 	GLuint gl_list[SEGMENT_COUNT];
 	GLuint gl_wire_list[SEGMENT_COUNT];
-	int i; // circular array index
+	int i;  // circular array index
 
 	float monolith_x;
 	float monolith_y;
