@@ -11,7 +11,6 @@ INSTALL:
 To compile, just run 'make'.
 If this don't work, please report to cave9@googlegroups.com
 
-If you downloaded the source from subversion,
-you will need to download the font and texture from the game homepage,
-put them on a data/ dir, with names cave9.ttf and cave9.jpg.
+You also need to download the cave9_data file from the game homepage,
+and extract it under the cave9 dir.  It containts the font and texture.
 
