@@ -104,8 +104,14 @@ void control(Display* display, Cave* cave, Ship* digger, Ship* player, Input* in
 
 void player_control(Ship* player, Input* input)
 {
-	player->lefton  = input->pressed[SDLK_LEFT];
-	player->righton = input->pressed[SDLK_RIGHT];
+	player->lefton  =
+		input->pressed[SDLK_LEFT]    ||
+		input->pressed[SDLK_LSHIFT]  ||
+		input->pressed[SDLK_LCTRL];
+	player->righton =
+		input->pressed[SDLK_RIGHT]   ||
+		input->pressed[SDLK_RSHIFT]  ||
+		input->pressed[SDLK_RCTRL];
 }
 
 void args_init(Args* args, int argc, char* argv[])

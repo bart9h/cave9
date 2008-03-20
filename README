@@ -1,5 +1,9 @@
 cave9
 
+
+ABOUT:
+======
+
 A gravity cave-exploration game by 9Hells.
 It's a 3D version of the classic SF-Cave game.
 
@@ -7,6 +11,7 @@ http://code.google.com/p/cave9
 
 
 INSTALL:
+========
 
 To compile, just run 'make'.
 If this don't work, please report to cave9@googlegroups.com
@@ -15,4 +20,20 @@ You also need to download the cave9_data file from the game homepage,
 and extract it under the cave9 dir.  It containts the font and texture.
 
 Use the --help option to check for startup options.
+
+
+PLAY:
+=====
+
+Use the two diagnoal thrusts of your ship to keep it from
+hitting the cave walls.
+
+You can use the left-right arrow, shift or control keys
+to activate them.
+
+Space will pause/unpause the game.
+
+F toggles fullscreen mode.
+
+Check the startup options with "./cave9 --help"
 
