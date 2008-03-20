@@ -1,3 +1,19 @@
+/*
+	This file is part of cave9.
+
+	cave9 is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+
+	cave9 is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with cave9.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,11 +26,11 @@
 #include "vec.h"
 #include "game.h"
 
-void cave_gen(Cave* cave, Ship* digger)
+void cave_gen (Cave* cave, Ship* digger)
 {
 	// check if the digger advanced to the next segment
-	int i = (cave->i-1+SEGMENT_COUNT)%SEGMENT_COUNT;
-	if( digger->pos[2] > digger->start+1 && digger->pos[2] - SEGMENT_LEN < cave->segs[i][0][2] )
+	int i = (cave->i - 1 + SEGMENT_COUNT) % SEGMENT_COUNT;
+	if (digger->pos[2] > digger->start+1  &&  digger->pos[2]-SEGMENT_LEN < cave->segs[i][0][2])
 		return;
 
 	// invalidate GL list for this segment
@@ -45,11 +61,11 @@ void cave_gen(Cave* cave, Ship* digger)
 		// place monolith
 		cave->monolith_x = digger->pos[0] + (2*RAND-1)*(digger->radius-MONOLITH_WIDTH);
 		cave->monolith_y = digger->pos[1] + (2*RAND-1)*(digger->radius-MONOLITH_HEIGHT);
-		cave->monolith_yaw   = atan2(digger->vel[0], digger->vel[2]);
+		cave->monolith_yaw = atan2(digger->vel[0], digger->vel[2]);
 	}
 }
 
-void cave_init(Cave* cave, Ship* digger)
+void cave_init (Cave* cave, Ship* digger)
 {
 	cave->i = 0;
 	do {
@@ -60,7 +76,7 @@ void cave_init(Cave* cave, Ship* digger)
 	while(cave->i != 0);
 }
 
-void ship_init(Ship* ship, float radius)
+void ship_init (Ship* ship, float radius)
 {
 	SET(ship->pos,0,0,ship->start);
 	SET(ship->vel,0,0,VELOCITY);
@@ -69,9 +85,8 @@ void ship_init(Ship* ship, float radius)
 	ship->dist = FLT_MAX;
 }
 
-void ship_move(Ship* ship, float dt)
+void ship_move (Ship* ship, float dt)
 {
-#if 1
 	float a = THRUST*dt;
 
 	if(ship->lefton) {
@@ -89,27 +104,18 @@ void ship_move(Ship* ship, float dt)
 	ADDSCALE(ship->pos, ship->vel, dt);
 
 	{
-		Vec3 d;
 		float smoothness = 0.2;
+		Vec3 d;
 		SUB2 (d, ship->vel, ship->lookAt);
 		ADDSCALE (ship->lookAt, d, smoothness);
 	}
-
-#else
-	if(ship->lefton)
-		ship->vel[1] += THRUST*dt;
-
-	ship->vel[1] -= GRAVITY*dt;
-
-	ship->pos[1] += ship->vel[1]*dt;
-#endif
 }
 
-void digger_control(Ship* ship)
+void digger_control (Ship* ship)
 {
 	float twist_factor = 500;
 	float noise = .1;
-	float twist = 1-1/(1+ ship->pos[2]/twist_factor );
+	float twist = 1 - 1/(1 + ship->pos[2]/twist_factor);
 	float max_vel[3] = { 
 		MAX_VEL_X * twist, 
 		MAX_VEL_Y * twist, 
@@ -121,7 +127,7 @@ void digger_control(Ship* ship)
 			ship->vel[1] < -max_vel[1] || 
 			ship->vel[0] >  max_vel[0] ||
 			ship->vel[0] < -max_vel[0] ||
-			RAND<twist*noise
+			RAND < twist*noise
 		) 
 	{
 		if(RAND>twist/2)
@@ -137,7 +143,8 @@ void digger_control(Ship* ship)
 	ship->radius = MIN_CAVE_RADIUS+(MAX_CAVE_RADIUS-MIN_CAVE_RADIUS)*scale+RAND;
 }
 
-static float X(Cave* cave, int i, float xn, float yn, int k0, int k1)
+
+static float X (Cave* cave, int i, float xn, float yn, int k0, int k1)
 {// used by collision()
 
 	float x1 = cave->segs[i][k0][0];
@@ -152,7 +159,7 @@ static float X(Cave* cave, int i, float xn, float yn, int k0, int k1)
 	return x;
 }
 
-float collision(Cave* cave, Ship* ship)
+float collision (Cave* cave, Ship* ship)
 {
 	float min = FLT_MAX;
 
@@ -216,4 +223,3 @@ float collision(Cave* cave, Ship* ship)
 }
 
 // vim600:fdm=syntax:fdn=1:
-
