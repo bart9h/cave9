@@ -47,8 +47,8 @@ void cave_gen (Cave* cave, Ship* digger)
 		float a = M_PI_2+(i-1)*M_PI*2/SECTOR_COUNT;
 		float r = digger->radius;
 		SET(cave->segs[cave->i][i],
-			digger->pos[0] + r*cos(a),
-			digger->pos[1] + r*sin(a),
+			digger->pos[0] + r*cos(a) + RAND,
+			digger->pos[1] + r*sin(a) + RAND,
 			((int)(digger->pos[2]/SEGMENT_LEN))*SEGMENT_LEN
 		);
 	}
