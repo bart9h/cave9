@@ -151,12 +151,16 @@ void cave_model(Display* display, Cave* cave, int wire)
 
 				int k0 = k%SECTOR_COUNT;
 
+#if TEXTURE_BOUNDARY_DEBUG
 				if(!wire) {
 					if(i0==0||i1==0||k==3*SECTOR_COUNT/4)
 						glColor4f(1, 0, 0, 0.5);
 					else
 						glColor4f(1, 1, 1, 0.5);
 				}
+#else
+				glColor4f(1, 1, 1, 0.5);
+#endif
 
 				if(!wire) {
 					glTexCoord2f(
@@ -325,7 +329,7 @@ void display_hud(Display* display, Ship* player)
 			log(1+LEN(player->vel)-MAX_VEL_Z) /
 			log(1+LEN(max_vel)-MAX_VEL_Z));
 	char gauge[11];
-	int i = int(vel*10);
+	int i = int(vel*20);
 	memset(gauge,'/',i);
 	gauge[i] = '\0';
 
