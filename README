@@ -17,7 +17,7 @@ To compile, just run 'make'.
 If this don't work, please report to cave9@googlegroups.com
 
 You also need to download the cave9_data file from the game homepage,
-and extract it under the cave9 dir.  It containts the font and texture.
+and extract it under the cave9 dir.  It contains the font and texture.
 
 Use the --help option to check for startup options.
 
@@ -25,15 +25,17 @@ Use the --help option to check for startup options.
 PLAY:
 =====
 
-Use the two diagnoal thrusts of your ship to keep it from
+Use the two diagonal thrusts of your ship to keep it from
 hitting the cave walls.
 
 You can use the left-right arrow, shift or control keys
 to activate them.
 
-Space will pause/unpause the game.
+<Space> will pause/unpause the game.
 
-F toggles fullscreen mode.
+<F> toggles fullscreen mode.
+
+<Esc> or <Q> quits immediately.
 
 Check the startup options with "./cave9 --help"
 
