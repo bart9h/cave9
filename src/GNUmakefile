@@ -10,11 +10,11 @@ LDFLAGS = `sdl-config --libs` -lm -L/usr/X11/lib -lGL -lGLU -lSDL_ttf -lSDL_imag
 #{{{1  build rules
 
 SRCS = \
-	 main.cpp \
-	 display.cpp \
-	 game.cpp \
+	 main.c \
+	 display.c \
+	 game.c \
 
-OBJS = $(subst .cpp,.o,$(SRCS))
+OBJS = $(subst .c,.o,$(SRCS))
 
 $(TARGET): $(OBJS)
 	$(CXX) $(LDFLAGS) -o $@ $^

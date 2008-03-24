@@ -367,6 +367,7 @@ void display_hud(Display* display, Ship* player)
 			}
 			snprintf(buf, HUD_TEXT_MAX, "velocity %s  score %d (%d/%d/%d)",
 				gauge, score,
+				// FIXME: local_score > global_score  (which is it?)
 				display->session_score,
 				display->local_score,
 				display->global_score
