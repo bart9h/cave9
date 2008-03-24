@@ -72,7 +72,7 @@ void cave_model(Display*, Cave*, int wire);
 void ship_model(Display*, Ship*);
 void render_hud(Display*, Ship* player);
 void display_init(Display*, Args*);
-void display_start_frame(Display*, Ship* player);
+void display_start_frame(Display* display, float r, float g, float b);
 void display_end_frame(Display*);
 void display_minimap(Display*, Cave*, Ship* player);
 void display_hud(Display*, Ship* player);

@@ -2,8 +2,8 @@
 
 TARGET = ../cave9
 
-CXX = gcc
-CXXFLAGS = -Wall -Werror -ggdb `sdl-config --cflags` -I/usr/include/SDL
+CC = gcc
+CFLAGS = -std=c99 -Wall -Werror -ggdb `sdl-config --cflags` -I/usr/include/SDL
 LDFLAGS = `sdl-config --libs` -lm -L/usr/X11/lib -lGL -lGLU -lSDL_ttf -lSDL_image -lSDL_net
 
 
@@ -17,7 +17,7 @@ SRCS = \
 OBJS = $(subst .c,.o,$(SRCS))
 
 $(TARGET): $(OBJS)
-	$(CXX) $(LDFLAGS) -o $@ $^
+	$(CC) $(LDFLAGS) -o $@ $^
 
 
 #{{{1  administrative rules
@@ -28,7 +28,7 @@ clean:
 
 
 .depend:
-	$(CXX) -MM $(CXXFLAGS) $(SRCS) > $@
+	$(CC) -MM $(CFLAGS) $(SRCS) > $@
 
 dep:
 	rm -f .depend
@@ -40,7 +40,7 @@ endif
 
 
 tags:
-	$(CXX) -M $(CXXFLAGS) $(SRCS) \
+	$(CC) -M $(CFLAGS) $(SRCS) \
 		| sed 's/:\ /\ /;s/\ /\n/g;s/\\//' | grep -v '\.o$$' | sort | uniq \
 		| ctags --c++-kinds=+px-f --c-kinds=+px-f -L -
 

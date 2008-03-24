@@ -46,11 +46,11 @@ void control(Display* display, Cave* cave, Ship* digger, Ship* player, Input* in
 			switch(event.key.keysym.sym) {
 			case SDLK_ESCAPE:
 			case SDLK_q:
-				input->state = Input::QUIT;
+				input->state = QUIT;
 				break;
 			case SDLK_f:
-				if(input->state == Input::PLAY)  {
-					input->state = Input::PAUSE;
+				if(input->state == PLAY)  {
+					input->state = PAUSE;
 					display_message(display, cave, player, "paused");
 				}
 				SDL_WM_ToggleFullScreen(display->screen);
@@ -58,17 +58,17 @@ void control(Display* display, Cave* cave, Ship* digger, Ship* player, Input* in
 			case SDLK_p:
 			case SDLK_PAUSE:
 			case SDLK_SPACE:
-				if(input->state == Input::WELCOME 
-				|| input->state == Input::PAUSE
-				|| input->state == Input::GAMEOVER) {
-					if(input->state == Input::GAMEOVER)
+				if(input->state == WELCOME 
+				|| input->state == PAUSE
+				|| input->state == GAMEOVER) {
+					if(input->state == GAMEOVER)
 						game_init(display, cave, digger, player);
 					else
 						display_message(display, cave, player, "");
-					input->state = Input::PLAY;
+					input->state = PLAY;
 				}
-				else if(input->state == Input::PLAY)  {
-					input->state = Input::PAUSE;
+				else if(input->state == PLAY)  {
+					input->state = PAUSE;
 					display_message(display, cave, player, "paused");
 				}
 				break;
@@ -83,7 +83,7 @@ void control(Display* display, Cave* cave, Ship* digger, Ship* player, Input* in
 			input->pressed[event.key.keysym.sym] = (event.type == SDL_KEYDOWN);
 			break;
 		case SDL_QUIT:
-			input->state = Input::QUIT;
+			input->state = QUIT;
 			break;
 		case SDL_VIDEORESIZE:
 			{
@@ -198,33 +198,33 @@ int main(int argc, char* argv[])
 
 	player.start = digger.start = (float)args.start;
 	game_init(&display, &cave, &digger, &player);
-	input.state = Input::WELCOME;
+	input.state = WELCOME;
 	display_message(&display, &cave, &player, "welcome!  left+right for control.  [press space]");
 
 	float dt = 0;
-	while(input.state != Input::QUIT) {
+	while(input.state != QUIT) {
 		int t0 = SDL_GetTicks();
 
 		control(&display, &cave, &digger, &player, &input);
 
 		switch(input.state) {
-		case Input::PLAY:
+		case PLAY:
 			player_control(&player, &input);
 			ship_move(&player, dt);
 			digger_control(&digger);
 			ship_move(&digger, dt);
 			if(collision(&cave, &player) <= 0) {
 				display_message(&display, &cave, &player, "gameover.  [press space]");
-				input.state = Input::GAMEOVER;
+				input.state = GAMEOVER;
 			}
 			cave_gen(&cave, &digger);
 
 			display_frame(&display, &cave, &player);
 			break;
-		case Input::WELCOME:
-		case Input::PAUSE:
-		case Input::GAMEOVER:
-		case Input::QUIT:
+		case WELCOME:
+		case PAUSE:
+		case GAMEOVER:
+		case QUIT:
 			break;
 		}
 

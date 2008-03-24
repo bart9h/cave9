@@ -27,7 +27,7 @@
 #include "display.h"
 
 void viewport(Display* display, GLsizei w, GLsizei h, GLsizei bpp,
-		bool fullscreen, int aa=0)
+		bool fullscreen, int aa)
 {
 	// video mode
 	SDL_GL_SetAttribute( SDL_GL_RED_SIZE, bpp/3 );
@@ -329,7 +329,7 @@ void display_hud(Display* display, Ship* player)
 			log(1+LEN(player->vel)-MAX_VEL_Z) /
 			log(1+LEN(max_vel)-MAX_VEL_Z));
 	char gauge[11];
-	int i = int(vel*20);
+	int i = (int)(vel*20);
 	memset(gauge,'/',i);
 	gauge[i] = '\0';
 
