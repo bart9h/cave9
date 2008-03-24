@@ -25,15 +25,17 @@
 typedef struct Input_struct
 {
 	bool pressed[SDLK_LAST];
-	enum {WELCOME, PLAY, PAUSE, GAMEOVER, QUIT} state;
+	enum { WELCOME, PLAY, PAUSE, GAMEOVER, QUIT } state;
 } Input;
 
-void game_init(Display* display, Cave* cave, Ship* digger, Ship* player)
+void game_init (Game* game)
+	Display* display, Cave* cave, Ship* digger, Ship* player)
 {
-	ship_init(player, SHIP_RADIUS);
-	ship_init(digger, MAX_CAVE_RADIUS);
-	cave_init(cave,digger);
-	display_message(display, cave, player, "");
+	ship_init (game->player, SHIP_RADIUS);
+	ship_init (game->diggers[0], MAX_CAVE_RADIUS);
+	ship_init (game->diggers[1], MAX_CAVE_RADIUS);
+	cave_init (game->cave, game->diggers);
+	display_message (game, "");
 }
 
 void control(Display* display, Cave* cave, Ship* digger, Ship* player, Input* input)

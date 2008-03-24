@@ -26,11 +26,23 @@
 #include "vec.h"
 #include "game.h"
 
-void cave_gen (Cave* cave, Ship* digger)
+Ship* nearest_digger (Ship* player, Ship* diggers[2])
 {
+	#define D(a,b)\
+	((a->pos[0]-b->pos[0])*(a->pos[0]-b->pos[0])\
+	+(a->pos[1]-b->pos[1])*(a->pos[1]-b->pos[1]))
+	return diggers[ (D(player,diggers[0]) < D(player,diggers[1])) ? 0 : 1 ];
+}
+
+void cave_gen (Cave* cave, Ship* player, Ship* diggers[2])
+{
+	// diggers must be synchronized  (same Z)
+	float digZ = diggers[0]->pos[2];
+	assert (digZ == diggers[1]->pos[2]);
+
 	// check if the digger advanced to the next segment
 	int i = (cave->i - 1 + SEGMENT_COUNT) % SEGMENT_COUNT;
-	if (digger->pos[2] > digger->start+1  &&  digger->pos[2]-SEGMENT_LEN < cave->segs[i][0][2])
+	if (digZ > diggers[0]->start+1  &&  digZ < cave->segs[i][0][2])
 		return;
 
 	// invalidate GL list for this segment
@@ -43,14 +55,41 @@ void cave_gen (Cave* cave, Ship* digger)
 	cave->gl_wire_list[cave->i] = 0;
 
 	// generate new segment
-	for( i = 0; i < SECTOR_COUNT; ++i ) {
-		float a = M_PI_2+(i-1)*M_PI*2/SECTOR_COUNT;
-		float r = digger->radius;
-		SET(cave->segs[cave->i][i],
-			digger->pos[0] + r*cos(a) + RAND,
-			digger->pos[1] + r*sin(a) + RAND,
-			((int)(digger->pos[2]/SEGMENT_LEN))*SEGMENT_LEN
+	{
+		Vec3 d0 = diggers[0]->pos;
+		Vec3 d1 = diggers[1]->pos;
+		float r0 = diggers[0]->radius;
+		float r1 = diggers[1]->radius;
+
+		float int0x, int0y, int1x, inty1;
+		int n = circle_circle_intersection (
+				d0[0], d0[1], r0,
+				d1[0], d1[1], r1,
+				&int0x, &int0y, &int1x, &int1y
 		);
+		if (n == 2) {
+			//TODO
+		}
+		else {
+			Vec3 pl = player->pos;
+			Ship* dig = diggers[
+				(n == 1) ?
+				// circles inside each other, pick bigger one
+				( (diggers[0]->radius > diggers[1]->radius) ? 0 : 1 ) :
+				// no intersection, check which one has the player ship
+				( ((pl[0]-d0[0])*(pl[0]-d0[0])+(pl[1]-d0[1])*(pl[1]-d0[1])) < r0*r0 ? 0 : 1 )
+			];
+
+			for( i = 0; i < SECTOR_COUNT; ++i ) {
+				float a = M_PI_2+(i-1)*M_PI*2/SECTOR_COUNT;
+				float r = dig->radius;
+				SET(cave->segs[cave->i][i],
+					dig->pos[0] + r*cos(a) + RAND,
+					dig->pos[1] + r*sin(a) + RAND,
+					((int)(digZ/SEGMENT_LEN))*SEGMENT_LEN
+				);
+			}
+		}
 	}
 
 	// increment segment circular pointer
@@ -65,7 +104,7 @@ void cave_gen (Cave* cave, Ship* digger)
 	}
 }
 
-void cave_init (Cave* cave, Ship* digger)
+void cave_init (Cave* cave, Ship* diggers[2])
 {
 	cave->i = 0;
 	do {
@@ -222,4 +261,4 @@ float collision (Cave* cave, Ship* ship)
 	return min;  // miss
 }
 
-// vim600:fdm=syntax:fdn=1:
+// vim600:fdm=syntax:fdn=2:

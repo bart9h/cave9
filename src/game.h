@@ -43,6 +43,13 @@
 #define MONOLITH_HEIGHT (3*3)
 
 typedef struct {
+	Display* display;
+	Cave* cave;
+	Ship* diggers[2];
+	Ship* player;
+} Game;
+
+typedef struct {
 	float radius;
 	Vec3 pos, vel, lookAt;
 	bool lefton, righton;
@@ -61,8 +68,8 @@ typedef struct {
 	float monolith_yaw;
 } Cave;
 
-void cave_gen(Cave*, Ship* digger);
-void cave_init(Cave*, Ship* digger);
+void cave_gen (Cave*, Ship* player, Ship* diggers[2]);
+void cave_init(Cave*, Ship* diggers[2]);
 void ship_init(Ship*, float radius);
 void ship_move(Ship*, float dt);
 void digger_control(Ship*);

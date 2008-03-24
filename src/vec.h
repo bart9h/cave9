@@ -92,6 +92,9 @@ typedef GLfloat Vec3[3];
 	a[1]=y; \
 	a[2]=z; 
 
+#define DIST2(a,b) \
+	( (b[0]-a[0])*(b[0]-a[0]) + (b[1]-a[1])*(b[1]-a[1]) + (b[2]-a[2])*(b[2]-a[2]) )
+
 #if 1
 #define NORM(a) { \
 	float invlen = 1/LEN(a); \

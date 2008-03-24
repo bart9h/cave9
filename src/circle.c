@@ -3,13 +3,13 @@
  *
  * int circle_circle_intersection(
  *                                // center and radius of 1st circle
- *                                double x0, double y0, double r0,
+ *                                float x0, float y0, float r0,
  *                                // center and radius of 2nd circle
- *                                double x1, double y1, double r1,
+ *                                float x1, float y1, float r1,
  *                                // 1st intersection point
- *                                double *xi, double *yi,
+ *                                float *xi, float *yi,              
  *                                // 2nd intersection point
- *                                double *xi_prime, double *yi_prime)
+ *                                float *xi_prime, float *yi_prime)
  *
  * This is a public domain work. 3/26/2005 Tim Voght
  *
@@ -18,13 +18,13 @@
 #include <math.h>
 
 int circle_circle_intersection(
-		double x0, double y0, double r0,
-		double x1, double y1, double r1,
-		double *xi, double *yi,
-		double *xi_prime, double *yi_prime)
+		float x0, float y0, float r0,
+		float x1, float y1, float r1,
+		float *xi, float *yi,
+		float *xi_prime, float *yi_prime)
 {
-	double a, dx, dy, d, h, rx, ry;
-	double x2, y2;
+	float a, dx, dy, d, h, rx, ry;
+	float x2, y2;
 
 	/* dx and dy are the vertical and horizontal distances between
 	 * the circle centers.
@@ -45,7 +45,7 @@ int circle_circle_intersection(
 	if (d < fabs(r0 - r1))
 	{
 		/* no solution. one circle is contained in the other */
-		return 0;
+		return 1;
 	}
 
 	/* 'point 2' is the point where the line through the circle
@@ -77,17 +77,17 @@ int circle_circle_intersection(
 	*yi = y2 + ry;
 	*yi_prime = y2 - ry;
 
-	return 1;
+	return 2;
 }
 
 #define TEST
 
 #ifdef TEST
 
-void run_test(double x0, double y0, double r0,
-		double x1, double y1, double r1)
+void run_test(float x0, float y0, float r0,
+		float x1, float y1, float r1)
 {
-	double x3, y3, x3_prime, y3_prime;
+	float x3, y3, x3_prime, y3_prime;
 
 	printf("x0=%F, y0=%F, r0=%F, x1=%F, y1=%F, r1=%F :\n",
 			x0, y0, r0, x1, y1, r1);
