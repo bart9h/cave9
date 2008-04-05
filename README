@@ -47,14 +47,32 @@ PLAY:
 Use the two diagonal thrusts of your ship to keep it from
 hitting the cave walls.
 
-You can use the left-right arrow, shift or control keys
-to activate them.
+The gravity will constantly push you down.
+Use the right thrust to pull up and left,
+and the left thrust to pull up and right.
 
-<Space> will pause/unpause the game.
+Using both controls simultaneously will cancel
+the lateral forces, and pull you straight up.
 
-<F> toggles fullscreen mode.
 
-<Esc> or <Q> quits immediately.
+KEYBOARD CONTROLS:
+==================
+
+<Left-Arrow>   or  <Left-Control>   or  <Left-Shift>:
+Activate the right thrust jet.
+
+<Right-Arrow>  or  <Right-Control>  or  <Right-Shift>:
+Activate the right thrust jet.
+
+<Space>
+Pause/un-pause the game.
+
+<F>
+Toggles full-screen mode.
+
+<Esc>  or  <Q>
+Quits immediately.
+
 
 Check the startup options with "./cave9 --help"
 
