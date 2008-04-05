@@ -121,7 +121,7 @@ void args_init(Args* args, int argc, char* argv[])
 	args->bpp = 0;
 	args->fullscreen = 0;
 	args->highres = 0;
-	args->antialiasing = 0;
+	args->antialiasing = 2;
 	args->monoliths = 0;
 	args->start = 0;
 	args->cockpit = 0;
