@@ -131,7 +131,7 @@ void display_world_transform(Display* display, Ship* player)
 	);
 }
 
-void cave_model(Display* display, Cave* cave, int wire)
+void cave_model(Display* display, Cave* cave, bool wire)
 {
 	for( int i = 0; i < SEGMENT_COUNT-1; ++i ) {
 		int i0 = (cave->i + i)%SEGMENT_COUNT;
@@ -319,7 +319,7 @@ void render_text(Display* display, GLuint id, const char* text,
 	glPopMatrix();
 }
 
-void display_hud(Display* display, Ship* player)
+void display_hud(Display* display, Ship* player, int game_mode)
 {
 	if(player->dist == FLT_MAX)
 		return;
@@ -333,7 +333,7 @@ void display_hud(Display* display, Ship* player)
 	memset(gauge,'/',i);
 	gauge[i] = '\0';
 
-	int score = (int)player->pos[2];
+	int score = (int)(player->pos[2] / game_mode);
 
 #define HUD_TEXT_MAX 80
 	char buf[HUD_TEXT_MAX];
@@ -380,11 +380,11 @@ void display_hud(Display* display, Ship* player)
 }
 
 char display_message_buf[256];
-void display_message(Display* display, Cave* cave, Ship* player, const char* buf)
+void display_message(Display* display, Cave* cave, Ship* player, const char* buf, int game_mode)
 {
 	strncpy(display_message_buf, buf, sizeof(display_message_buf)-1);
 	display_message_buf[sizeof(display_message_buf)-1] = '\0';
-	display_frame(display, cave, player);
+	display_frame(display, cave, player, game_mode);
 }
 
 void display_start_frame(Display* display, float r, float g, float b)
@@ -402,7 +402,7 @@ void display_end_frame(Display* display)
 	SDL_GL_SwapBuffers();
 }
 
-void display_frame(Display* display, Cave* cave, Ship* player)
+void display_frame(Display* display, Cave* cave, Ship* player, int game_mode)
 {
 	int hit = player->dist <= SHIP_RADIUS*1.1;
 
@@ -411,14 +411,14 @@ void display_frame(Display* display, Cave* cave, Ship* player)
 	if(!hit) { // avoid drawing the cave from outside
 		glPushMatrix();
 			display_world_transform(display, player);
-			cave_model(display, cave, 0);
+			cave_model(display, cave, false);
 			monolith_model(display, cave, player);
 		glPopMatrix();
 	}
 
 	ship_model(display, player);
 	display_minimap(display, cave, player);
-	display_hud(display, player);
+	display_hud(display, player, game_mode);
 	render_text(display, display->msg_id, display_message_buf, .5,.5,1,.25, 1,1,1);
 
 	display_end_frame(display);
@@ -648,9 +648,8 @@ void display_minimap(Display* display, Cave* cave, Ship* player)
 				-player->pos[0]-1000, // XXX hardcoded
 				-player->pos[1]-100,
 				-player->pos[2]-(SEGMENT_COUNT-1)*SEGMENT_LEN/2);
-		cave_model(display, cave, 1);
+		cave_model(display, cave, true);
 	glPopMatrix();
-
 }
 
 // vim600:fdm=syntax:fdn=1:

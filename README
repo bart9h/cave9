@@ -74,5 +74,10 @@ Toggles full-screen mode.
 Quits immediately.
 
 
+For the one-key mode, use
+<Up-Arrow>  or  <Down-Arrow>
+To activate both thursts.
+
+
 Check the startup options with "./cave9 --help"
 

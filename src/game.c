@@ -65,11 +65,11 @@ void cave_gen (Cave* cave, Ship* digger)
 	}
 }
 
-void cave_init (Cave* cave, Ship* digger)
+void cave_init (Cave* cave, Ship* digger, int game_mode)
 {
 	cave->i = 0;
 	do {
-		digger_control(digger);
+		digger_control(digger, game_mode);
 		ship_move(digger, 1./FPS);
 		cave_gen(cave, digger);
 	}
@@ -111,7 +111,7 @@ void ship_move (Ship* ship, float dt)
 	}
 }
 
-void digger_control (Ship* ship)
+void digger_control (Ship* ship, int game_mode)
 {
 	float twist_factor = 500;
 	float noise = .1;
@@ -137,6 +137,9 @@ void digger_control (Ship* ship)
 		if(RAND>twist/2)
 			ship->righton = RAND<twist*noise ? rand()%2 :
 				ship->vel[1] < 0 || ship->vel[0] < -max_vel[0];
+
+		if (game_mode == ONE_BUTTON)
+			ship->lefton = ship->righton = (ship->lefton | ship->righton);
 	}
 
 	float scale = 1-MIN(1,log(1+ship->pos[2])/log(1+MIN_CAVE_RADIUS_DEPTH));

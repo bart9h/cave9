@@ -31,7 +31,8 @@
 #define GLOBAL_SCORE_LEN 16
 #define GLOBAL_SCORE_WAIT 666
 
-typedef struct {
+typedef struct Display_struct
+{
 	SDL_Surface* screen;
 	GLuint texture_id;
 	GLuint hud_id;
@@ -39,14 +40,14 @@ typedef struct {
 	TTF_Font* font;
 	Vec3 cam, target;
 	GLfloat near_plane, far_plane;
-	
+
 	GLuint list_start;
 	GLuint wire_list_start;
 	GLuint ship_list;
-	
+
 	int monoliths;
 	int cockpit;
-	
+
 	int session_score;
 	int local_score;
 	int global_score;
@@ -55,7 +56,8 @@ typedef struct {
 	UDPpacket* udp_pkt;
 } Display;
 
-typedef struct {
+typedef struct Args_struct
+{
 	int width;
 	int height;
 	int bpp;
@@ -65,19 +67,20 @@ typedef struct {
 	int monoliths;
 	int start;
 	int cockpit;
+	int game_mode;
 } Args;
 
 void viewport(Display*, GLsizei w, GLsizei h, GLsizei bpp, bool fullscreen, int aa);
-void cave_model(Display*, Cave*, int wire);
+void cave_model(Display*, Cave*, bool wire);
 void ship_model(Display*, Ship*);
 void render_hud(Display*, Ship* player);
 void display_init(Display*, Args*);
 void display_start_frame(Display* display, float r, float g, float b);
 void display_end_frame(Display*);
 void display_minimap(Display*, Cave*, Ship* player);
-void display_hud(Display*, Ship* player);
-void display_message(Display*, Cave*, Ship* player, const char* buf);
-void display_frame(Display*, Cave*, Ship* player);
+void display_hud(Display*, Ship* player, int game_mode);
+void display_message(Display*, Cave*, Ship* player, const char* buf, int game_mode);
+void display_frame(Display*, Cave*, Ship* player, int game_mode);
 void display_net_update(Display*);
 void display_net_finish(Display*);
 

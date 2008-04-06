@@ -42,7 +42,8 @@
 #define MONOLITH_WIDTH  (2*2)
 #define MONOLITH_HEIGHT (3*3)
 
-typedef struct {
+typedef struct  Ship_struct
+{
 	float radius;
 	Vec3 pos, vel, lookAt;
 	bool lefton, righton;
@@ -50,7 +51,8 @@ typedef struct {
 	float start;
 } Ship;
 
-typedef struct {
+typedef struct  Cave_struct
+{
 	Vec3 segs[SEGMENT_COUNT][SECTOR_COUNT];
 	GLuint gl_list[SEGMENT_COUNT];
 	GLuint gl_wire_list[SEGMENT_COUNT];
@@ -61,11 +63,17 @@ typedef struct {
 	float monolith_yaw;
 } Cave;
 
+enum GameMode
+{
+	ONE_BUTTON = 1,
+	TWO_BUTTONS = 2
+};
+
 void cave_gen(Cave*, Ship* digger);
-void cave_init(Cave*, Ship* digger);
+void cave_init(Cave*, Ship* digger, int game_mode);
 void ship_init(Ship*, float radius);
 void ship_move(Ship*, float dt);
-void digger_control(Ship*);
+void digger_control(Ship*, int game_mode);
 float collision(Cave*, Ship*);
 
 #endif
