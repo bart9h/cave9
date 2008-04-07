@@ -43,21 +43,6 @@ void score_init (Game* game)
 	}
 }
 
-void game_init (Display* display, Game* game, Args* args)
-{
-	if (args != NULL) {
-		game->mode = args->game_mode;
-		game->monoliths = args->monoliths;
-		game->player.start = game->digger.start = (float)args->start;
-	}
-
-	ship_init (&game->player, SHIP_RADIUS);
-	ship_init (&game->digger, MAX_CAVE_RADIUS);
-	cave_init (&game->cave, &game->digger, game->mode);
-
-	display_message (display, game, "");
-}
-
 void control (Display* display, Game* game, Input* input)
 {
 	SDL_Event event;

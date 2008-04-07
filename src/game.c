@@ -67,6 +67,7 @@ void cave_gen (Cave* cave, Ship* digger)
 
 void cave_init (Cave* cave, Ship* digger, int game_mode)
 {
+	memset (cave, 0, sizeof(Cave));
 	cave->i = 0;
 	do {
 		digger_control(digger, game_mode);
@@ -78,11 +79,27 @@ void cave_init (Cave* cave, Ship* digger, int game_mode)
 
 void ship_init (Ship* ship, float radius)
 {
-	SET(ship->pos,0,0,ship->start);
-	SET(ship->vel,0,0,VELOCITY);
-	SET(ship->lookAt,0,0,VELOCITY);
+	memset (ship, 0, sizeof(Ship));
+	SET (ship->pos, 0,0,ship->start);
+	SET (ship->vel, 0,0,VELOCITY);
+	SET (ship->lookAt, 0,0,VELOCITY);
 	ship->radius = radius;
 	ship->dist = FLT_MAX;
+}
+
+void game_init (Display* display, Game* game, Args* args)
+{
+	if (args != NULL) {
+		game->mode = args->game_mode;
+		game->monoliths = args->monoliths;
+		game->player.start = game->digger.start = (float)args->start;
+	}
+
+	ship_init (&game->player, SHIP_RADIUS);
+	ship_init (&game->digger, MAX_CAVE_RADIUS);
+	cave_init (&game->cave, &game->digger, game->mode);
+
+	display_message (display, game, "");
 }
 
 void ship_move (Ship* ship, float dt)
