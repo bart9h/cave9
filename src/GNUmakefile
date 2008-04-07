@@ -3,8 +3,8 @@
 TARGET = ../cave9
 
 CC = gcc
-CFLAGS = -std=c99 -Wall -Werror -ggdb `sdl-config --cflags` -I/usr/include/SDL
-LDFLAGS = `sdl-config --libs` -lm -L/usr/X11/lib -lGL -lGLU -lSDL_ttf -lSDL_image -lSDL_net
+CFLAGS += -std=c99 -Wall -Werror -ggdb `sdl-config --cflags` -I/usr/include/SDL
+LDFLAGS += `sdl-config --libs` -lm -L/usr/X11/lib -lGL -lGLU -lSDL_ttf -lSDL_image -lSDL_net
 
 
 #{{{1  build rules
