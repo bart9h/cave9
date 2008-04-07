@@ -28,15 +28,19 @@ typedef struct Input_struct
 	enum {WELCOME, PLAY, PAUSE, GAMEOVER, QUIT} state;
 } Input;
 
-void game_init(Display* display, Cave* cave, Ship* digger, Ship* player, int game_mode)
+void game_init (Display* display, Game* game, Args* args)
 {
-	ship_init(player, SHIP_RADIUS);
-	ship_init(digger, MAX_CAVE_RADIUS);
-	cave_init(cave, digger, game_mode);
-	display_message(display, cave, player, "", game_mode);
+	if (args != NULL) {
+		game->mode = args->game_mode;
+		game->player.start = game->digger.start = (float)args->start;
+	}
+	ship_init (&game->player, SHIP_RADIUS);
+	ship_init (&game->digger, MAX_CAVE_RADIUS);
+	cave_init (&game->cave, &game->digger, game->mode);
+	display_message (display, game, "");
 }
 
-void control(Display* display, Cave* cave, Ship* digger, Ship* player, Input* input, int game_mode)
+void control (Display* display, Game* game, Input* input)
 {
 	SDL_Event event;
 
@@ -51,7 +55,7 @@ void control(Display* display, Cave* cave, Ship* digger, Ship* player, Input* in
 			case SDLK_f:
 				if(input->state == PLAY)  {
 					input->state = PAUSE;
-					display_message(display, cave, player, "paused", game_mode);
+					display_message(display, game, "paused");
 				}
 				SDL_WM_ToggleFullScreen(display->screen);
 				break;
@@ -62,14 +66,14 @@ void control(Display* display, Cave* cave, Ship* digger, Ship* player, Input* in
 				|| input->state == PAUSE
 				|| input->state == GAMEOVER) {
 					if(input->state == GAMEOVER)
-						game_init(display, cave, digger, player, game_mode);
+						game_init (display, game, NULL);
 					else
-						display_message(display, cave, player, "", game_mode);
+						display_message (display, game, "");
 					input->state = PLAY;
 				}
 				else if(input->state == PLAY)  {
 					input->state = PAUSE;
-					display_message(display, cave, player, "paused", game_mode);
+					display_message (display, game, "paused");
 				}
 				break;
 			case SDLK_RETURN:
@@ -88,13 +92,13 @@ void control(Display* display, Cave* cave, Ship* digger, Ship* player, Input* in
 		case SDL_VIDEORESIZE:
 			{
 				int aa;
-				SDL_GL_GetAttribute( SDL_GL_MULTISAMPLESAMPLES, &aa );
-				viewport(display, event.resize.w, event.resize.h, 0, 
+				SDL_GL_GetAttribute (SDL_GL_MULTISAMPLESAMPLES, &aa);
+				viewport (display, event.resize.w, event.resize.h, 0, 
 						display->screen->flags & SDL_FULLSCREEN, aa);
 			}
 			break;
 		case SDL_VIDEOEXPOSE:
-			display_frame(display, cave, player, game_mode);
+			display_frame (display, game);
 			break;
 		default:
 			break;
@@ -102,7 +106,7 @@ void control(Display* display, Cave* cave, Ship* digger, Ship* player, Input* in
 	}
 }
 
-void player_control(Ship* player, Input* input, int game_mode)
+void player_control (Ship* player, Input* input, int game_mode)
 {
 	if (game_mode == ONE_BUTTON) {
 
@@ -125,7 +129,7 @@ void player_control(Ship* player, Input* input, int game_mode)
 	}
 }
 
-void args_init(Args* args, int argc, char* argv[])
+void args_init (Args* args, int argc, char* argv[])
 {
 	args->width = 640;
 	args->height = 480;
@@ -193,46 +197,43 @@ void args_init(Args* args, int argc, char* argv[])
 	}
 }
 
-int main(int argc, char* argv[])
+int main (int argc, char* argv[])
 {
 	Args args;
 	Display display;
 	Input input;
-	memset( input.pressed, 0, sizeof(input.pressed) );
+	memset (input.pressed, 0, sizeof(input.pressed));
 
 	srand(time(NULL));
 
-	Cave cave;
-	Ship digger;
-	Ship player;
+	Game game;
 
-	args_init(&args, argc, argv);
-	display_init(&display, &args);
+	args_init (&args, argc, argv);
+	display_init (&display, &args);
 
-	player.start = digger.start = (float)args.start;
-	game_init(&display, &cave, &digger, &player, args.game_mode);
+	game_init (&display, &game, &args);
 	input.state = WELCOME;
-	display_message(&display, &cave, &player, "welcome!  left+right for control.  [press space]", args.game_mode);
+	display_message (&display, &game, "welcome!  left+right for control.  [press space]");
 
 	float dt = 0;
-	while(input.state != QUIT) {
+	while (input.state != QUIT) {
 		int t0 = SDL_GetTicks();
 
-		control(&display, &cave, &digger, &player, &input, args.game_mode);
+		control (&display, &game, &input);
 
-		switch(input.state) {
+		switch (input.state) {
 		case PLAY:
-			player_control(&player, &input, args.game_mode);
-			ship_move(&player, dt);
-			digger_control(&digger, args.game_mode);
-			ship_move(&digger, dt);
-			if(collision(&cave, &player) <= 0) {
-				display_message(&display, &cave, &player, "gameover.  [press space]", args.game_mode);
+			player_control (&game.player, &input, args.game_mode);
+			ship_move (&game.player, dt);
+			digger_control (&game.digger, args.game_mode);
+			ship_move (&game.digger, dt);
+			if (collision (&game.cave, &game.player) <= 0) {
+				display_message (&display, &game, "gameover.  [press space]");
 				input.state = GAMEOVER;
 			}
-			cave_gen(&cave, &digger);
+			cave_gen (&game.cave, &game.digger);
 
-			display_frame(&display, &cave, &player, args.game_mode);
+			display_frame (&display, &game);
 			break;
 		case WELCOME:
 		case PAUSE:
@@ -248,8 +249,8 @@ int main(int argc, char* argv[])
 		//dt = 1./FPS;
 	}
 
-	display_net_finish(&display);
-	display_message(&display, &cave, &player, "bye.", args.game_mode);
+	display_net_finish (&display);
+	display_message (&display, &game, "bye.");
 
 	return 0;
 }

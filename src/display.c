@@ -208,9 +208,9 @@ void cave_model(Display* display, Cave* cave, bool wire)
 
 }
 
-void monolith_model(Display* display, Cave* cave, Ship* player)
+void monolith_model (Display* display, Game* game)
 {
-	if(!display->monoliths)
+	if (!display->monoliths)
 		return;
 
 	glColor3f(.2,.2,.2);
@@ -219,28 +219,28 @@ void monolith_model(Display* display, Cave* cave, Ship* player)
 	float h = MONOLITH_HEIGHT/2;
 	float d = MONOLITH_DEPTH;
 
-	glEnable(GL_DEPTH_TEST);
-	glDisable(GL_BLEND);
-	glDisable(GL_TEXTURE_2D);
+	glEnable (GL_DEPTH_TEST);
+	glDisable (GL_BLEND);
+	glDisable (GL_TEXTURE_2D);
 
 	glPushMatrix();
 
-		glTranslatef( cave->monolith_x, cave->monolith_y, cave->segs[0][0][2] );
-		glRotatef( cave->monolith_yaw,   1, 0, 0 );
+		glTranslatef (game->cave.monolith_x, game->cave.monolith_y, game->cave.segs[0][0][2]);
+		glRotatef (game->cave.monolith_yaw,   1, 0, 0);
 
-		glBegin( GL_QUAD_STRIP );
-			glVertex3f( +w, -h, d );  glVertex3f( -w, -h, d );
-			glVertex3f( +w, -h, 0 );  glVertex3f( -w, -h, 0 );
-			glVertex3f( +w, +h, 0 );  glVertex3f( -w, +h, 0 );
-			glVertex3f( +w, +h, d );  glVertex3f( -w, +h, d );
+		glBegin (GL_QUAD_STRIP);
+			glVertex3f (+w, -h, d);  glVertex3f (-w, -h, d);
+			glVertex3f (+w, -h, 0);  glVertex3f (-w, -h, 0);
+			glVertex3f (+w, +h, 0);  glVertex3f (-w, +h, 0);
+			glVertex3f (+w, +h, d);  glVertex3f (-w, +h, d);
 		glEnd();
 
-		glBegin( GL_QUADS );
-			glVertex3f( -w, -h, d );  glVertex3f( -w, +h, d );
-			glVertex3f( -w, +h, 0 );  glVertex3f( -w, -h, 0 );
+		glBegin (GL_QUADS);
+			glVertex3f (-w, -h, d);  glVertex3f (-w, +h, d);
+			glVertex3f (-w, +h, 0);  glVertex3f (-w, -h, 0);
 
-			glVertex3f( +w, +h, d );  glVertex3f( +w, -h, d );
-			glVertex3f( +w, -h, 0 );  glVertex3f( +w, +h, 0 );
+			glVertex3f (+w, +h, d);  glVertex3f (+w, -h, d);
+			glVertex3f (+w, -h, 0);  glVertex3f (+w, +h, 0);
 		glEnd();
 
 	glPopMatrix();
@@ -319,36 +319,36 @@ void render_text(Display* display, GLuint id, const char* text,
 	glPopMatrix();
 }
 
-void display_hud(Display* display, Ship* player, int game_mode)
+void display_hud (Display* display, Game* game)
 {
-	if(player->dist == FLT_MAX)
+	if(game->player.dist == FLT_MAX)
 		return;
 
 	float max_vel[3] = { MAX_VEL_X, MAX_VEL_Y, MAX_VEL_Z };
 	float vel = MIN(1,
-			log(1+LEN(player->vel)-MAX_VEL_Z) /
+			log(1+LEN(game->player.vel)-MAX_VEL_Z) /
 			log(1+LEN(max_vel)-MAX_VEL_Z));
 	char gauge[11];
 	int i = (int)(vel*20);
 	memset(gauge,'/',i);
 	gauge[i] = '\0';
 
-	int score = (int)(player->pos[2] / game_mode);
+	int score = (int)(game->player.pos[2] / game->mode);
 
 #define HUD_TEXT_MAX 80
 	char buf[HUD_TEXT_MAX];
-	if(player->dist > 0) {
+	if(game->player.dist > 0) {
 		snprintf(buf, HUD_TEXT_MAX, "velocity %-10s  score %9d",
 			gauge, score
 		);
 	} else {
 		if(score > display->session_score)
 			display->session_score = score;
-		if(player->start) {
+		if(game->player.start) {
 			snprintf(buf, HUD_TEXT_MAX, "velocity %s  score %d (%d) - %d",
 				gauge, score,
 				display->session_score,
-				(int)player->start
+				(int)game->player.start
 			);
 		} else {
 			if(score > display->local_score) {
@@ -375,16 +375,16 @@ void display_hud(Display* display, Ship* player, int game_mode)
 		}
 	}
 
-	float white = player->dist <= 0 ? 1 : 1-vel;
+	float white = game->player.dist <= 0 ? 1 : 1-vel;
 	render_text(display, display->hud_id, buf, .5,.9,1,.2, 1,white,white);
 }
 
 char display_message_buf[256];
-void display_message(Display* display, Cave* cave, Ship* player, const char* buf, int game_mode)
+void display_message (Display* display, Game* game, const char* buf)
 {
-	strncpy(display_message_buf, buf, sizeof(display_message_buf)-1);
+	strncpy (display_message_buf, buf, sizeof(display_message_buf)-1);
 	display_message_buf[sizeof(display_message_buf)-1] = '\0';
-	display_frame(display, cave, player, game_mode);
+	display_frame (display, game);
 }
 
 void display_start_frame(Display* display, float r, float g, float b)
@@ -402,24 +402,24 @@ void display_end_frame(Display* display)
 	SDL_GL_SwapBuffers();
 }
 
-void display_frame(Display* display, Cave* cave, Ship* player, int game_mode)
+void display_frame (Display* display, Game* game)
 {
-	int hit = player->dist <= SHIP_RADIUS*1.1;
+	int hit = game->player.dist <= SHIP_RADIUS*1.1;
 
-	display_start_frame(display, hit,0,0);
+	display_start_frame (display, hit,0,0);
 
 	if(!hit) { // avoid drawing the cave from outside
 		glPushMatrix();
-			display_world_transform(display, player);
-			cave_model(display, cave, false);
-			monolith_model(display, cave, player);
+			display_world_transform (display, &game->player);
+			cave_model (display, &game->cave, false);
+			monolith_model (display, game);
 		glPopMatrix();
 	}
 
-	ship_model(display, player);
-	display_minimap(display, cave, player);
-	display_hud(display, player, game_mode);
-	render_text(display, display->msg_id, display_message_buf, .5,.5,1,.25, 1,1,1);
+	ship_model (display, &game->player);
+	display_minimap (display, game);
+	display_hud (display, game);
+	render_text (display, display->msg_id, display_message_buf, .5,.5,1,.25, 1,1,1);
 
 	display_end_frame(display);
 }
@@ -639,16 +639,16 @@ void display_net_finish(Display* display)
 	}
 }
 
-void display_minimap(Display* display, Cave* cave, Ship* player)
+void display_minimap (Display* display, Game* game)
 {
 	glPushMatrix();
 		glScalef(.0065,.003,.001);
 		glRotatef(-90,0,1,0);
 		glTranslatef(
-				-player->pos[0]-1000, // XXX hardcoded
-				-player->pos[1]-100,
-				-player->pos[2]-(SEGMENT_COUNT-1)*SEGMENT_LEN/2);
-		cave_model(display, cave, true);
+				-game->player.pos[0]-1000, // XXX hardcoded
+				-game->player.pos[1]-100,
+				-game->player.pos[2]-(SEGMENT_COUNT-1)*SEGMENT_LEN/2);
+		cave_model (display, &game->cave, true);
 	glPopMatrix();
 }
 

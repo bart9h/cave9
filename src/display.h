@@ -70,19 +70,19 @@ typedef struct Args_struct
 	int game_mode;
 } Args;
 
-void viewport(Display*, GLsizei w, GLsizei h, GLsizei bpp, bool fullscreen, int aa);
-void cave_model(Display*, Cave*, bool wire);
-void ship_model(Display*, Ship*);
-void render_hud(Display*, Ship* player);
-void display_init(Display*, Args*);
-void display_start_frame(Display* display, float r, float g, float b);
-void display_end_frame(Display*);
-void display_minimap(Display*, Cave*, Ship* player);
-void display_hud(Display*, Ship* player, int game_mode);
-void display_message(Display*, Cave*, Ship* player, const char* buf, int game_mode);
-void display_frame(Display*, Cave*, Ship* player, int game_mode);
-void display_net_update(Display*);
-void display_net_finish(Display*);
+void viewport (Display*, GLsizei w, GLsizei h, GLsizei bpp, bool fullscreen, int aa);
+void cave_model (Display*, Cave*, bool wire);
+void ship_model (Display*, Ship*);
+void render_hud (Display*, Ship* player);
+void display_init (Display*, Args*);
+void display_start_frame (Display* display, float r, float g, float b);
+void display_end_frame (Display*);
+void display_minimap (Display*, Game*);
+void display_hud (Display*, Game*);
+void display_message (Display*, Game*, const char* buf);
+void display_frame (Display*, Game*);
+void display_net_update (Display*);
+void display_net_finish (Display*);
 
 #endif
 

@@ -63,6 +63,14 @@ typedef struct  Cave_struct
 	float monolith_yaw;
 } Cave;
 
+typedef struct Game_struct
+{
+	Cave cave;
+	Ship player;
+	Ship digger;
+	int mode;
+} Game;
+
 enum GameMode
 {
 	ONE_BUTTON = 1,
