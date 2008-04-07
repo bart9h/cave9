@@ -28,15 +28,33 @@ typedef struct Input_struct
 	enum {WELCOME, PLAY, PAUSE, GAMEOVER, QUIT} state;
 } Input;
 
+void score_init (Game* game)
+{
+	game->local_score = 0;
+	game->session_score = 0;
+	game->global_score = 0;
+
+	FILE* fp = fopen(SCORE_FILE, "r");
+	if (fp == NULL) {
+		perror ("failed to open score file");
+	} else {
+		fscanf (fp, "%d", &game->local_score);
+		fclose (fp);
+	}
+}
+
 void game_init (Display* display, Game* game, Args* args)
 {
 	if (args != NULL) {
 		game->mode = args->game_mode;
+		game->monoliths = args->monoliths;
 		game->player.start = game->digger.start = (float)args->start;
 	}
+
 	ship_init (&game->player, SHIP_RADIUS);
 	ship_init (&game->digger, MAX_CAVE_RADIUS);
 	cave_init (&game->cave, &game->digger, game->mode);
+
 	display_message (display, game, "");
 }
 
@@ -210,8 +228,9 @@ int main (int argc, char* argv[])
 
 	args_init (&args, argc, argv);
 	display_init (&display, &args);
-
 	game_init (&display, &game, &args);
+	score_init (&game);
+
 	input.state = WELCOME;
 	display_message (&display, &game, "welcome!  left+right for control.  [press space]");
 

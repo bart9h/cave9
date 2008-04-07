@@ -68,7 +68,14 @@ typedef struct Game_struct
 	Cave cave;
 	Ship player;
 	Ship digger;
+
 	int mode;
+	bool monoliths;
+
+	int session_score;
+	int local_score;
+	int global_score;
+
 } Game;
 
 enum GameMode

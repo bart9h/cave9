@@ -45,12 +45,7 @@ typedef struct Display_struct
 	GLuint wire_list_start;
 	GLuint ship_list;
 
-	int monoliths;
 	int cockpit;
-
-	int session_score;
-	int local_score;
-	int global_score;
 
 	UDPsocket udp_sock;
 	UDPpacket* udp_pkt;
@@ -81,7 +76,7 @@ void display_minimap (Display*, Game*);
 void display_hud (Display*, Game*);
 void display_message (Display*, Game*, const char* buf);
 void display_frame (Display*, Game*);
-void display_net_update (Display*);
+void display_net_update (Display*, Game*);
 void display_net_finish (Display*);
 
 #endif

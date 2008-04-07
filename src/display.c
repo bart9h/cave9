@@ -210,7 +210,7 @@ void cave_model(Display* display, Cave* cave, bool wire)
 
 void monolith_model (Display* display, Game* game)
 {
-	if (!display->monoliths)
+	if (!game->monoliths)
 		return;
 
 	glColor3f(.2,.2,.2);
@@ -342,35 +342,35 @@ void display_hud (Display* display, Game* game)
 			gauge, score
 		);
 	} else {
-		if(score > display->session_score)
-			display->session_score = score;
+		if(score > game->session_score)
+			game->session_score = score;
 		if(game->player.start) {
 			snprintf(buf, HUD_TEXT_MAX, "velocity %s  score %d (%d) - %d",
 				gauge, score,
-				display->session_score,
+				game->session_score,
 				(int)game->player.start
 			);
 		} else {
-			if(score > display->local_score) {
-				display->local_score = score;
+			if(score > game->local_score) {
+				game->local_score = score;
 				FILE* fp = fopen(SCORE_FILE, "w");
 				if(fp == NULL) {
 					perror("failed to open score file");
 				} else {
-					fprintf(fp, "%d", display->local_score);
+					fprintf(fp, "%d", game->local_score);
 					fclose(fp);
 				}
 			}
-			if(score > display->global_score) {
-				display->global_score = score;
-				display_net_update(display);
+			if(score > game->global_score) {
+				game->global_score = score;
+				display_net_update (display, game);
 			}
 			snprintf(buf, HUD_TEXT_MAX, "velocity %s  score %d (%d/%d/%d)",
 				gauge, score,
 				// FIXME: local_score > global_score  (which is it?)
-				display->session_score,
-				display->local_score,
-				display->global_score
+				game->session_score,
+				game->local_score,
+				game->global_score
 			);
 		}
 	}
@@ -466,7 +466,7 @@ GLuint display_make_ship_list()
 	return ship_list;
 }
 
-void display_init(Display* display, Args* args)
+void display_init (Display* display, Args* args)
 {
 
 	memset(display, 0, sizeof(Display));
@@ -559,21 +559,7 @@ void display_init(Display* display, Args* args)
 
 	display->ship_list = display_make_ship_list();
 
-	display->monoliths = args->monoliths;
 	display->cockpit = args->cockpit;
-
-	display->session_score = 0;
-
-	display->local_score = 0;
-	FILE* fp = fopen(SCORE_FILE, "r");
-	if(fp == NULL) {
-		perror("failed to open score file");
-	} else {
-		fscanf(fp, "%d", &display->local_score);
-		fclose(fp);
-	}
-
-	display->global_score = 0;
 
 	if(SDLNet_Init()==-1)
 	{
@@ -607,12 +593,12 @@ void display_init(Display* display, Args* args)
 
 }
 
-void display_net_update(Display* display)
+void display_net_update (Display* display, Game* game)
 {
 	if(display->udp_sock == 0)
 		return;
 
-	snprintf((char*)display->udp_pkt->data,GLOBAL_SCORE_LEN,"%d",display->global_score);
+	snprintf((char*)display->udp_pkt->data,GLOBAL_SCORE_LEN,"%d",game->global_score);
 	display->udp_pkt->len = GLOBAL_SCORE_LEN;
 	if(SDLNet_UDP_Send(display->udp_sock,0,display->udp_pkt) == 0) {
 		fprintf(stderr, "SDLNet_UDP_Send(): %s\n", SDLNet_GetError());
@@ -622,7 +608,7 @@ void display_net_update(Display* display)
 			fprintf(stderr, "SDLNet_UDP_Recv(%s,%d): %s\n",
 					GLOBAL_SCORE_HOST, GLOBAL_SCORE_PORT, SDLNet_GetError());
 		} else {
-			sscanf((char*)display->udp_pkt->data,"%d",&display->global_score);
+			sscanf((char*)display->udp_pkt->data,"%d",&game->global_score);
 		}
 	}
 }
