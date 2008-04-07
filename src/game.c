@@ -87,7 +87,7 @@ void ship_init (Ship* ship, float radius)
 	ship->dist = FLT_MAX;
 }
 
-void game_init (Display* display, Game* game, Args* args)
+void game_init (Game* game, Args* args)
 {
 	if (args != NULL) {
 		game->mode = args->game_mode;
@@ -98,8 +98,6 @@ void game_init (Display* display, Game* game, Args* args)
 	ship_init (&game->player, SHIP_RADIUS);
 	ship_init (&game->digger, MAX_CAVE_RADIUS);
 	cave_init (&game->cave, &game->digger, game->mode);
-
-	display_message (display, game, "");
 }
 
 void ship_move (Ship* ship, float dt)
@@ -162,7 +160,6 @@ void digger_control (Ship* ship, int game_mode)
 	float scale = 1-MIN(1,log(1+ship->pos[2])/log(1+MIN_CAVE_RADIUS_DEPTH));
 	ship->radius = MIN_CAVE_RADIUS+(MAX_CAVE_RADIUS-MIN_CAVE_RADIUS)*scale+RAND;
 }
-
 
 static float X (Cave* cave, int i, float xn, float yn, int k0, int k1)
 {// used by collision()

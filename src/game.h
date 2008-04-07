@@ -84,12 +84,27 @@ enum GameMode
 	TWO_BUTTONS = 2
 };
 
-void cave_gen(Cave*, Ship* digger);
-void cave_init(Cave*, Ship* digger, int game_mode);
-void ship_init(Ship*, float radius);
-void ship_move(Ship*, float dt);
-void digger_control(Ship*, int game_mode);
-float collision(Cave*, Ship*);
+typedef struct Args_struct
+{
+	int width;
+	int height;
+	int bpp;
+	int fullscreen;
+	int highres;
+	int antialiasing;
+	int monoliths;
+	int start;
+	int cockpit;
+	int game_mode;
+} Args;
+
+void game_init (Game* game, Args* args);
+void cave_gen (Cave*, Ship* digger);
+void cave_init (Cave*, Ship* digger, int game_mode);
+void ship_init (Ship*, float radius);
+void ship_move (Ship*, float dt);
+void digger_control (Ship*, int game_mode);
+float collision (Cave*, Ship*);
 
 #endif
 

@@ -51,20 +51,6 @@ typedef struct Display_struct
 	UDPpacket* udp_pkt;
 } Display;
 
-typedef struct Args_struct
-{
-	int width;
-	int height;
-	int bpp;
-	int fullscreen;
-	int highres;
-	int antialiasing;
-	int monoliths;
-	int start;
-	int cockpit;
-	int game_mode;
-} Args;
-
 void viewport (Display*, GLsizei w, GLsizei h, GLsizei bpp, bool fullscreen, int aa);
 void cave_model (Display*, Cave*, bool wire);
 void ship_model (Display*, Ship*);

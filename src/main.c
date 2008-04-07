@@ -69,9 +69,8 @@ void control (Display* display, Game* game, Input* input)
 				|| input->state == PAUSE
 				|| input->state == GAMEOVER) {
 					if(input->state == GAMEOVER)
-						game_init (display, game, NULL);
-					else
-						display_message (display, game, "");
+						game_init (game, NULL);
+					display_message (display, game, "");
 					input->state = PLAY;
 				}
 				else if(input->state == PLAY)  {
@@ -213,7 +212,7 @@ int main (int argc, char* argv[])
 
 	args_init (&args, argc, argv);
 	display_init (&display, &args);
-	game_init (&display, &game, &args);
+	game_init (&game, &args);
 	score_init (&game);
 
 	input.state = WELCOME;
