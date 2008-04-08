@@ -79,12 +79,12 @@ void cave_init (Cave* cave, Ship* digger, int game_mode)
 
 void ship_init (Ship* ship, float radius)
 {
-	memset (ship, 0, sizeof(Ship));
 	SET (ship->pos, 0,0,ship->start);
 	SET (ship->vel, 0,0,VELOCITY);
 	SET (ship->lookAt, 0,0,VELOCITY);
 	ship->radius = radius;
 	ship->dist = FLT_MAX;
+	ship->lefton = ship->righton = false;
 }
 
 void game_init (Game* game, Args* args)
