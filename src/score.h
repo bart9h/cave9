@@ -19,6 +19,7 @@
 #define score_h_included
 
 #include <SDL_net.h>
+#include "vec.h"
 
 #define SCORE_FILE "data/cave9.hi"
 #define GLOBAL_SCORE_PORT 31559
@@ -28,17 +29,18 @@
 
 typedef struct Score_struct
 {
-	int session_score;
-	int local_score;
-	int global_score;
+	int current;
+	int session;
+	int local;
+	int global;
 
 	UDPsocket udp_sock;
 	UDPpacket* udp_pkt;
 } Score;
 
-void score_init (Score* score);
-void score_finish (Score* score);
-void score_net_update (Score* score);
+void score_init (Score*);
+void score_finish (Score*);
+void score_update (Score*, int new_score, bool is_global);
 
 #endif
 

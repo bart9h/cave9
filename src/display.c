@@ -344,35 +344,23 @@ void display_hud (Display* display, Game* game)
 			gauge, score
 		);
 	} else {
-		if(score > game->score.session_score)
-			game->score.session_score = score;
-		if(game->player.start) {
-			snprintf(buf, HUD_TEXT_MAX, "velocity %s  score %d (%d) - %d",
-				gauge, score,
-				game->score.session_score,
-				(int)game->player.start
-			);
-		} else {
-			if(score > game->score.local_score) {
-				game->score.local_score = score;
-				FILE* fp = fopen(SCORE_FILE, "w");
-				if(fp == NULL) {
-					perror("failed to open score file");
-				} else {
-					fprintf(fp, "%d", game->score.local_score);
-					fclose(fp);
-				}
-			}
-			if(score > game->score.global_score) {
-				game->score.global_score = score;
-				score_net_update (&game->score);
-			}
+		bool is_global = (game->player.start == 0);
+printf("st=%f\n", game->player.start);
+		score_update (&game->score, score, is_global);
+		if (is_global) {
 			snprintf(buf, HUD_TEXT_MAX, "velocity %s  score %d (%d/%d/%d)",
 				gauge, score,
-				// FIXME: local_score > global_score  (which is it?)
-				game->score.session_score,
-				game->score.local_score,
-				game->score.global_score
+				// FIXME: local > global  (which is it?)
+				game->score.session,
+				game->score.local,
+				game->score.global
+			);
+		}
+		else {
+			snprintf(buf, HUD_TEXT_MAX, "velocity %s  score %d (%d) - %d",
+				gauge, score,
+				game->score.session,
+				(int)game->player.start
 			);
 		}
 	}

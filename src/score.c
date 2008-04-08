@@ -53,7 +53,7 @@ void score_net_update (Score* score)
 	if(score->udp_sock == 0)
 		return;
 
-	snprintf((char*)score->udp_pkt->data,GLOBAL_SCORE_LEN,"%d",score->global_score);
+	snprintf((char*)score->udp_pkt->data,GLOBAL_SCORE_LEN,"%d",score->global);
 	score->udp_pkt->len = GLOBAL_SCORE_LEN;
 	if(SDLNet_UDP_Send(score->udp_sock,0,score->udp_pkt) == 0) {
 		fprintf(stderr, "SDLNet_UDP_Send(): %s\n", SDLNet_GetError());
@@ -63,22 +63,22 @@ void score_net_update (Score* score)
 			fprintf(stderr, "SDLNet_UDP_Recv(%s,%d): %s\n",
 					GLOBAL_SCORE_HOST, GLOBAL_SCORE_PORT, SDLNet_GetError());
 		} else {
-			sscanf((char*)score->udp_pkt->data,"%d",&score->global_score);
+			sscanf((char*)score->udp_pkt->data,"%d",&score->global);
 		}
 	}
 }
 
 void score_init (Score* score)
 {
-	score->local_score = 0;
-	score->session_score = 0;
-	score->global_score = 0;
+	score->local = 0;
+	score->session = 0;
+	score->global = 0;
 
 	FILE* fp = fopen(SCORE_FILE, "r");
 	if (fp == NULL) {
 		perror ("failed to open score file");
 	} else {
-		fscanf (fp, "%d", &score->local_score);
+		fscanf (fp, "%d", &score->local);
 		fclose (fp);
 	}
 
@@ -88,5 +88,30 @@ void score_init (Score* score)
 void score_finish (Score* score)
 {
 	score_net_finish (score);
+}
+
+void score_update (Score* score, int new_score, bool is_global)
+{
+	if (new_score > score->session)
+		score->session = new_score;
+
+	if (is_global) {
+
+		if (new_score > score->local) {
+			score->local = new_score;
+			FILE* fp = fopen (SCORE_FILE, "w");
+			if (fp == NULL) {
+				perror ("failed to open score file");
+			} else {
+				fprintf (fp, "%d", score->local);
+				fclose (fp);
+			}
+		}
+
+		if(new_score > score->global) {
+			score->global = new_score;
+			score_net_update (score);
+		}
+	}
 }
 
