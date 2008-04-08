@@ -335,7 +335,7 @@ void display_hud (Display* display, Game* game)
 	memset(gauge,'/',n);
 	gauge[n] = '\0';
 
-	int score = (int)(game->player.pos[2] / game->mode);
+	int score = (int)(game->player.pos[2] / (game->mode==ONE_BUTTON?2:1));
 
 #define HUD_TEXT_MAX 80
 	char buf[HUD_TEXT_MAX];
