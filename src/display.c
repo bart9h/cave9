@@ -584,7 +584,10 @@ void display_init (Display* display, Args* args)
 				display_net_finish(display);
 			} else {
 				display->udp_pkt = SDLNet_AllocPacket(GLOBAL_SCORE_LEN);
-				if(display->udp_pkt == NULL) {
+				if(display->udp_pkt != NULL) {
+					memset (display->udp_pkt->data, 0, GLOBAL_SCORE_LEN);
+				}
+				else {
 					display_net_finish(display);
 				}
 			}
