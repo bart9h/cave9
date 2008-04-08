@@ -328,10 +328,12 @@ void display_hud (Display* display, Game* game)
 	float vel = MIN(1,
 			log(1+LEN(game->player.vel)-MAX_VEL_Z) /
 			log(1+LEN(max_vel)-MAX_VEL_Z));
-	char gauge[11];
-	int i = (int)(vel*20);
-	memset(gauge,'/',i);
-	gauge[i] = '\0';
+
+#define GAUGE_MAX 10
+	char gauge[GAUGE_MAX+1];
+	int n = MIN(GAUGE_MAX, (int)(vel*20));
+	memset(gauge,'/',n);
+	gauge[n] = '\0';
 
 	int score = (int)(game->player.pos[2] / game->mode);
 
