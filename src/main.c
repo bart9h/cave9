@@ -28,21 +28,6 @@ typedef struct Input_struct
 	enum {WELCOME, PLAY, PAUSE, GAMEOVER, QUIT} state;
 } Input;
 
-void score_init (Game* game)
-{
-	game->local_score = 0;
-	game->session_score = 0;
-	game->global_score = 0;
-
-	FILE* fp = fopen(SCORE_FILE, "r");
-	if (fp == NULL) {
-		perror ("failed to open score file");
-	} else {
-		fscanf (fp, "%d", &game->local_score);
-		fclose (fp);
-	}
-}
-
 void control (Display* display, Game* game, Input* input)
 {
 	SDL_Event event;
@@ -138,7 +123,7 @@ void args_init (Args* args, int argc, char* argv[])
 	args->bpp = 0;
 	args->fullscreen = 0;
 	args->highres = 0;
-	args->antialiasing = 2;
+	args->antialiasing = 0;
 	args->monoliths = 0;
 	args->start = 0;
 	args->cockpit = 0;
@@ -213,7 +198,6 @@ int main (int argc, char* argv[])
 	args_init (&args, argc, argv);
 	display_init (&display, &args);
 	game_init (&game, &args);
-	score_init (&game);
 
 	input.state = WELCOME;
 	display_message (&display, &game, "welcome!  left+right for control.  [press space]");
@@ -252,8 +236,8 @@ int main (int argc, char* argv[])
 		//dt = 1./FPS;
 	}
 
-	display_net_finish (&display);
 	display_message (&display, &game, "bye.");
+	score_finish (&game.score);
 
 	return 0;
 }

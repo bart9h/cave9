@@ -344,35 +344,35 @@ void display_hud (Display* display, Game* game)
 			gauge, score
 		);
 	} else {
-		if(score > game->session_score)
-			game->session_score = score;
+		if(score > game->score.session_score)
+			game->score.session_score = score;
 		if(game->player.start) {
 			snprintf(buf, HUD_TEXT_MAX, "velocity %s  score %d (%d) - %d",
 				gauge, score,
-				game->session_score,
+				game->score.session_score,
 				(int)game->player.start
 			);
 		} else {
-			if(score > game->local_score) {
-				game->local_score = score;
+			if(score > game->score.local_score) {
+				game->score.local_score = score;
 				FILE* fp = fopen(SCORE_FILE, "w");
 				if(fp == NULL) {
 					perror("failed to open score file");
 				} else {
-					fprintf(fp, "%d", game->local_score);
+					fprintf(fp, "%d", game->score.local_score);
 					fclose(fp);
 				}
 			}
-			if(score > game->global_score) {
-				game->global_score = score;
-				display_net_update (display, game);
+			if(score > game->score.global_score) {
+				game->score.global_score = score;
+				score_net_update (&game->score);
 			}
 			snprintf(buf, HUD_TEXT_MAX, "velocity %s  score %d (%d/%d/%d)",
 				gauge, score,
 				// FIXME: local_score > global_score  (which is it?)
-				game->session_score,
-				game->local_score,
-				game->global_score
+				game->score.session_score,
+				game->score.local_score,
+				game->score.global_score
 			);
 		}
 	}
@@ -470,7 +470,6 @@ GLuint display_make_ship_list()
 
 void display_init (Display* display, Args* args)
 {
-
 	memset(display, 0, sizeof(Display));
 
 	if(SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -562,72 +561,6 @@ void display_init (Display* display, Args* args)
 	display->ship_list = display_make_ship_list();
 
 	display->cockpit = args->cockpit;
-
-	if(SDLNet_Init()==-1)
-	{
-		fprintf(stderr, "SDLNet_Init(): %s\n",SDLNet_GetError());
-		exit(1);
-	}
-	atexit(SDLNet_Quit);
-
-	IPaddress addr;
-	display->udp_sock = 0;
-	display->udp_pkt = NULL;
-	if(SDLNet_ResolveHost(&addr,GLOBAL_SCORE_HOST, GLOBAL_SCORE_PORT) == -1) {
-		fprintf(stderr, "SDLNet_ResolveHost(): %s\n", SDLNet_GetError());
-	} else {
-		display->udp_sock=SDLNet_UDP_Open(0);
-		if(display->udp_sock == 0) {
-			fprintf(stderr, "SDLNet_UDP_Open(): %s\n", SDLNet_GetError());
-			display_net_finish(display);
-		} else {
-			if(SDLNet_UDP_Bind(display->udp_sock, 0, &addr) == -1) {
-				fprintf(stderr, "SDLNet_UDP_Bind(): %s\n", SDLNet_GetError());
-				display_net_finish(display);
-			} else {
-				display->udp_pkt = SDLNet_AllocPacket(GLOBAL_SCORE_LEN);
-				if(display->udp_pkt != NULL) {
-					memset (display->udp_pkt->data, 0, GLOBAL_SCORE_LEN);
-				}
-				else {
-					display_net_finish(display);
-				}
-			}
-		}
-	}
-
-}
-
-void display_net_update (Display* display, Game* game)
-{
-	if(display->udp_sock == 0)
-		return;
-
-	snprintf((char*)display->udp_pkt->data,GLOBAL_SCORE_LEN,"%d",game->global_score);
-	display->udp_pkt->len = GLOBAL_SCORE_LEN;
-	if(SDLNet_UDP_Send(display->udp_sock,0,display->udp_pkt) == 0) {
-		fprintf(stderr, "SDLNet_UDP_Send(): %s\n", SDLNet_GetError());
-	} else {
-		SDL_Delay(666); // XXX only wait 666ms for hiscores
-		if(SDLNet_UDP_Recv(display->udp_sock,display->udp_pkt) == 0) {
-			fprintf(stderr, "SDLNet_UDP_Recv(%s,%d): %s\n",
-					GLOBAL_SCORE_HOST, GLOBAL_SCORE_PORT, SDLNet_GetError());
-		} else {
-			sscanf((char*)display->udp_pkt->data,"%d",&game->global_score);
-		}
-	}
-}
-
-void display_net_finish(Display* display)
-{
-	if(display->udp_pkt != NULL) {
-		SDLNet_FreePacket(display->udp_pkt);
-		display->udp_pkt = NULL;
-	}
-	if(display->udp_sock != 0) {
-		SDLNet_UDP_Close(display->udp_sock);
-		display->udp_sock = 0;
-	}
 }
 
 void display_minimap (Display* display, Game* game)

@@ -18,6 +18,7 @@
 #ifndef game_h_included
 #define game_h_included
 
+#include "score.h"
 #include "vec.h"
 
 #define FPS 30
@@ -68,14 +69,10 @@ typedef struct Game_struct
 	Cave cave;
 	Ship player;
 	Ship digger;
+	Score score;
 
 	int mode;
 	bool monoliths;
-
-	int session_score;
-	int local_score;
-	int global_score;
-
 } Game;
 
 enum GameMode

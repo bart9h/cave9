@@ -20,16 +20,10 @@
 
 #include <SDL.h>
 #include <SDL_ttf.h>
-#include <SDL_net.h>
 #include "game.h"
 
 #define TEXTURE_FILE "data/cave9.jpg"
 #define FONT_FILE "data/cave9.ttf"
-#define SCORE_FILE "data/cave9.hi"
-#define GLOBAL_SCORE_PORT 31559
-#define GLOBAL_SCORE_HOST "cave9.9hells.org"
-#define GLOBAL_SCORE_LEN 16
-#define GLOBAL_SCORE_WAIT 666
 
 typedef struct Display_struct
 {
@@ -62,8 +56,6 @@ void display_minimap (Display*, Game*);
 void display_hud (Display*, Game*);
 void display_message (Display*, Game*, const char* buf);
 void display_frame (Display*, Game*);
-void display_net_update (Display*, Game*);
-void display_net_finish (Display*);
 
 #endif
 

@@ -13,6 +13,7 @@ SRCS = \
 	 main.c \
 	 display.c \
 	 game.c \
+	 score.c \
 
 OBJS = $(subst .c,.o,$(SRCS))
 
