@@ -345,7 +345,6 @@ void display_hud (Display* display, Game* game)
 		);
 	} else {
 		bool is_global = (game->player.start == 0);
-printf("st=%f\n", game->player.start);
 		score_update (&game->score, score, is_global);
 		if (is_global) {
 			snprintf(buf, HUD_TEXT_MAX, "velocity %s  score %d (%d/%d/%d)",

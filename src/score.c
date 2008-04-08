@@ -50,21 +50,25 @@ void score_net_init (Score* score)
 
 void score_net_update (Score* score)
 {
-	if(score->udp_sock == 0)
+	if (score->udp_sock == 0)
 		return;
 
-	snprintf((char*)score->udp_pkt->data,GLOBAL_SCORE_LEN,"%d",score->global);
+	snprintf ((char*)score->udp_pkt->data,GLOBAL_SCORE_LEN, "%d", score->global);
 	score->udp_pkt->len = GLOBAL_SCORE_LEN;
-	if(SDLNet_UDP_Send(score->udp_sock,0,score->udp_pkt) == 0) {
-		fprintf(stderr, "SDLNet_UDP_Send(): %s\n", SDLNet_GetError());
-	} else {
-		SDL_Delay(GLOBAL_SCORE_WAIT); // XXX only wait 666ms for hiscores
-		if(SDLNet_UDP_Recv(score->udp_sock,score->udp_pkt) == 0) {
-			fprintf(stderr, "SDLNet_UDP_Recv(%s,%d): %s\n",
-					GLOBAL_SCORE_HOST, GLOBAL_SCORE_PORT, SDLNet_GetError());
-		} else {
-			sscanf((char*)score->udp_pkt->data,"%d",&score->global);
+	if (SDLNet_UDP_Send (score->udp_sock, 0, score->udp_pkt) == 1)
+	{
+		SDL_Delay (666); // XXX only wait 666ms for hiscores
+		int n = SDLNet_UDP_Recv (score->udp_sock, score->udp_pkt);
+		if (n == 1) {
+			sscanf ((char*)score->udp_pkt->data, "%d", &score->global);
 		}
+		else if (n < 0) {
+			fprintf (stderr, "SDLNet_UDP_Recv(%s,%d): %s\n",
+					GLOBAL_SCORE_HOST, GLOBAL_SCORE_PORT, SDLNet_GetError());
+		}
+	}
+	else {
+		fprintf (stderr, "SDLNet_UDP_Send(): %s\n", SDLNet_GetError());
 	}
 }
 
