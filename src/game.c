@@ -160,6 +160,9 @@ void digger_control (Ship* ship, int game_mode)
 
 	float scale = 1-MIN(1,log(1+ship->pos[2])/log(1+MIN_CAVE_RADIUS_DEPTH));
 	ship->radius = MIN_CAVE_RADIUS+(MAX_CAVE_RADIUS-MIN_CAVE_RADIUS)*scale+RAND;
+
+	if (ship->pos[2] < .33*SEGMENT_COUNT*SEGMENT_LEN)
+		ship->lefton = ship->righton = false;
 }
 
 static float X (Cave* cave, int i, float xn, float yn, int k0, int k1)
