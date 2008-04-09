@@ -95,24 +95,17 @@ void control (Display* display, Game* game, Input* input)
 
 void player_control (Ship* player, Input* input, int game_mode)
 {
-	if (game_mode == ONE_BUTTON) {
+#define K(k) (input->pressed[k])
+	bool up    = K(SDLK_DOWN)  || K(SDLK_UP);
+	bool left  = K(SDLK_LEFT)  || K(SDLK_LSHIFT) || K(SDLK_LCTRL);
+	bool right = K(SDLK_RIGHT) || K(SDLK_RSHIFT) || K(SDLK_RCTRL);
 
-		player->lefton  =
-		player->righton =
-			input->pressed[SDLK_DOWN]    ||
-			input->pressed[SDLK_UP];
+	if (game_mode == ONE_BUTTON) {
+		player->lefton = player->righton = left || up || right;
 	}
 	else {
-
-		player->lefton  =
-			input->pressed[SDLK_LEFT]    ||
-			input->pressed[SDLK_LSHIFT]  ||
-			input->pressed[SDLK_LCTRL];
-
-		player->righton =
-			input->pressed[SDLK_RIGHT]   ||
-			input->pressed[SDLK_RSHIFT]  ||
-			input->pressed[SDLK_RCTRL];
+		player->lefton  = left  || (up && !right);
+		player->righton = right || (up && !left);
 	}
 }
 
