@@ -262,7 +262,7 @@ void ship_model(Display* display, Ship* ship)
 	float white = ship->dist <= 0 || ship->dist > alert_dist ? 1 :
 		1-(alert_dist - ship->dist)/alert_dist;
 
-	float f =1.8;
+	float f = 1.8;
 
 	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
