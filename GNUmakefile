@@ -15,14 +15,13 @@ release:
 		GNUmakefile \
 		src/GNUmakefile \
 		src/main.c \
-		src/display.h \
 		src/display.c \
-		src/game.h \
+		src/display.h \
 		src/game.c \
+		src/game.h \
+		src/score.c \
+		src/score.h \
 		src/vec.h \
-		src/Makefile.cross \
-		src/sfcave9.pl \
-		src/cave9-global.pl \
 	| tar -C $$dir -xf -; \
 	archive=cave9_src.$$date.tgz; \
 	tar -cvzf $$archive $$dir; \
