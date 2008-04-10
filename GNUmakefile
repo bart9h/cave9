@@ -15,6 +15,7 @@ release:
 		GNUmakefile \
 		src/GNUmakefile \
 		src/main.c \
+		src/control.c \
 		src/display.c \
 		src/display.h \
 		src/game.c \
