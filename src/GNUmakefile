@@ -11,6 +11,7 @@ LDFLAGS += `sdl-config --libs` -lm -L/usr/X11/lib -lGL -lGLU -lSDL_ttf -lSDL_ima
 
 SRCS = \
 	 main.c \
+	 control.c \
 	 display.c \
 	 game.c \
 	 score.c \
