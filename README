@@ -58,6 +58,9 @@ the lateral forces, and pull you straight up.
 KEYBOARD CONTROLS:
 ==================
 
+<Up-Arrow>  or  <Down-Arrow>
+Activate both thursts.
+
 <Left-Arrow>   or  <Left-Control>   or  <Left-Shift>:
 Activate the right thrust jet.
 
@@ -72,11 +75,6 @@ Toggles full-screen mode.
 
 <Esc>  or  <Q>
 Quits immediately.
-
-
-For the one-key mode, use
-<Up-Arrow>  or  <Down-Arrow>
-To activate both thursts.
 
 
 Check the startup options with "./cave9 --help"
