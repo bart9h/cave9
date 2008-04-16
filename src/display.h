@@ -24,6 +24,20 @@
 
 #define TEXTURE_FILE "data/cave9.jpg"
 #define FONT_FILE "data/cave9.ttf"
+#define AUDIO_FILE "data/cave9.wav"
+
+typedef struct Audio_struct
+{
+	int enabled;
+	SDL_AudioSpec fmt;
+	Ship *ship;
+	signed short *data;
+	unsigned size;
+	unsigned index;
+	float low_index;
+	float left;
+	float right;
+} Audio;
 
 typedef struct Display_struct
 {
@@ -43,7 +57,13 @@ typedef struct Display_struct
 
 	UDPsocket udp_sock;
 	UDPpacket* udp_pkt;
+
+	Audio audio;
 } Display;
+
+void audio_mix(void *data, Uint8 *stream, int len);
+void audio_start(Display *display, Ship *ship);
+void audio_stop(Display *display);
 
 void viewport (Display*, GLsizei w, GLsizei h, GLsizei bpp, bool fullscreen, int aa);
 void cave_model (Display*, Cave*, bool wire);

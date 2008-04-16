@@ -45,8 +45,11 @@ void viewport(Display* display, GLsizei w, GLsizei h, GLsizei bpp,
 	if(fullscreen)
 		flags |= SDL_FULLSCREEN;
 	display->screen = SDL_SetVideoMode(w, h, bpp, flags);
-	if(display->screen == NULL)
+	if(display->screen == NULL) {
+		fprintf(stderr, "SDL_SetVideoMode(%d,%d,%d,%d): %s\n", 
+				w, h, bpp, flags, SDL_GetError());
 		goto error;
+	}
 
 	bpp = display->screen->format->BitsPerPixel;
 	//printf("%dx%dx%d\n", display->screen->w, display->screen->h, display->screen->format->BitsPerPixel);
@@ -114,13 +117,24 @@ void viewport(Display* display, GLsizei w, GLsizei h, GLsizei bpp,
 
 	return;
 	error:
-	fprintf(stderr, "SDL ERROR: %s\n", SDL_GetError());
+	fprintf(stderr, ": %s\n", SDL_GetError());
 	exit(1);
 }
 
 void display_world_transform(Display* display, Ship* player)
 {
-	COPY(display->cam, player->pos);
+	Vec3 shake = {
+		.5 * RAND * player->vel[0] / MAX_VEL_X +
+		.5 * RAND * player->lefton + 
+		.5 * RAND * player->righton +
+		.5 * RAND * player->vel[2] / MAX_VEL_Z,
+
+		.5 * RAND * player->vel[1] / MAX_VEL_Y +
+		.5 * RAND * player->vel[2] / MAX_VEL_Z,
+
+		.5 * RAND * player->vel[2] / MAX_VEL_Z
+	};
+	ADD2(display->cam, player->pos, shake);
 	ADD2(display->target, player->pos, player->lookAt);
 	//display->target[1]=display->target[1]*.5+player->pos[1]*.5;
 	//display->target[2]+=10;
@@ -159,6 +173,7 @@ void cave_model(Display* display, Cave* cave, bool wire)
 						glColor4f(1, 1, 1, 0.5);
 				}
 #else
+				//glColor4f(1, .8, .7, 0.5);
 				glColor4f(1, 1, 1, 0.5);
 #endif
 
@@ -455,15 +470,101 @@ GLuint display_make_ship_list()
 	return ship_list;
 }
 
+void audio_mix(void *data, Uint8 *stream, int len)
+{
+	Audio *audio = (Audio*)data;
+
+	float low_freq = .4 - .3 * audio->ship->dist / MAX_CAVE_RADIUS;
+
+	unsigned int data_samples = audio->size/2; // 16bit
+	unsigned int buffer_samples = len/2; // 16bit
+	signed short *buffer = (signed short *)stream;
+	for(unsigned i = 0; i < buffer_samples; ) {
+		float p2 = fmodf(audio->low_index, 1);
+		float p1 = 1 - p2;
+		float low = 
+			p1 * audio->data[(int)(audio->low_index)] +
+			p2 * audio->data[(int)(audio->low_index + 1) % data_samples];
+
+		float high = audio->data[audio->index];
+
+		// FIXME use audio->fmt-> sample rate to make a transition time in seconds:
+		audio->right = audio->right * .999 + .001 * audio->ship->righton;
+		audio->left  = audio->left  * .999 + .001 * audio->ship->lefton;
+
+		buffer[i++] = low * .3 + .1 * high * audio->right;
+		buffer[i++] = low * .3 + .1 * high * audio->left;
+		
+		audio->index = (audio->index + 1) % data_samples;
+		audio->low_index = fmodf(audio->low_index + low_freq, data_samples);
+	}
+}
+
+void audio_start(Display *display, Ship *ship)
+{
+	if(!display->audio.enabled)
+		return;
+	display->audio.ship  = ship;
+	display->audio.left  = 0;
+	display->audio.right = 0;
+	SDL_PauseAudio(0);
+}
+
+void audio_stop(Display *display)
+{
+	if(!display->audio.enabled)
+		return;
+	SDL_PauseAudio(1);
+}
+
 void display_init (Display* display, Args* args)
 {
 	memset(display, 0, sizeof(Display));
 
-	if(SDL_Init(SDL_INIT_VIDEO) != 0) {
+	if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
 		fprintf(stderr, "SDL_Init(): %s\n", SDL_GetError());
 		exit(1);
 	}
 	atexit(SDL_Quit);
+
+	do {
+		display->audio.enabled = 0;
+
+		 
+		 if(SDL_LoadWAV(AUDIO_FILE, &display->audio.fmt, 
+		 	(Uint8**)&(display->audio.data), &display->audio.size) == NULL)
+		 {
+			fprintf(stderr, "SDL_LoadWAV(%s): %s\n", AUDIO_FILE, SDL_GetError());
+			break;
+		}
+		display->audio.index = 0;
+		display->audio.low_index = 0;
+
+		//display->audio.fmt.freq = 8000;
+		if(display->audio.fmt.format != AUDIO_S16) {
+			fprintf(stderr, "audio file '%s' must be 16bit (its %d) and signed (%08x, not %08x)\n", 
+				AUDIO_FILE, display->audio.fmt.format & 0xff, AUDIO_S16, display->audio.fmt.format);
+			break;
+		}
+		if(display->audio.fmt.channels != 1) {
+			fprintf(stderr, "audio file '%s' must be 1 channel (not %d)\n", 
+				AUDIO_FILE, display->audio.fmt.channels);
+			break;
+
+		}
+		display->audio.fmt.channels = 2;
+		display->audio.fmt.samples = 128;
+		display->audio.fmt.callback = audio_mix;
+		display->audio.fmt.userdata = &display->audio;
+
+		if(SDL_OpenAudio(&display->audio.fmt, NULL) != 0) {
+			fprintf(stderr, "SDL_OpenAudio(): %s\n", SDL_GetError());
+			break;
+		}
+		atexit(SDL_CloseAudio);
+		display->audio.enabled = 1;
+
+	} while(0);
 
 	display->near_plane = MIN(SEGMENT_LEN,SHIP_RADIUS)/4.; // was EPSILON;
 	display->far_plane = SEGMENT_COUNT * SEGMENT_LEN;

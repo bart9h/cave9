@@ -57,10 +57,14 @@ void control (Display* display, Game* game, Input* input)
 						game_init (game, NULL);
 					display_message (display, game, "");
 					input->state = PLAY;
+					audio_start(display, &game->player);
 				}
-				else if(input->state == PLAY)  {
-					input->state = PAUSE;
-					display_message (display, game, "paused");
+				else {
+					if(input->state == PLAY)  {
+						input->state = PAUSE;
+						display_message (display, game, "paused");
+					}
+					audio_stop(display);
 				}
 				break;
 			case SDLK_RETURN:
@@ -210,6 +214,7 @@ int main_control (int argc, char* argv[])
 			if (collision (&game.cave, &game.player) <= 0) {
 				display_message (&display, &game, "gameover.  [press space]");
 				input.state = GAMEOVER;
+				audio_stop(&display);
 			}
 			cave_gen (&game.cave, &game.digger);
 
