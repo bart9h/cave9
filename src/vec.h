@@ -21,14 +21,6 @@
 #include <SDL_opengl.h>
 #include <GL/gl.h>
 
-#ifndef __cplusplus
-  #ifndef bool
-    typedef unsigned char bool;
-    #define false 0
-    #define true  1
-  #endif
-#endif
-
 #define EPSILON 0.000001
 
 typedef GLfloat Vec3[3];

@@ -18,7 +18,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
-#include "vec.h"
+#include <stdbool.h>
 #include "display.h"
 #include "game.h"
 #include "audio.h"
@@ -26,7 +26,7 @@
 typedef struct Input_struct
 {
 	bool pressed[SDLK_LAST];
-	enum {WELCOME, PLAY, PAUSE, GAMEOVER, QUIT} state;
+	enum { WELCOME, PLAY, PAUSE, GAMEOVER, QUIT } state;
 } Input;
 
 void control (Display* display, Audio* audio, Game* game, Input* input)

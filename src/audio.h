@@ -18,8 +18,9 @@
 #ifndef audio_h_included
 #define audio_h_included
 
+#include <stdbool.h>
 #include "game.h"
-#include "vec.h"
+#include "config.h"
 
 typedef struct Audio_struct
 {
@@ -38,7 +39,7 @@ void audio_init (Audio*);
 void audio_start (Audio*, Ship*);
 void audio_stop (Audio*);
 
-#define AUDIO_FILE "data/cave9.wav"
+#define AUDIO_FILE DATA_DIR "cave9.wav"
 
 #endif
 

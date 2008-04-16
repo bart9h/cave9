@@ -19,7 +19,7 @@
 #define score_h_included
 
 #include <SDL_net.h>
-#include "vec.h"
+#include <stdbool.h>
 
 #define SCORE_FILE "data/cave9.hi"
 #define GLOBAL_SCORE_PORT 31559

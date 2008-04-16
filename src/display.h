@@ -20,12 +20,12 @@
 
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include <stdbool.h>
 #include "game.h"
 #include "config.h"
 
 #define TEXTURE_FILE DATA_DIR "cave9.jpg"
 #define FONT_FILE DATA_DIR "cave9.ttf"
-#define AUDIO_FILE DATA_DIR "cave9.wav"
 
 typedef struct Display_struct
 {
@@ -41,7 +41,7 @@ typedef struct Display_struct
 	GLuint wire_list_start;
 	GLuint ship_list;
 
-	int cockpit;
+	bool cockpit;
 
 	UDPsocket udp_sock;
 	UDPpacket* udp_pkt;
