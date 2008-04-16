@@ -21,6 +21,7 @@
 #include "vec.h"
 #include "display.h"
 #include "game.h"
+#include "audio.h"
 
 typedef struct Input_struct
 {
@@ -28,7 +29,7 @@ typedef struct Input_struct
 	enum {WELCOME, PLAY, PAUSE, GAMEOVER, QUIT} state;
 } Input;
 
-void control (Display* display, Game* game, Input* input)
+void control (Display* display, Audio* audio, Game* game, Input* input)
 {
 	SDL_Event event;
 
@@ -57,14 +58,14 @@ void control (Display* display, Game* game, Input* input)
 						game_init (game, NULL);
 					display_message (display, game, "");
 					input->state = PLAY;
-					audio_start(display, &game->player);
+					audio_start (audio, &game->player);
 				}
 				else {
 					if(input->state == PLAY)  {
 						input->state = PAUSE;
 						display_message (display, game, "paused");
 					}
-					audio_stop(display);
+					audio_stop (audio);
 				}
 				break;
 			case SDLK_RETURN:
@@ -185,6 +186,7 @@ int main_control (int argc, char* argv[])
 {
 	Args args;
 	Display display;
+	Audio audio;
 	Input input;
 	memset (input.pressed, 0, sizeof(input.pressed));
 
@@ -194,6 +196,7 @@ int main_control (int argc, char* argv[])
 
 	args_init (&args, argc, argv);
 	display_init (&display, &args);
+	audio_init (&audio);
 	game_init (&game, &args);
 
 	input.state = WELCOME;
@@ -203,7 +206,7 @@ int main_control (int argc, char* argv[])
 	while (input.state != QUIT) {
 		int t0 = SDL_GetTicks();
 
-		control (&display, &game, &input);
+		control (&display, &audio, &game, &input);
 
 		switch (input.state) {
 		case PLAY:
@@ -214,7 +217,7 @@ int main_control (int argc, char* argv[])
 			if (collision (&game.cave, &game.player) <= 0) {
 				display_message (&display, &game, "gameover.  [press space]");
 				input.state = GAMEOVER;
-				audio_stop(&display);
+				audio_stop (&audio);
 			}
 			cave_gen (&game.cave, &game.digger);
 
