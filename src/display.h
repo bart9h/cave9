@@ -22,9 +22,11 @@
 #include <SDL_ttf.h>
 #include "game.h"
 
-#define TEXTURE_FILE "data/cave9.jpg"
-#define FONT_FILE "data/cave9.ttf"
-#define AUDIO_FILE "data/cave9.wav"
+#include "config.h"
+
+#define TEXTURE_FILE DATA_DIR "cave9.jpg"
+#define FONT_FILE DATA_DIR "cave9.ttf"
+#define AUDIO_FILE DATA_DIR "cave9.wav"
 
 typedef struct Audio_struct
 {
