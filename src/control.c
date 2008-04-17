@@ -38,7 +38,7 @@ typedef struct Input_struct
 	enum { WELCOME, PLAY, PAUSE, GAMEOVER, QUIT } state;
 } Input;
 
-void control (Display* display, Audio* audio, Game* game, Input* input)
+static void control (Display* display, Audio* audio, Game* game, Input* input)
 {
 	SDL_Event event;
 
@@ -107,7 +107,7 @@ void control (Display* display, Audio* audio, Game* game, Input* input)
 	}
 }
 
-void player_control (Ship* player, Input* input, int game_mode)
+static void player_control (Ship* player, Input* input, int game_mode)
 {
 #define K(k) (input->pressed[k])
 	bool up    = K(SDLK_DOWN)  || K(SDLK_UP);
@@ -123,7 +123,7 @@ void player_control (Ship* player, Input* input, int game_mode)
 	}
 }
 
-void args_init (Args* args, int argc, char* argv[])
+static void args_init (Args* args, int argc, char* argv[])
 {
 	args->width = 640;
 	args->height = 480;

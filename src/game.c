@@ -70,7 +70,7 @@ void cave_gen (Cave* cave, Ship* digger)
 	}
 }
 
-void cave_init (Cave* cave, Ship* digger, int game_mode)
+static void cave_init (Cave* cave, Ship* digger, int game_mode)
 {
 	memset (cave, 0, sizeof(Cave));
 	cave->i = 0;
@@ -82,7 +82,7 @@ void cave_init (Cave* cave, Ship* digger, int game_mode)
 	while(cave->i != 0);
 }
 
-void ship_init (Ship* ship, float radius)
+static void ship_init (Ship* ship, float radius)
 {
 	SET (ship->pos, 0,0,ship->start);
 	SET (ship->vel, 0,0,VELOCITY);

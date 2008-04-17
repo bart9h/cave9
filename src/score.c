@@ -1,6 +1,6 @@
 #include "score.h"
 
-void score_net_finish (Score* score)
+static void score_net_finish (Score* score)
 {
 	if(score->udp_pkt != NULL) {
 		SDLNet_FreePacket(score->udp_pkt);
@@ -12,7 +12,7 @@ void score_net_finish (Score* score)
 	}
 }
 
-void score_net_init (Score* score)
+static void score_net_init (Score* score)
 {
 	if(SDLNet_Init()==-1)
 	{
@@ -48,7 +48,7 @@ void score_net_init (Score* score)
 	}
 }
 
-void score_net_update (Score* score)
+static void score_net_update (Score* score)
 {
 	if (score->udp_sock == 0)
 		return;

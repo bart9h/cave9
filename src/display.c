@@ -27,7 +27,7 @@
 #include "display.h"
 #include "util.h"
 
-void viewport(Display* display, GLsizei w, GLsizei h, GLsizei bpp,
+void viewport (Display* display, GLsizei w, GLsizei h, GLsizei bpp,
 		bool fullscreen, int aa)
 {
 	// video mode
@@ -124,7 +124,7 @@ void viewport(Display* display, GLsizei w, GLsizei h, GLsizei bpp,
 	exit(1);
 }
 
-void display_world_transform(Display* display, Ship* player)
+static void display_world_transform (Display* display, Ship* player)
 {
 #ifndef NOSHAKE
 	float hit = ship_hit(player);
@@ -157,7 +157,7 @@ void display_world_transform(Display* display, Ship* player)
 	);
 }
 
-void cave_model (Display* display, Cave* cave, int mode)
+static void cave_model (Display* display, Cave* cave, int mode)
 {
 	for (int i = 0; i < SEGMENT_COUNT-1; ++i) {
 		int i0 = (cave->i + i)%SEGMENT_COUNT;
@@ -242,7 +242,7 @@ void cave_model (Display* display, Cave* cave, int mode)
 
 }
 
-void monolith_model (Display* display, Game* game)
+static void monolith_model (Display* display, Game* game)
 {
 	if (!game->monoliths)
 		return;
@@ -280,7 +280,7 @@ void monolith_model (Display* display, Game* game)
 	glPopMatrix();
 }
 
-void ship_model(Display* display, Ship* ship)
+static void ship_model(Display* display, Ship* ship)
 {
 	if(!display->cockpit)
 		return;
@@ -318,7 +318,7 @@ void ship_model(Display* display, Ship* ship)
 	glPopMatrix();
 }
 
-void render_text(Display* display, GLuint id, const char* text,
+static void render_text(Display* display, GLuint id, const char* text,
 		float x, float y, float w, float h,
 		float r, float g, float b)
 {
@@ -352,7 +352,7 @@ void render_text(Display* display, GLuint id, const char* text,
 	glPopMatrix();
 }
 
-void display_hud (Display* display, Game* game)
+static void display_hud (Display* display, Game* game)
 {
 	if(game->player.dist == FLT_MAX)
 		return;
@@ -399,7 +399,7 @@ void display_hud (Display* display, Game* game)
 	render_text(display, display->hud_id, buf, .5,.9,1,.2, 1,white,white);
 }
 
-char display_message_buf[256];
+static char display_message_buf[256];
 void display_message (Display* display, Game* game, const char* buf)
 {
 	strncpy (display_message_buf, buf, sizeof(display_message_buf)-1);
@@ -407,7 +407,7 @@ void display_message (Display* display, Game* game, const char* buf)
 	display_frame (display, game);
 }
 
-void display_start_frame(Display* display, float r, float g, float b)
+static void display_start_frame(Display* display, float r, float g, float b)
 {
 	glClearColor(r,g,b,1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -415,11 +415,29 @@ void display_start_frame(Display* display, float r, float g, float b)
 	glLoadIdentity();
 }
 
-void display_end_frame(Display* display)
+static void display_end_frame(Display* display)
 {
 	glFinish();
 
 	SDL_GL_SwapBuffers();
+}
+
+static void display_minimap (Display* display, Game* game)
+{
+	float len = cave_len(&game->cave);
+	glPushMatrix();
+		glScalef(.0065,.003,.001);
+		glRotatef(-90,0,1,0);
+		glTranslatef(
+				-game->player.pos[0]-len*8, // XXX hardcoded
+				-game->player.pos[1]-MAX_CAVE_RADIUS*3,
+				-game->player.pos[2]-len/2);
+		cave_model (display, &game->cave, true);
+
+		glColor4f(1,1,1,0.05);
+		glTranslatef (game->player.pos[0],game->player.pos[1],game->player.pos[2]);
+		glCallList( display->ship_list );
+	glPopMatrix();
 }
 
 void display_frame (Display* display, Game* game)
@@ -457,7 +475,7 @@ void display_frame (Display* display, Game* game)
 	display_end_frame(display);
 }
 
-GLuint display_make_ship_list()
+static GLuint display_make_ship_list()
 {
 	/* Magic Numbers: It is possible to create a dodecahedron by attaching two pentagons
 	 * to each face of a cube. The coordinates of the points are:
@@ -598,24 +616,6 @@ void display_init (Display* display, Args* args)
 	display->ship_list = display_make_ship_list();
 
 	display->cockpit = args->cockpit;
-}
-
-void display_minimap (Display* display, Game* game)
-{
-	float len = cave_len(&game->cave);
-	glPushMatrix();
-		glScalef(.0065,.003,.001);
-		glRotatef(-90,0,1,0);
-		glTranslatef(
-				-game->player.pos[0]-len*8, // XXX hardcoded
-				-game->player.pos[1]-MAX_CAVE_RADIUS*3,
-				-game->player.pos[2]-len/2);
-		cave_model (display, &game->cave, true);
-
-		glColor4f(1,1,1,0.05);
-		glTranslatef (game->player.pos[0],game->player.pos[1],game->player.pos[2]);
-		glCallList( display->ship_list );
-	glPopMatrix();
 }
 
 // vim600:fdm=syntax:fdn=1:

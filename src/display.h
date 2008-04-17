@@ -48,14 +48,7 @@ typedef struct Display_struct
 } Display;
 
 void viewport (Display*, GLsizei w, GLsizei h, GLsizei bpp, bool fullscreen, int aa);
-void cave_model (Display*, Cave*, int mode);
-void ship_model (Display*, Ship*);
-void render_hud (Display*, Ship* player);
 void display_init (Display*, Args*);
-void display_start_frame (Display* display, float r, float g, float b);
-void display_end_frame (Display*);
-void display_minimap (Display*, Game*);
-void display_hud (Display*, Game*);
 void display_message (Display*, Game*, const char* buf);
 void display_frame (Display*, Game*);
 

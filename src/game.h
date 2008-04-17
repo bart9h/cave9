@@ -87,8 +87,6 @@ typedef struct Args_struct
 void game_init (Game* game, Args* args);
 float cave_len (Cave*);
 void cave_gen (Cave*, Ship* digger);
-void cave_init (Cave*, Ship* digger, int game_mode);
-void ship_init (Ship*, float radius);
 void ship_move (Ship*, float dt);
 void digger_control (Ship*, int game_mode);
 float collision (Cave*, Ship*);
