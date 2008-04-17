@@ -25,19 +25,20 @@
 typedef struct Audio_struct
 {
 	bool enabled;
-	SDL_AudioSpec fmt;
+	SDL_AudioSpec fmt, hit_fmt;
+	signed short *thrust_data, *hit_data;
+	unsigned thrust_size, hit_size;
+	float high_index, low_index, hit_index;
+	float left, right, hit;
 	Ship* ship;
-	signed short* data;
-	unsigned size;
-	float high, low, hit;
-	float left, right;
 } Audio;
 
 void audio_init (Audio*);
 void audio_start (Audio*, Ship*);
 void audio_stop (Audio*);
 
-#define AUDIO_FILE DATA_DIR "cave9.wav"
+#define AUDIO_FILE DATA_DIR "thrust.wav"
+#define AUDIO_HIT_FILE DATA_DIR "crash.wav"
 
 #endif
 

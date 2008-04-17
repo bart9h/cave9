@@ -24,9 +24,9 @@
 #include "game.h"
 #include "config.h"
 
-#define ICON_FILE DATA_DIR "cave9.png"
-#define TEXTURE_FILE DATA_DIR "cave9.jpg"
-#define FONT_FILE DATA_DIR "cave9.ttf"
+#define ICON_FILE DATA_DIR "icon.png"
+#define TEXTURE_FILE DATA_DIR "rocky.jpg"
+#define FONT_FILE DATA_DIR "trashco.ttf"
 
 typedef struct Display_struct
 {

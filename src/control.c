@@ -218,8 +218,8 @@ int main_control (int argc, char* argv[])
 			
 #ifndef NO_STRETCH_FIX
 			game.player.pos[2] = 
-				0.8 * (game.player.pos[2]) +
-				0.2 * (game.digger.pos[2] - cave_len(&game.cave)); 
+				0.7 * (game.player.pos[2]) +
+				0.3 * (game.digger.pos[2] - cave_len(&game.cave)); 
 			// XXX fix player position in case digger moves differently
 #endif
 

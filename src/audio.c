@@ -20,13 +20,13 @@
 #include "audio.h"
 
 
-float audio_index_value(Audio *audio, float *i, float freq)
+float audio_index_value(signed short *data, int size, float *i, float freq)
 {
-        unsigned int samples = audio->size/2; // 16bit
+        unsigned int samples = size/2; // 16bit
         float i2 = fmodf(*i, 1), i1 = 1 - i2;
         float v =
-                i1 * audio->data[(int)(*i)] +
-                i2 * audio->data[(int)(*i + 1) % samples];
+                i1 * data[(int)(*i)] +
+                i2 * data[(int)(*i + 1) % samples];
         *i = fmodf(*i + freq, samples);
         return v;
 }
@@ -40,12 +40,13 @@ void audio_mix(void *data, Uint8 *stream, int len)
                 10000*(1-CLAMP(audio->ship->dist / MIN_CAVE_RADIUS,0,1)) +
                 10000*MIN(1, (LEN(audio->ship->vel)-MAX_VEL_Z) / (LEN(max_vel)-MAX_VEL_Z))
                 ) / log(1+20000);
-
-        float hit_freq  = 6 + 10 * RAND;
         float low_freq  =  .2 +  .6 * intensity;
         float high_freq = 1.0 + 2.0 * intensity;
 
 		float collision = ship_hit(audio->ship);
+		if(collision > audio->hit)
+			audio->hit = collision;
+        float hit_freq  = audio->hit != 0;
 
         unsigned int buffer_samples = len/2; // 16bit
         signed short *buffer = (signed short *)stream;
@@ -53,12 +54,13 @@ void audio_mix(void *data, Uint8 *stream, int len)
                 // FIXME use audio->fmt-> sample rate to make a transition time in seconds:
                 audio->right = audio->right * .999 + .001 * audio->ship->righton;
                 audio->left  = audio->left  * .999 + .001 * audio->ship->lefton;
+                audio->hit  *= .9996;
 
-                float high = audio_index_value(audio, &audio->high, high_freq);
-                float low  = audio_index_value(audio, &audio->low,  low_freq);
-                float hit  = audio_index_value(audio, &audio->hit,  hit_freq);
-                buffer[i++] = .3 * low + .1 * high * audio->right + .2 * hit * collision;
-                buffer[i++] = .3 * low + .1 * high * audio->left  + .2 * hit * collision;
+                float high = audio_index_value(audio->thrust_data, audio->thrust_size, &audio->high_index, high_freq);
+                float low  = audio_index_value(audio->thrust_data, audio->thrust_size, &audio->low_index,  low_freq);
+                float hit  = audio_index_value(audio->hit_data,    audio->hit_size,    &audio->hit_index,  hit_freq);
+                buffer[i++] = .3 * low + .1 * high * audio->right + .5 * hit * audio->hit;
+                buffer[i++] = .3 * low + .1 * high * audio->left  + .5 * hit * audio->hit;
         }
 }
 
@@ -67,6 +69,7 @@ void audio_start (Audio* audio, Ship* ship)
 	if(!audio->enabled)
 		return;
 	audio->ship  = ship;
+	audio->hit  =
 	audio->left  =
 	audio->right = 0;
 	SDL_PauseAudio(0);
@@ -84,31 +87,35 @@ void audio_init (Audio* audio)
 	audio->enabled = false;
 
 	if (SDL_LoadWAV(AUDIO_FILE, &audio->fmt,
-				(Uint8**)&(audio->data), &audio->size) == NULL)
+				(Uint8**)&(audio->thrust_data), &audio->thrust_size) == NULL)
 	{
 		fprintf(stderr, "SDL_LoadWAV(%s): %s\n", AUDIO_FILE, SDL_GetError());
 		return;
 	}
-
-	audio->hit =
-	audio->low =
-	audio->high = 0;
-
-
-	//audio->fmt.freq = 8000;
-	if(audio->fmt.format != AUDIO_S16) {
-		fprintf(stderr, "audio file '%s' must be 16bit (its %d) and signed (%08x, not %08x)\n",
-				AUDIO_FILE, audio->fmt.format & 0xff, AUDIO_S16, audio->fmt.format);
-		return;
-	}
-	if(audio->fmt.channels != 1) {
-		fprintf(stderr, "audio file '%s' must be 1 channel (not %d)\n",
-				AUDIO_FILE, audio->fmt.channels);
+	if(audio->fmt.format != AUDIO_S16 && audio->fmt.channels != 1) {
+		fprintf(stderr, "audio file '%s' expected to be 1ch and 16bit\n", AUDIO_FILE);
 		return;
 
 	}
+
+	if (SDL_LoadWAV(AUDIO_HIT_FILE, &audio->hit_fmt,
+				(Uint8**)&(audio->hit_data), &audio->hit_size) == NULL)
+	{
+		fprintf(stderr, "SDL_LoadWAV(%s): %s\n", AUDIO_HIT_FILE, SDL_GetError());
+		return;
+	}
+	if(audio->hit_fmt.format != AUDIO_S16 && audio->hit_fmt.channels != 1) {
+		fprintf(stderr, "audio file '%s' expected to be 1ch and 16bit\n", AUDIO_HIT_FILE);
+		return;
+	}
+
+	audio->hit_index =
+	audio->low_index =
+	audio->high_index = 0;
+
+
 	audio->fmt.channels = 2;
-	audio->fmt.samples = 128;
+	audio->fmt.samples = 512;
 	audio->fmt.callback = audio_mix;
 	audio->fmt.userdata = audio;
 
