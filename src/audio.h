@@ -20,7 +20,6 @@
 
 #include <stdbool.h>
 #include "game.h"
-#include "config.h"
 
 typedef struct Audio_struct
 {
@@ -37,8 +36,8 @@ void audio_init (Audio*);
 void audio_start (Audio*, Ship*);
 void audio_stop (Audio*);
 
-#define AUDIO_FILE DATA_DIR "thrust.wav"
-#define AUDIO_HIT_FILE DATA_DIR "crash.wav"
+#define AUDIO_FILE "thrust.wav"
+#define AUDIO_HIT_FILE "crash.wav"
 
 #endif
 

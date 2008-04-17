@@ -18,7 +18,7 @@
 #include <SDL.h>
 #include <math.h>
 #include "audio.h"
-
+#include "util.h"
 
 float audio_index_value(signed short *data, int size, float *i, float freq)
 {
@@ -86,26 +86,28 @@ void audio_init (Audio* audio)
 {
 	audio->enabled = false;
 
-	if (SDL_LoadWAV(AUDIO_FILE, &audio->fmt,
+	const char* audio_file = FIND (AUDIO_FILE);
+	if (SDL_LoadWAV(audio_file, &audio->fmt,
 				(Uint8**)&(audio->thrust_data), &audio->thrust_size) == NULL)
 	{
-		fprintf(stderr, "SDL_LoadWAV(%s): %s\n", AUDIO_FILE, SDL_GetError());
+		fprintf(stderr, "SDL_LoadWAV(%s): %s\n", audio_file, SDL_GetError());
 		return;
 	}
 	if(audio->fmt.format != AUDIO_S16 && audio->fmt.channels != 1) {
-		fprintf(stderr, "audio file '%s' expected to be 1ch and 16bit\n", AUDIO_FILE);
+		fprintf(stderr, "audio file '%s' expected to be 1ch and 16bit\n", audio_file);
 		return;
 
 	}
 
-	if (SDL_LoadWAV(AUDIO_HIT_FILE, &audio->hit_fmt,
+	const char* audio_hit_file = FIND (AUDIO_HIT_FILE);
+	if (SDL_LoadWAV(audio_hit_file, &audio->hit_fmt,
 				(Uint8**)&(audio->hit_data), &audio->hit_size) == NULL)
 	{
-		fprintf(stderr, "SDL_LoadWAV(%s): %s\n", AUDIO_HIT_FILE, SDL_GetError());
+		fprintf(stderr, "SDL_LoadWAV(%s): %s\n", audio_hit_file, SDL_GetError());
 		return;
 	}
 	if(audio->hit_fmt.format != AUDIO_S16 && audio->hit_fmt.channels != 1) {
-		fprintf(stderr, "audio file '%s' expected to be 1ch and 16bit\n", AUDIO_HIT_FILE);
+		fprintf(stderr, "audio file '%s' expected to be 1ch and 16bit\n", audio_hit_file);
 		return;
 	}
 

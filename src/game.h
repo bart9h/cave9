@@ -96,6 +96,9 @@ int game_score (Game *game);
 void game_score_update (Game *game);
 float ship_hit (Ship*);
 
+extern const char* data_paths[];
+#define FIND(f) find_file(f,data_paths)
+
 #define FPS 30
 #define SEGMENT_LEN 2.0
 #define SHIP_RADIUS 1.0

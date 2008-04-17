@@ -23,6 +23,14 @@
 #include "game.h"
 #include "audio.h"
 
+const char* data_paths[] = {
+	"./data",
+	"~/.cave9/data",
+	"/usr/local/share/cave9",
+	"/usr/share/cave9",
+	NULL
+};
+
 typedef struct Input_struct
 {
 	bool pressed[SDLK_LAST];

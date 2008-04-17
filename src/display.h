@@ -22,11 +22,10 @@
 #include <SDL_ttf.h>
 #include <stdbool.h>
 #include "game.h"
-#include "config.h"
 
-#define ICON_FILE DATA_DIR "icon.png"
-#define TEXTURE_FILE DATA_DIR "rocky.jpg"
-#define FONT_FILE DATA_DIR "trashco.ttf"
+#define  ICON_FILE     "icon.png"
+#define  TEXTURE_FILE  "rocky.jpg"
+#define  FONT_FILE     "trashco.ttf"
 
 typedef struct Display_struct
 {

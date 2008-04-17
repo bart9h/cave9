@@ -25,6 +25,7 @@
 #include <float.h>
 #include <assert.h>
 #include "display.h"
+#include "util.h"
 
 void viewport(Display* display, GLsizei w, GLsizei h, GLsizei bpp,
 		bool fullscreen, int aa)
@@ -508,9 +509,10 @@ void display_init (Display* display, Args* args)
 	}
 	atexit(SDL_Quit);
 
-	display->icon = IMG_Load(ICON_FILE);
+	const char* icon_file = FIND (ICON_FILE);
+	display->icon = IMG_Load(icon_file);
 	if(display->icon == NULL) {
-		fprintf(stderr, "IMG_Load(%s): %s\n", ICON_FILE, IMG_GetError());
+		fprintf(stderr, "IMG_Load(%s): %s\n", icon_file, IMG_GetError());
 		exit(1);
 	}
 
@@ -545,7 +547,7 @@ void display_init (Display* display, Args* args)
 	}
 	atexit(TTF_Quit);
 
-	char* font_filename = FONT_FILE;
+	const char* font_filename = FIND (FONT_FILE);
 	int font_size = args->antialiasing ? 96 : 48;
 	display->font = TTF_OpenFont(font_filename, font_size); // FIXME path
 	if(display->font == NULL) {
@@ -576,9 +578,10 @@ void display_init (Display* display, Args* args)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	SDL_Surface* texture = IMG_Load(TEXTURE_FILE);
+	const char* texture_file = FIND (TEXTURE_FILE);
+	SDL_Surface* texture = IMG_Load (texture_file);
 	if(texture == NULL) {
-		fprintf(stderr, "IMG_Load(%s): %s\n", TEXTURE_FILE, IMG_GetError());
+		fprintf(stderr, "IMG_Load(%s): %s\n", texture_file, IMG_GetError());
 		exit(1);
 	}
 
