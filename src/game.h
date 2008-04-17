@@ -24,6 +24,13 @@
 #define SECTOR_COUNT 32
 #define SEGMENT_COUNT 64
 
+enum DisplayMode
+{
+	DISPLAYMODE_NORMAL,
+	DISPLAYMODE_MINIMAP,
+	DISPLAYMODE_COUNT
+};
+
 typedef struct  Ship_struct
 {
 	float radius;
@@ -36,8 +43,7 @@ typedef struct  Ship_struct
 typedef struct  Cave_struct
 {
 	Vec3 segs[SEGMENT_COUNT][SECTOR_COUNT];
-	GLuint gl_list[SEGMENT_COUNT];
-	GLuint gl_wire_list[SEGMENT_COUNT];
+	GLuint gl_list[DISPLAYMODE_COUNT][SEGMENT_COUNT];
 	int i;  // circular array index
 
 	float monolith_x;

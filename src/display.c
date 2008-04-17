@@ -145,28 +145,27 @@ void display_world_transform(Display* display, Ship* player)
 	);
 }
 
-void cave_model(Display* display, Cave* cave, bool wire)
+void cave_model (Display* display, Cave* cave, int mode)
 {
-	for( int i = 0; i < SEGMENT_COUNT-1; ++i ) {
+	for (int i = 0; i < SEGMENT_COUNT-1; ++i) {
 		int i0 = (cave->i + i)%SEGMENT_COUNT;
 
-		if( (wire ? cave->gl_wire_list : cave->gl_list)[i0] == 0 ) {
-			int id = wire ?
-				(cave->gl_wire_list[i0] = i0 + display->wire_list_start) :
-				(cave->gl_list[i0]      = i0 + display->list_start) ;
+		if (cave->gl_list[mode][i0] == 0) {
+			int id = cave->gl_list[mode][i0] = i0 + display->list_start[mode];
 
-			glNewList( id, GL_COMPILE );
+			glNewList (id, GL_COMPILE);
 
 			int i1 = (i0 + 1)%SEGMENT_COUNT;
-			if(!wire)
-				glBindTexture(GL_TEXTURE_2D, display->texture_id);
-			glBegin(GL_QUAD_STRIP);
-			for( int k = 0; k <= SECTOR_COUNT; ++k ) {
+			if (mode == DISPLAYMODE_NORMAL)
+				glBindTexture (GL_TEXTURE_2D, display->texture_id);
+
+			glBegin (GL_QUAD_STRIP);
+			for (int k = 0; k <= SECTOR_COUNT; ++k) {
 
 				int k0 = k%SECTOR_COUNT;
 
 #if TEXTURE_BOUNDARY_DEBUG
-				if(!wire) {
+				if (mode == DISPLAYMODE_NORMAL) {
 					if(i0==0||i1==0||k==3*SECTOR_COUNT/4)
 						glColor4f(1, 0, 0, 0.5);
 					else
@@ -177,11 +176,11 @@ void cave_model(Display* display, Cave* cave, bool wire)
 				glColor4f(1, 1, 1, 0.5);
 #endif
 
-				if(!wire) {
+				if (mode == DISPLAYMODE_NORMAL) {
 					glTexCoord2f(
 							(float)(cave->i+i)/SEGMENT_COUNT,
 							(float)k/SECTOR_COUNT);
-				} else {
+				} else if (mode == DISPLAYMODE_MINIMAP) {
 					glColor4f(
 							(float)i0/SEGMENT_COUNT,
 							1-(float)i0/SEGMENT_COUNT,
@@ -190,11 +189,11 @@ void cave_model(Display* display, Cave* cave, bool wire)
 				}
 				glVertex3fv(cave->segs[i0][k0]);
 
-				if(!wire) {
+				if (mode == DISPLAYMODE_NORMAL) {
 					glTexCoord2f(
 							((float)(cave->i+i+1))/SEGMENT_COUNT,
 							(float)k/SECTOR_COUNT);
-				} else {
+				} else if (mode == DISPLAYMODE_MINIMAP) {
 					glColor4f(
 							(float)i1/SEGMENT_COUNT,
 							1-(float)i1/SEGMENT_COUNT,
@@ -208,17 +207,17 @@ void cave_model(Display* display, Cave* cave, bool wire)
 			glEndList();
 		}
 
-		if(wire) {
-			glDisable(GL_DEPTH_TEST);
-			glEnable(GL_BLEND);
-			glDisable(GL_TEXTURE_2D);
+		if (mode == DISPLAYMODE_NORMAL) {
+			glEnable  (GL_DEPTH_TEST);
+			glDisable (GL_BLEND);
+			glEnable  (GL_TEXTURE_2D);
 		} else {
-			glEnable(GL_DEPTH_TEST);
-			glDisable(GL_BLEND);
-			glEnable(GL_TEXTURE_2D);
+			glDisable (GL_DEPTH_TEST);
+			glEnable  (GL_BLEND);
+			glDisable (GL_TEXTURE_2D);
 		}
 
-		glCallList( (wire ? cave->gl_wire_list : cave->gl_list)[i0] );
+		glCallList (cave->gl_list[mode][i0]);
 	}
 
 }
@@ -415,7 +414,7 @@ void display_frame (Display* display, Game* game)
 	if(!hit) { // avoid drawing the cave from outside
 		glPushMatrix();
 			display_world_transform (display, &game->player);
-			cave_model (display, &game->cave, false);
+			cave_model (display, &game->cave, DISPLAYMODE_NORMAL);
 			monolith_model (display, game);
 		glPopMatrix();
 	}
@@ -502,8 +501,8 @@ void display_init (Display* display, Args* args)
 	}
 	viewport(display, w, h, args->bpp, f, args->antialiasing);
 
-	display->list_start = glGenLists( SEGMENT_COUNT );
-	display->wire_list_start = glGenLists( SEGMENT_COUNT );
+	for (int mode = 0; mode < DISPLAYMODE_COUNT; ++mode)
+		display->list_start[mode] = glGenLists (SEGMENT_COUNT);
 
 	if(TTF_Init() != 0) {
 		fprintf(stderr, "TTF_Init(): %s\n", TTF_GetError());

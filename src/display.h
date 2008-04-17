@@ -37,8 +37,7 @@ typedef struct Display_struct
 	Vec3 cam, target;
 	GLfloat near_plane, far_plane;
 
-	GLuint list_start;
-	GLuint wire_list_start;
+	GLuint list_start[DISPLAYMODE_COUNT];
 	GLuint ship_list;
 
 	bool cockpit;
@@ -48,7 +47,7 @@ typedef struct Display_struct
 } Display;
 
 void viewport (Display*, GLsizei w, GLsizei h, GLsizei bpp, bool fullscreen, int aa);
-void cave_model (Display*, Cave*, bool wire);
+void cave_model (Display*, Cave*, int mode);
 void ship_model (Display*, Ship*);
 void render_hud (Display*, Ship* player);
 void display_init (Display*, Args*);
