@@ -1,0 +1,5 @@
+cave9
+src/*.o
+data/
+.svn/
+*.tmp
