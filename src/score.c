@@ -1,3 +1,7 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/stat.h>
+#include <assert.h>
 #include "score.h"
 
 static void score_net_finish (Score* score)
@@ -78,10 +82,27 @@ void score_init (Score* score)
 	score->session = 0;
 	score->global = 0;
 
-	FILE* fp = fopen(SCORE_FILE, "r");
-	if (fp == NULL) {
-		perror ("failed to open score file");
-	} else {
+	char* home = getenv("HOME");
+	if (home != NULL) {
+		size_t len = strlen(home) + strlen("/.cave/") + strlen(SCORE_FILE) + 1;
+		score->filename = malloc (len);
+
+		char* dir = score->filename;
+		sprintf (dir, "%s/.cave9", home);
+		mkdir (dir, 0755);
+		strcat (score->filename, "/");
+		strcat (score->filename, SCORE_FILE);
+	}
+	else {
+		fprintf (stderr,
+			"HOME environment variable not set, using current dir to save %s\n",
+			SCORE_FILE);
+		score->filename = strdup (SCORE_FILE);
+	}
+	assert (score->filename != NULL);
+
+	FILE* fp = fopen (score->filename, "r");
+	if (fp != NULL) {
 		fscanf (fp, "%d", &score->local);
 		fclose (fp);
 	}
@@ -92,6 +113,8 @@ void score_init (Score* score)
 void score_finish (Score* score)
 {
 	score_net_finish (score);
+	free (score->filename);
+	memset (score, 0, sizeof(Score));
 }
 
 void score_update (Score* score, int new_score, bool is_global)
@@ -103,16 +126,16 @@ void score_update (Score* score, int new_score, bool is_global)
 
 		if (new_score > score->local) {
 			score->local = new_score;
-			FILE* fp = fopen (SCORE_FILE, "w");
+			FILE* fp = fopen (score->filename, "w");
 			if (fp == NULL) {
 				perror ("failed to open score file");
 			} else {
-				fprintf (fp, "%d", score->local);
+				fprintf (fp, "%d\n", score->local);
 				fclose (fp);
 			}
 		}
 
-		if(new_score > score->global) {
+		if (new_score > score->global) {
 			score->global = new_score;
 			score_net_update (score);
 		}

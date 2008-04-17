@@ -34,6 +34,7 @@ typedef struct Score_struct
 	int session;
 	int local;
 	int global;
+	char* filename;
 
 	UDPsocket udp_sock;
 	UDPpacket* udp_pkt;
