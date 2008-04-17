@@ -21,7 +21,7 @@
 #include <SDL_net.h>
 #include <stdbool.h>
 
-#define SCORE_FILE DATA_DIR "hiscore.txt"
+#define SCORE_FILE "hiscore.txt"
 
 #define GLOBAL_SCORE_PORT 31559
 #define GLOBAL_SCORE_HOST "cave9.9hells.org"
