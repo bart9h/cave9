@@ -54,11 +54,7 @@ void cave_gen (Cave* cave, Ship* digger)
 		SET(cave->segs[cave->i][i],
 			digger->pos[0] + r*cos(a) + RAND,
 			digger->pos[1] + r*sin(a) + RAND,
-#ifndef NO_STRETCH_FIX
 			digger->pos[2]
-#else
-			((int)(digger->pos[2]/SEGMENT_LEN))*SEGMENT_LEN
-#endif
 		);
 	}
 
