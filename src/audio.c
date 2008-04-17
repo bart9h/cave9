@@ -20,7 +20,7 @@
 #include "audio.h"
 #include "util.h"
 
-float audio_index_value(signed short *data, int size, float *i, float freq)
+static float audio_index_value(signed short *data, int size, float *i, float freq)
 {
         unsigned int samples = size/2; // 16bit
         float i2 = fmodf(*i, 1), i1 = 1 - i2;
@@ -31,7 +31,7 @@ float audio_index_value(signed short *data, int size, float *i, float freq)
         return v;
 }
 
-void audio_mix(void *data, Uint8 *stream, int len)
+static void audio_mix(void *data, Uint8 *stream, int len)
 {
         Audio *audio = (Audio*)data;
 
@@ -82,9 +82,11 @@ void audio_stop (Audio* audio)
 	SDL_PauseAudio(1);
 }
 
-void audio_init (Audio* audio)
+void audio_init (Audio* audio, bool enabled)
 {
 	audio->enabled = false;
+	if (!enabled)
+		return;
 
 	const char* audio_file = FIND (AUDIO_FILE);
 	if (SDL_LoadWAV(audio_file, &audio->fmt,

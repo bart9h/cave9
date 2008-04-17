@@ -32,7 +32,7 @@ typedef struct Audio_struct
 	Ship* ship;
 } Audio;
 
-void audio_init (Audio*);
+void audio_init (Audio*, bool enabled);
 void audio_start (Audio*, Ship*);
 void audio_stop (Audio*);
 

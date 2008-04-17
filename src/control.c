@@ -23,7 +23,8 @@
 #include "game.h"
 #include "audio.h"
 
-const char* data_paths[] = {
+const char* data_paths[] =
+{
 	"./data",
 	"~/.cave9/data",
 	"/usr/local/share/cave9",
@@ -134,6 +135,7 @@ void args_init (Args* args, int argc, char* argv[])
 	args->start = 0;
 	args->cockpit = 0;
 	args->game_mode = TWO_BUTTONS;
+	args->nosound = 0;
 	int help_called = 0;
 
 	struct {
@@ -142,17 +144,18 @@ void args_init (Args* args, int argc, char* argv[])
 		char* short_name;
 		char* long_name;
 	} options[] = {
-		{ 0, &help_called, "-h", "--help" },
-		{ 1, &args->game_mode, "-g", "--game_mode" },
-		{ 1, &args->width, "-W", "--width" },
-		{ 1, &args->height, "-H", "--height" },
-		{ 1, &args->bpp, "-B", "--bpp" },
-		{ 0, &args->fullscreen, "-F", "--fullscreen" },
-		{ 0, &args->highres, "-R", "--highres" },
+		{ 0, &help_called,        "-h", "--help" },
+		{ 1, &args->game_mode,    "-g", "--game_mode" },
+		{ 1, &args->width,        "-W", "--width" },
+		{ 1, &args->height,       "-H", "--height" },
+		{ 1, &args->bpp,          "-B", "--bpp" },
+		{ 0, &args->fullscreen,   "-F", "--fullscreen" },
+		{ 0, &args->highres,      "-R", "--highres" },
 		{ 1, &args->antialiasing, "-A", "--antialiasing" },
-		{ 0, &args->monoliths, "-M", "--monoliths" },
-		{ 1, &args->start, "-S", "--start" },
-		{ 0, &args->cockpit, "-C", "--cockpit" },
+		{ 0, &args->monoliths,    "-M", "--monoliths" },
+		{ 1, &args->start,        "-S", "--start" },
+		{ 0, &args->cockpit,      "-C", "--cockpit" },
+		{ 0, &args->nosound,      "-N", "--nosound" },
 		{ 0, NULL, NULL, NULL }
 	};
 
@@ -204,7 +207,7 @@ int main_control (int argc, char* argv[])
 
 	args_init (&args, argc, argv);
 	display_init (&display, &args);
-	audio_init (&audio);
+	audio_init (&audio, !args.nosound);
 	game_init (&game, &args);
 
 	input.state = WELCOME;
