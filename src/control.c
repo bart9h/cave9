@@ -210,10 +210,19 @@ int main_control (int argc, char* argv[])
 
 		switch (input.state) {
 		case PLAY:
-			player_control (&game.player, &input, args.game_mode);
-			ship_move (&game.player, dt);
-			digger_control (&game.digger, args.game_mode);
+			digger_control (&game.digger, game.mode);
 			ship_move (&game.digger, dt);
+			
+			player_control (&game.player, &input, game.mode);
+			ship_move (&game.player, dt);
+			
+#ifndef NO_STRETCH_FIX
+			game.player.pos[2] = 
+				0.8 * (game.player.pos[2]) +
+				0.2 * (game.digger.pos[2] - cave_len(&game.cave)); 
+			// XXX fix player position in case digger moves differently
+#endif
+
 			if (collision (&game.cave, &game.player) <= 0) {
 				input.state = GAMEOVER;
 				display_message (&display, &game, "gameover.  [press space]");

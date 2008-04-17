@@ -26,6 +26,13 @@
 #include "vec.h"
 #include "game.h"
 
+float cave_len (Cave *cave)
+{
+	int head = cave->i;
+	int tail = (head - 1 + SEGMENT_COUNT) % SEGMENT_COUNT;
+	return cave->segs[tail][0][2] - cave->segs[head][0][2];
+}
+
 void cave_gen (Cave* cave, Ship* digger)
 {
 	// check if the digger advanced to the next segment
@@ -47,7 +54,11 @@ void cave_gen (Cave* cave, Ship* digger)
 		SET(cave->segs[cave->i][i],
 			digger->pos[0] + r*cos(a) + RAND,
 			digger->pos[1] + r*sin(a) + RAND,
+#ifndef NO_STRETCH_FIX
+			digger->pos[2]
+#else
 			((int)(digger->pos[2]/SEGMENT_LEN))*SEGMENT_LEN
+#endif
 		);
 	}
 
@@ -82,6 +93,7 @@ void ship_init (Ship* ship, float radius)
 	SET (ship->lookAt, 0,0,VELOCITY);
 	ship->radius = radius;
 	ship->dist = FLT_MAX;
+	SET(ship->repulsion,0,1,0);
 	ship->lefton = ship->righton = false;
 }
 

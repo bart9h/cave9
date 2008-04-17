@@ -41,6 +41,8 @@ void viewport(Display* display, GLsizei w, GLsizei h, GLsizei bpp,
 		SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, aa );
 	}
 
+	SDL_WM_SetIcon(display->icon, NULL);
+
 	int flags = SDL_HWSURFACE|SDL_OPENGLBLIT|SDL_RESIZABLE;
 	if(fullscreen)
 		flags |= SDL_FULLSCREEN;
@@ -123,23 +125,27 @@ void viewport(Display* display, GLsizei w, GLsizei h, GLsizei bpp,
 
 void display_world_transform(Display* display, Ship* player)
 {
+#ifndef NOSHAKE
 	float hit = ship_hit(player);
 	Vec3 shake = {
-		1  * SHIP_RADIUS * RAND * hit + 
-		.3 * SHIP_RADIUS * RAND * player->vel[0] / MAX_VEL_X +
-		.2 * SHIP_RADIUS * RAND * player->lefton + 
-		.2 * SHIP_RADIUS * RAND * player->righton +
-		.1 * SHIP_RADIUS * RAND * player->vel[2] / MAX_VEL_Z,
-
-		1  * SHIP_RADIUS * RAND * hit + 
-		.3 * SHIP_RADIUS * RAND * player->vel[1] / MAX_VEL_Y +
-		.1 * SHIP_RADIUS * RAND * player->vel[2] / MAX_VEL_Z,
-
-		1  * SHIP_RADIUS * RAND * hit +
-		.3 * SHIP_RADIUS * RAND * player->vel[2] / MAX_VEL_Z
+		1  * RAND * player->radius * hit + 
+		.3 * RAND * player->radius * player->vel[0] / MAX_VEL_X +
+		.2 * RAND * player->radius * player->lefton + 
+		.2 * RAND * player->radius * player->righton +
+		.1 * RAND * player->radius * player->vel[2] / MAX_VEL_Z,
+                 
+		1  * RAND * player->radius * hit + 
+		.3 * RAND * player->radius * player->vel[1] / MAX_VEL_Y +
+		.1 * RAND * player->radius * player->vel[2] / MAX_VEL_Z,
+                 
+		1  * RAND * player->radius * hit +
+		.3 * RAND * player->radius * player->vel[2] / MAX_VEL_Z
 	};
 	ADD2(display->cam, player->pos, shake);
-	ADDSCALE(display->cam, player->repulsion, hit*SHIP_RADIUS*2);
+	ADDSCALE(display->cam, player->repulsion, hit * player->radius * 2);
+#else
+	COPY(display->cam, player->pos);
+#endif
 	ADD2(display->target, player->pos, player->lookAt);
 	//display->target[1]=display->target[1]*.5+player->pos[1]*.5;
 	//display->target[2]+=10;
@@ -183,7 +189,11 @@ void cave_model (Display* display, Cave* cave, int mode)
 
 				if (mode == DISPLAYMODE_NORMAL) {
 					glTexCoord2f(
+#ifndef NO_STRETCH_FIX
+							cave->segs[i0][k0][2]/SEGMENT_LEN/SEGMENT_COUNT, 
+#else
 							(float)(cave->i+i)/SEGMENT_COUNT,
+#endif
 							(float)k/SECTOR_COUNT);
 				} else if (mode == DISPLAYMODE_MINIMAP) {
 					glColor4f(
@@ -196,7 +206,11 @@ void cave_model (Display* display, Cave* cave, int mode)
 
 				if (mode == DISPLAYMODE_NORMAL) {
 					glTexCoord2f(
+#ifndef NO_STRETCH_FIX
+							cave->segs[i1][k0][2]/SEGMENT_LEN/SEGMENT_COUNT, 
+#else
 							((float)(cave->i+i+1))/SEGMENT_COUNT,
+#endif
 							(float)k/SECTOR_COUNT);
 				} else if (mode == DISPLAYMODE_MINIMAP) {
 					glColor4f(
@@ -409,18 +423,30 @@ void display_end_frame(Display* display)
 
 void display_frame (Display* display, Game* game)
 {
-	//int hit = game->player.dist <= SHIP_RADIUS*1.1;
-
-	//display_start_frame (display, hit,0,0);
 	display_start_frame (display, 0,0,0);
 
-	//if(!hit) { // avoid drawing the cave from outside
+	float hit = ship_hit(&game->player);
+	if(hit < .5) { // avoid drawing the cave from outside
 		glPushMatrix();
 			display_world_transform (display, &game->player);
 			cave_model (display, &game->cave, DISPLAYMODE_NORMAL);
 			monolith_model (display, game);
 		glPopMatrix();
-	//}
+	}
+
+	if(hit) {
+		glDisable (GL_DEPTH_TEST);
+		glEnable  (GL_BLEND);
+		glDisable (GL_TEXTURE_2D);
+
+		glColor4f(1,0,0,hit);
+		glBegin (GL_QUADS);
+		glVertex3f(-1,-1,-1);
+		glVertex3f(+1,-1,-1);
+		glVertex3f(+1,+1,-1);
+		glVertex3f(-1,+1,-1);
+		glEnd();
+	}
 
 	ship_model (display, &game->player);
 	display_minimap (display, game);
@@ -482,6 +508,12 @@ void display_init (Display* display, Args* args)
 	}
 	atexit(SDL_Quit);
 
+	display->icon = IMG_Load(ICON_FILE);
+	if(display->icon == NULL) {
+		fprintf(stderr, "IMG_Load(%s): %s\n", ICON_FILE, IMG_GetError());
+		exit(1);
+	}
+
 	display->near_plane = MIN(SEGMENT_LEN,SHIP_RADIUS)/4.; // was EPSILON;
 	display->far_plane = SEGMENT_COUNT * SEGMENT_LEN;
 	SET(display->cam, 0,0,0);
@@ -539,16 +571,14 @@ void display_init (Display* display, Args* args)
 	render_text(display, display->msg_id, "loading cave9", .5,.5,1,.25, 1,1,1);
 	display_end_frame(display);
 
-	char* texture_filename = TEXTURE_FILE;
-
     glGenTextures(1, &display->texture_id);
     glBindTexture(GL_TEXTURE_2D, display->texture_id);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	SDL_Surface* texture = IMG_Load(texture_filename);
+	SDL_Surface* texture = IMG_Load(TEXTURE_FILE);
 	if(texture == NULL) {
-		fprintf(stderr, "IMG_Load(%s): %s\n", texture_filename, IMG_GetError());
+		fprintf(stderr, "IMG_Load(%s): %s\n", TEXTURE_FILE, IMG_GetError());
 		exit(1);
 	}
 
@@ -569,14 +599,19 @@ void display_init (Display* display, Args* args)
 
 void display_minimap (Display* display, Game* game)
 {
+	float len = cave_len(&game->cave);
 	glPushMatrix();
 		glScalef(.0065,.003,.001);
 		glRotatef(-90,0,1,0);
 		glTranslatef(
-				-game->player.pos[0]-1000, // XXX hardcoded
-				-game->player.pos[1]-100,
-				-game->player.pos[2]-(SEGMENT_COUNT-1)*SEGMENT_LEN/2);
+				-game->player.pos[0]-len*8, // XXX hardcoded
+				-game->player.pos[1]-MAX_CAVE_RADIUS*3,
+				-game->player.pos[2]-len/2);
 		cave_model (display, &game->cave, true);
+
+		glColor4f(1,1,1,0.05);
+		glTranslatef (game->player.pos[0],game->player.pos[1],game->player.pos[2]);
+		glCallList( display->ship_list );
 	glPopMatrix();
 }
 

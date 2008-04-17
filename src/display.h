@@ -24,11 +24,13 @@
 #include "game.h"
 #include "config.h"
 
+#define ICON_FILE DATA_DIR "cave9.png"
 #define TEXTURE_FILE DATA_DIR "cave9.jpg"
 #define FONT_FILE DATA_DIR "cave9.ttf"
 
 typedef struct Display_struct
 {
+	SDL_Surface* icon;
 	SDL_Surface* screen;
 	GLuint texture_id;
 	GLuint hud_id;
