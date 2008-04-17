@@ -215,9 +215,10 @@ int main_control (int argc, char* argv[])
 			digger_control (&game.digger, args.game_mode);
 			ship_move (&game.digger, dt);
 			if (collision (&game.cave, &game.player) <= 0) {
-				display_message (&display, &game, "gameover.  [press space]");
 				input.state = GAMEOVER;
+				display_message (&display, &game, "gameover.  [press space]");
 				audio_stop (&audio);
+				game_score_update (&game);
 			}
 			cave_gen (&game.cave, &game.digger);
 

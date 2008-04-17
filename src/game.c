@@ -181,6 +181,7 @@ static float X (Cave* cave, int i, float xn, float yn, int k0, int k1)
 float collision (Cave* cave, Ship* ship)
 {
 	float min = FLT_MAX;
+	Vec3 center = {0,0,0};
 
 	// This method counts the number of intersections of a semi-line
 	// starting from the point being checked against the poligon,
@@ -200,6 +201,8 @@ float collision (Cave* cave, Ship* ship)
 	for( k = 0; k < SECTOR_COUNT; ++k ) {
 		int i0 = (k+0)%SECTOR_COUNT;
 		int i1 = (k+1)%SECTOR_COUNT;
+
+		ADD(center,cave->segs[i][i0]);
 
 		Vec3 dist;
 		SUB2(dist, ship->pos, cave->segs[i][i0]);
@@ -231,6 +234,11 @@ float collision (Cave* cave, Ship* ship)
 			++intersection_count[3];
 	}
 
+	SCALE(center,SECTOR_COUNT);
+	SUB2(ship->repulsion, center, ship->pos);
+	ship->repulsion[2] = 0;
+	NORM(ship->repulsion);
+
 	for(i = 0; i < 4; ++i) {
 		if(intersection_count[i] % 2 == 0) {
 			return ship->dist = 0;  // hit
@@ -239,6 +247,26 @@ float collision (Cave* cave, Ship* ship)
 
 	ship->dist = min - 2*ship->radius;
 	return min;  // miss
+}
+
+bool game_nocheat(Game *game)
+{
+	return (game->player.start == 0);
+}
+
+int game_score (Game *game)
+{
+	return game->player.pos[2] / (game->mode==ONE_BUTTON?2:1);
+}
+
+void game_score_update (Game *game)
+{
+	score_update (&game->score, game_score(game), game_nocheat(game));
+}
+
+float ship_hit (Ship *ship)
+{
+	return 1-CLAMP(ship->dist / (2*SHIP_RADIUS),0,1);
 }
 
 // vim600:fdm=syntax:fdn=1:

@@ -29,10 +29,8 @@ typedef struct Audio_struct
 	Ship* ship;
 	signed short* data;
 	unsigned size;
-	unsigned index;
-	float low_index;
-	float left;
-	float right;
+	float high, low, hit;
+	float left, right;
 } Audio;
 
 void audio_init (Audio*);

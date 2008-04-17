@@ -37,6 +37,7 @@ typedef struct  Ship_struct
 	Vec3 pos, vel, lookAt;
 	bool lefton, righton;
 	float dist;  // distance to cave wall
+	Vec3 repulsion;  // normal to collision
 	float start;
 } Ship;
 
@@ -89,6 +90,10 @@ void ship_init (Ship*, float radius);
 void ship_move (Ship*, float dt);
 void digger_control (Ship*, int game_mode);
 float collision (Cave*, Ship*);
+bool game_nocheat(Game *game);
+int game_score (Game *game);
+void game_score_update (Game *game);
+float ship_hit (Ship*);
 
 #define FPS 30
 #define SEGMENT_LEN 2.0

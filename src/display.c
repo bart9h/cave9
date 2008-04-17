@@ -123,18 +123,23 @@ void viewport(Display* display, GLsizei w, GLsizei h, GLsizei bpp,
 
 void display_world_transform(Display* display, Ship* player)
 {
+	float hit = ship_hit(player);
 	Vec3 shake = {
-		.5 * RAND * player->vel[0] / MAX_VEL_X +
-		.5 * RAND * player->lefton + 
-		.5 * RAND * player->righton +
-		.5 * RAND * player->vel[2] / MAX_VEL_Z,
+		1  * SHIP_RADIUS * RAND * hit + 
+		.3 * SHIP_RADIUS * RAND * player->vel[0] / MAX_VEL_X +
+		.2 * SHIP_RADIUS * RAND * player->lefton + 
+		.2 * SHIP_RADIUS * RAND * player->righton +
+		.1 * SHIP_RADIUS * RAND * player->vel[2] / MAX_VEL_Z,
 
-		.5 * RAND * player->vel[1] / MAX_VEL_Y +
-		.5 * RAND * player->vel[2] / MAX_VEL_Z,
+		1  * SHIP_RADIUS * RAND * hit + 
+		.3 * SHIP_RADIUS * RAND * player->vel[1] / MAX_VEL_Y +
+		.1 * SHIP_RADIUS * RAND * player->vel[2] / MAX_VEL_Z,
 
-		.5 * RAND * player->vel[2] / MAX_VEL_Z
+		1  * SHIP_RADIUS * RAND * hit +
+		.3 * SHIP_RADIUS * RAND * player->vel[2] / MAX_VEL_Z
 	};
 	ADD2(display->cam, player->pos, shake);
+	ADDSCALE(display->cam, player->repulsion, hit*SHIP_RADIUS*2);
 	ADD2(display->target, player->pos, player->lookAt);
 	//display->target[1]=display->target[1]*.5+player->pos[1]*.5;
 	//display->target[2]+=10;
@@ -265,8 +270,7 @@ void ship_model(Display* display, Ship* ship)
 	if(!display->cockpit)
 		return;
 
-	if(ship->dist <= 0)
-		return;
+	//if(ship->dist <= 0) return;
 
 	float alpha = (1-MIN(1,(ship->pos[2]/MIN_CAVE_RADIUS_DEPTH)))/8.;
 	if(alpha == 0)
@@ -349,7 +353,7 @@ void display_hud (Display* display, Game* game)
 	memset(gauge,'/',n);
 	gauge[n] = '\0';
 
-	int score = (int)(game->player.pos[2] / (game->mode==ONE_BUTTON?2:1));
+	int score = game_score(game);
 
 #define HUD_TEXT_MAX 80
 	char buf[HUD_TEXT_MAX];
@@ -358,9 +362,7 @@ void display_hud (Display* display, Game* game)
 			gauge, score
 		);
 	} else {
-		bool is_global = (game->player.start == 0);
-		score_update (&game->score, score, is_global);
-		if (is_global) {
+		if (game_nocheat(game)) {
 			snprintf(buf, HUD_TEXT_MAX, "velocity %s  score %d (%d/%d/%d)",
 				gauge, score,
 				// FIXME: local > global  (which is it?)
@@ -407,17 +409,18 @@ void display_end_frame(Display* display)
 
 void display_frame (Display* display, Game* game)
 {
-	int hit = game->player.dist <= SHIP_RADIUS*1.1;
+	//int hit = game->player.dist <= SHIP_RADIUS*1.1;
 
-	display_start_frame (display, hit,0,0);
+	//display_start_frame (display, hit,0,0);
+	display_start_frame (display, 0,0,0);
 
-	if(!hit) { // avoid drawing the cave from outside
+	//if(!hit) { // avoid drawing the cave from outside
 		glPushMatrix();
 			display_world_transform (display, &game->player);
 			cave_model (display, &game->cave, DISPLAYMODE_NORMAL);
 			monolith_model (display, game);
 		glPopMatrix();
-	}
+	//}
 
 	ship_model (display, &game->player);
 	display_minimap (display, game);

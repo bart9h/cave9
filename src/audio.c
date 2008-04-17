@@ -19,34 +19,47 @@
 #include <math.h>
 #include "audio.h"
 
-void audio_mix (void* data, Uint8* stream, int len)
+
+float audio_index_value(Audio *audio, float *i, float freq)
 {
-	Audio *audio = (Audio*)data;
+        unsigned int samples = audio->size/2; // 16bit
+        float i2 = fmodf(*i, 1), i1 = 1 - i2;
+        float v =
+                i1 * audio->data[(int)(*i)] +
+                i2 * audio->data[(int)(*i + 1) % samples];
+        *i = fmodf(*i + freq, samples);
+        return v;
+}
 
-	float low_freq = .4 - .3 * audio->ship->dist / MAX_CAVE_RADIUS;
+void audio_mix(void *data, Uint8 *stream, int len)
+{
+        Audio *audio = (Audio*)data;
 
-	unsigned int data_samples = audio->size/2; // 16bit
-	unsigned int buffer_samples = len/2; // 16bit
-	signed short *buffer = (signed short*)stream;
-	for (unsigned i = 0; i < buffer_samples; ) {
-		float p2 = fmodf (audio->low_index, 1);
-		float p1 = 1 - p2;
-		float low =
-			p1 * audio->data[(int)(audio->low_index)] +
-			p2 * audio->data[(int)(audio->low_index + 1) % data_samples];
+        float max_vel[3] = { MAX_VEL_X, MAX_VEL_Y, MAX_VEL_Z };
+        float intensity = log(1+
+                10000*(1-CLAMP(audio->ship->dist / MIN_CAVE_RADIUS,0,1)) +
+                10000*MIN(1, (LEN(audio->ship->vel)-MAX_VEL_Z) / (LEN(max_vel)-MAX_VEL_Z))
+                ) / log(1+20000);
 
-		float high = audio->data[audio->index];
+        float hit_freq  = 6 + 10 * RAND;
+        float low_freq  =  .2 +  .6 * intensity;
+        float high_freq = 1.0 + 2.0 * intensity;
 
-		// FIXME use audio->fmt-> sample rate to make a transition time in seconds:
-		audio->right = audio->right * .999 + .001 * audio->ship->righton;
-		audio->left  = audio->left  * .999 + .001 * audio->ship->lefton;
+		float collision = ship_hit(audio->ship);
 
-		buffer[i++] = low * .3 + .1 * high * audio->right;
-		buffer[i++] = low * .3 + .1 * high * audio->left;
+        unsigned int buffer_samples = len/2; // 16bit
+        signed short *buffer = (signed short *)stream;
+        for(unsigned i = 0; i < buffer_samples; ) {
+                // FIXME use audio->fmt-> sample rate to make a transition time in seconds:
+                audio->right = audio->right * .999 + .001 * audio->ship->righton;
+                audio->left  = audio->left  * .999 + .001 * audio->ship->lefton;
 
-		audio->index = (audio->index + 1) % data_samples;
-		audio->low_index = fmodf(audio->low_index + low_freq, data_samples);
-	}
+                float high = audio_index_value(audio, &audio->high, high_freq);
+                float low  = audio_index_value(audio, &audio->low,  low_freq);
+                float hit  = audio_index_value(audio, &audio->hit,  hit_freq);
+                buffer[i++] = .3 * low + .1 * high * audio->right + .2 * hit * collision;
+                buffer[i++] = .3 * low + .1 * high * audio->left  + .2 * hit * collision;
+        }
 }
 
 void audio_start (Audio* audio, Ship* ship)
@@ -54,7 +67,7 @@ void audio_start (Audio* audio, Ship* ship)
 	if(!audio->enabled)
 		return;
 	audio->ship  = ship;
-	audio->left  = 0;
+	audio->left  =
 	audio->right = 0;
 	SDL_PauseAudio(0);
 }
@@ -76,8 +89,11 @@ void audio_init (Audio* audio)
 		fprintf(stderr, "SDL_LoadWAV(%s): %s\n", AUDIO_FILE, SDL_GetError());
 		return;
 	}
-	audio->index = 0;
-	audio->low_index = 0;
+
+	audio->hit =
+	audio->low =
+	audio->high = 0;
+
 
 	//audio->fmt.freq = 8000;
 	if(audio->fmt.format != AUDIO_S16) {
