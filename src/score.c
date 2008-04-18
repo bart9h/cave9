@@ -28,42 +28,45 @@ static void score_net_finish (Score* score)
 		SDLNet_FreePacket(score->udp_pkt);
 		score->udp_pkt = NULL;
 	}
+
 	if(score->udp_sock != 0) {
 		SDLNet_UDP_Close(score->udp_sock);
 		score->udp_sock = 0;
 	}
 }
 
-static void score_net_init (Score* score)
+static void score_net_init (Score* score, const char* server, int port)
 {
-	if(SDLNet_Init()==-1)
-	{
-		fprintf(stderr, "SDLNet_Init(): %s\n",SDLNet_GetError());
+	if (server == NULL  ||  server[0] == '\0')
+		return;
+puts("a");
+	if (SDLNet_Init() == -1) {
+		fprintf (stderr, "SDLNet_Init(): %s\n", SDLNet_GetError());
 		exit(1);
 	}
-	atexit(SDLNet_Quit);
+	atexit (SDLNet_Quit);
 
 	IPaddress addr;
 	score->udp_sock = 0;
 	score->udp_pkt = NULL;
-	if(SDLNet_ResolveHost(&addr,GLOBAL_SCORE_HOST, GLOBAL_SCORE_PORT) == -1) {
+	if (SDLNet_ResolveHost (&addr, server, port) == -1) {
 		fprintf(stderr, "SDLNet_ResolveHost(): %s\n", SDLNet_GetError());
 	} else {
 		score->udp_sock = SDLNet_UDP_Open(0);
 		if(score->udp_sock == 0) {
 			fprintf(stderr, "SDLNet_UDP_Open(): %s\n", SDLNet_GetError());
-			score_net_finish(score);
+			score_net_finish (score);
 		} else {
 			if(SDLNet_UDP_Bind(score->udp_sock, 0, &addr) == -1) {
 				fprintf(stderr, "SDLNet_UDP_Bind(): %s\n", SDLNet_GetError());
-				score_net_finish(score);
+				score_net_finish (score);
 			} else {
-				score->udp_pkt = SDLNet_AllocPacket(GLOBAL_SCORE_LEN);
+				score->udp_pkt = SDLNet_AllocPacket (GLOBAL_SCORE_LEN);
 				if(score->udp_pkt != NULL) {
 					memset (score->udp_pkt->data, 0, GLOBAL_SCORE_LEN);
 				}
 				else {
-					score_net_finish(score);
+					score_net_finish (score);
 				}
 			}
 		}
@@ -94,11 +97,9 @@ static void score_net_update (Score* score)
 	}
 }
 
-void score_init (Score* score)
+void score_init (Score* score, Args* args)
 {
-	score->local = 0;
-	score->session = 0;
-	score->global = 0;
+	memset (score, 0, sizeof(Score));
 
 	char cave9_home[FILENAME_MAX] = ".";
 	char* home = getenv("HOME");
@@ -126,7 +127,7 @@ void score_init (Score* score)
 		fclose (fp);
 	}
 
-	score_net_init (score);
+	score_net_init (score, args->server, args->port);
 }
 
 void score_finish (Score* score)

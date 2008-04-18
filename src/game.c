@@ -104,7 +104,7 @@ void game_init (Game* game, Args* args)
 	ship_init (&game->player, SHIP_RADIUS);
 	ship_init (&game->digger, MAX_CAVE_RADIUS);
 	cave_init (&game->cave, &game->digger, game->mode);
-	score_init (&game->score);
+	score_init (&game->score, args);
 }
 
 void ship_move (Ship* ship, float dt)

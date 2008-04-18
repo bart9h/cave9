@@ -20,6 +20,7 @@
 
 #include "score.h"
 #include "vec.h"
+#include "args.h"
 
 #define SECTOR_COUNT 32
 #define SEGMENT_COUNT 64
@@ -68,22 +69,6 @@ enum GameMode
 	ONE_BUTTON = 1,
 	TWO_BUTTONS = 2
 };
-
-typedef struct Args_struct
-{
-	int width;
-	int height;
-	int bpp;
-	int fullscreen;
-	int highres;
-	int antialiasing;
-	int monoliths;
-	int start;
-	int cockpit;
-	int game_mode;
-	int nosound;
-	int noshake;
-} Args;
 
 void game_init (Game* game, Args* args);
 float cave_len (Cave*);

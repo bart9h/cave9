@@ -19,6 +19,7 @@
 #include <time.h>
 #include <string.h>
 #include <stdbool.h>
+#include <assert.h>
 #include "display.h"
 #include "game.h"
 #include "audio.h"
@@ -137,59 +138,84 @@ static void args_init (Args* args, int argc, char* argv[])
 	args->game_mode = TWO_BUTTONS;
 	args->nosound = 0;
 	args->noshake = 0;
+	args->port = GLOBAL_SCORE_PORT;
+#ifdef NET_DEFAULT_ENABLED
+	snprintf (args->server, ARG_STR_MAX, "%s", GAME_SCORE_HOST);
+#else
+	args->server[0] = '\0';
+#endif
 	int help_called = 0;
 
 	struct {
-		bool has_arg;
-		int* val;
 		char* short_name;
 		char* long_name;
+		bool  has_arg;
+		int*  val_num;
+		char* val_str;
 	} options[] = {
-		{ 0, &help_called,        "-h", "--help" },
-		{ 1, &args->game_mode,    "-g", "--game_mode" },
-		{ 1, &args->width,        "-W", "--width" },
-		{ 1, &args->height,       "-H", "--height" },
-		{ 1, &args->bpp,          "-B", "--bpp" },
-		{ 0, &args->fullscreen,   "-F", "--fullscreen" },
-		{ 0, &args->highres,      "-R", "--highres" },
-		{ 1, &args->antialiasing, "-A", "--antialiasing" },
-		{ 0, &args->monoliths,    "-M", "--monoliths" },
-		{ 1, &args->start,        "-S", "--start" },
-		{ 0, &args->cockpit,      "-C", "--cockpit" },
-		{ 0, &args->nosound,      "-N", "--nosound" },
-		{ 0, &args->noshake,      "-K", "--noshake" },
-		{ 0, NULL, NULL, NULL }
+		{ "-h", "--help",         false, &help_called,        NULL         },
+		{ "-g", "--game_mode",    true,  &args->game_mode,    NULL         },
+		{ "-W", "--width",        true,  &args->width,        NULL         },
+		{ "-H", "--height",       true,  &args->height,       NULL         },
+		{ "-B", "--bpp",          true,  &args->bpp,          NULL         },
+		{ "-F", "--fullscreen",   false, &args->fullscreen,   NULL         },
+		{ "-R", "--highres",      false, &args->highres,      NULL         },
+		{ "-A", "--antialiasing", true,  &args->antialiasing, NULL         },
+		{ "-M", "--monoliths",    false, &args->monoliths,    NULL         },
+		{ "-S", "--start",        true,  &args->start,        NULL         },
+		{ "-C", "--cockpit",      false, &args->cockpit,      NULL         },
+		{ "-N", "--nosound",      false, &args->nosound,      NULL         },
+		{ "-K", "--noshake",      false, &args->noshake,      NULL         },
+		{ "-s", "--server",       true,  NULL,                args->server },
+		{ "-p", "--port",         true,  &args->port,         NULL         },
+		{ 0, 0, 0, 0, 0 }
 	};
 
-	for(int i = 1; i < argc; ++i) {
-		for(int opt = 0; ; ++opt) {
-			if(options[opt].val == NULL) {
+	for (int i = 1;  i < argc;  ++i) {
+		for (int opt = 0; ; ++opt) {
+			if (options[opt].long_name == NULL) {
 				fprintf(stderr, "invalid argument %s\n", argv[i]);
 				help_called = 1;
 				break;
 			}
-			if(!strcmp(argv[i], options[opt].short_name) || !strcmp(argv[i], options[opt].long_name)) {
-				int value = 1;
-				if(options[opt].has_arg) {
-					if(++i == argc) {
+
+			assert (options[opt].long_name != NULL);
+			if ((options[opt].short_name != NULL && strcmp (argv[i], options[opt].short_name) == 0)
+					|| (strcmp (argv[i], options[opt].long_name) == 0))
+			{
+				if (options[opt].has_arg) {
+					if (++i == argc) {
 						fprintf(stderr, "argument required for %s\n", argv[i-1]);
 						exit(1);
 					}
-					value = atoi(argv[i]);
+
+					if (options[opt].val_num != NULL)
+						*(options[opt].val_num) = atoi(argv[i]);
+					else if (options[opt].val_str != NULL)
+						snprintf (options[opt].val_str, ARG_STR_MAX, "%s", argv[i]);
+					else
+						assert (0=="has_arg && !(val_num||val_str)");
 				}
-				*(options[opt].val) = value;
+				else {
+					assert (options[opt].val_num != NULL);
+					*(options[opt].val_num) = 1;
+				}
 				break;
 			}
 		}
 	}
 
-	if(help_called) {
-		printf("command-line options:\n");
-		for(int opt = 0; options[opt].val; ++opt) {
-			printf("%s  or  %s", options[opt].short_name, options[opt].long_name);
-			if(options[opt].has_arg)
-				printf("  <num>");
-			printf("\n");
+	if (help_called) {
+		printf ("command-line options:\n");
+		for (int opt = 0;  options[opt].long_name != NULL;  ++opt) {
+			printf ("%s  or  %s", options[opt].short_name, options[opt].long_name);
+			if (options[opt].has_arg) {
+				if (options[opt].val_num != NULL)
+					printf ("  <num>");
+				else if (options[opt].val_str != NULL)
+					printf ("  <str>");
+			}
+			printf ("\n");
 		}
 		exit(1);
 	}

@@ -15,35 +15,28 @@
 	along with cave9.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef score_h_included
-#define score_h_included
+#ifndef args_h_included
+#define args_h_included
 
-#include <SDL_net.h>
-#include <stdbool.h>
-#include "args.h"
+#define ARG_STR_MAX 256
 
-#define SCORE_FILE "hiscore.txt"
-
-#define GLOBAL_SCORE_PORT 31559
-#define GLOBAL_SCORE_HOST "cave9.9hells.org"
-#define GLOBAL_SCORE_LEN 16
-#define GLOBAL_SCORE_WAIT 666
-
-typedef struct Score_struct
+typedef struct Args_struct
 {
-	int current;
-	int session;
-	int local;
-	int global;
-	char* filename;
-
-	UDPsocket udp_sock;
-	UDPpacket* udp_pkt;
-} Score;
-
-void score_init (Score*, Args*);
-void score_finish (Score*);
-void score_update (Score*, int new_score, bool is_global);
+	int width;
+	int height;
+	int bpp;
+	int fullscreen;
+	int highres;
+	int antialiasing;
+	int monoliths;
+	int start;
+	int cockpit;
+	int game_mode;
+	int nosound;
+	int noshake;
+	int port;
+	char server[ARG_STR_MAX];
+} Args;
 
 #endif
 
