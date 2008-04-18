@@ -257,7 +257,7 @@ float collision (Cave* cave, Ship* ship)
 	return min;  // miss
 }
 
-bool game_nocheat(Game *game)
+bool game_nocheat (Game *game)
 {
 	return (game->player.start == 0);
 }

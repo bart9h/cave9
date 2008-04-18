@@ -39,7 +39,7 @@ static void score_net_init (Score* score, const char* server, int port)
 {
 	if (server == NULL  ||  server[0] == '\0')
 		return;
-puts("a");
+
 	if (SDLNet_Init() == -1) {
 		fprintf (stderr, "SDLNet_Init(): %s\n", SDLNet_GetError());
 		exit(1);

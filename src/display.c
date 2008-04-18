@@ -450,32 +450,35 @@ void display_frame (Display* display, Game* game)
 {
 	display_start_frame (display, 0,0,0);
 
-	float hit = ship_hit(&game->player);
-	if(hit < .5) { // avoid drawing the cave from outside
-		glPushMatrix();
-			display_world_transform (display, &game->player);
-			cave_model (display, &game->cave, DISPLAYMODE_NORMAL);
-			monolith_model (display, game);
-		glPopMatrix();
+	if (game != NULL) {
+		float hit = ship_hit(&game->player);
+		if(hit < .5) { // avoid drawing the cave from outside
+			glPushMatrix();
+				display_world_transform (display, &game->player);
+				cave_model (display, &game->cave, DISPLAYMODE_NORMAL);
+				monolith_model (display, game);
+			glPopMatrix();
+		}
+
+		if(hit) {
+			glDisable (GL_DEPTH_TEST);
+			glEnable  (GL_BLEND);
+			glDisable (GL_TEXTURE_2D);
+
+			glColor4f(1,0,0,hit);
+			glBegin (GL_QUADS);
+			glVertex3f(-1,-1,-1);
+			glVertex3f(+1,-1,-1);
+			glVertex3f(+1,+1,-1);
+			glVertex3f(-1,+1,-1);
+			glEnd();
+		}
+
+		ship_model (display, &game->player);
+		display_minimap (display, game);
+		display_hud (display, game);
 	}
 
-	if(hit) {
-		glDisable (GL_DEPTH_TEST);
-		glEnable  (GL_BLEND);
-		glDisable (GL_TEXTURE_2D);
-
-		glColor4f(1,0,0,hit);
-		glBegin (GL_QUADS);
-		glVertex3f(-1,-1,-1);
-		glVertex3f(+1,-1,-1);
-		glVertex3f(+1,+1,-1);
-		glVertex3f(-1,+1,-1);
-		glEnd();
-	}
-
-	ship_model (display, &game->player);
-	display_minimap (display, game);
-	display_hud (display, game);
 	render_text (display, display->msg_id, display_message_buf, .5,.5,1,.25, 1,1,1);
 
 	display_end_frame(display);

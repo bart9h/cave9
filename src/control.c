@@ -235,7 +235,10 @@ int main_control (int argc, char* argv[])
 
 	args_init (&args, argc, argv);
 	display_init (&display, &args);
+
+	display_message (&display, NULL, "loading sounds");
 	audio_init (&audio, !args.nosound);
+
 	game_init (&game, &args);
 
 	input.state = WELCOME;
