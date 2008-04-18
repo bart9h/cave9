@@ -36,7 +36,8 @@ After that, just get into the cave9 dir and run 'make'.
 If this don't work, please report to cave9@googlegroups.com
 
 You also need to download the cave9_data file from the game homepage,
-and extract it under the cave9 dir.  It contains the font and texture.
+and extract it either under cave9 dir, or under "~/.cave9/".
+It contains the font, texture and sounds.
 
 Use the --help option to check for startup options.
 
