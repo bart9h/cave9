@@ -82,6 +82,7 @@ typedef struct Args_struct
 	int cockpit;
 	int game_mode;
 	int nosound;
+	int noshake;
 } Args;
 
 void game_init (Game* game, Args* args);

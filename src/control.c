@@ -136,6 +136,7 @@ static void args_init (Args* args, int argc, char* argv[])
 	args->cockpit = 0;
 	args->game_mode = TWO_BUTTONS;
 	args->nosound = 0;
+	args->noshake = 0;
 	int help_called = 0;
 
 	struct {
@@ -156,6 +157,7 @@ static void args_init (Args* args, int argc, char* argv[])
 		{ 1, &args->start,        "-S", "--start" },
 		{ 0, &args->cockpit,      "-C", "--cockpit" },
 		{ 0, &args->nosound,      "-N", "--nosound" },
+		{ 0, &args->noshake,      "-K", "--noshake" },
 		{ 0, NULL, NULL, NULL }
 	};
 

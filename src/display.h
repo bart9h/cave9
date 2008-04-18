@@ -42,6 +42,7 @@ typedef struct Display_struct
 	GLuint ship_list;
 
 	bool cockpit;
+	bool shaking;
 
 	UDPsocket udp_sock;
 	UDPpacket* udp_pkt;

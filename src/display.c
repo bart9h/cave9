@@ -27,6 +27,11 @@
 #include "display.h"
 #include "util.h"
 
+const float shake_hit = 1.0;
+const float shake_vel = 0.3;
+const float shake_velZ = 0.1;
+const float shake_thrust = 0.2;
+
 void viewport (Display* display, GLsizei w, GLsizei h, GLsizei bpp,
 		bool fullscreen, int aa)
 {
@@ -126,27 +131,28 @@ void viewport (Display* display, GLsizei w, GLsizei h, GLsizei bpp,
 
 static void display_world_transform (Display* display, Ship* player)
 {
-#ifndef NOSHAKE
-	float hit = ship_hit(player);
-	Vec3 shake = {
-		1  * RAND * player->radius * hit + 
-		.3 * RAND * player->radius * player->vel[0] / MAX_VEL_X +
-		.2 * RAND * player->radius * player->lefton + 
-		.2 * RAND * player->radius * player->righton +
-		.1 * RAND * player->radius * player->vel[2] / MAX_VEL_Z,
-                 
-		1  * RAND * player->radius * hit + 
-		.3 * RAND * player->radius * player->vel[1] / MAX_VEL_Y +
-		.1 * RAND * player->radius * player->vel[2] / MAX_VEL_Z,
-                 
-		1  * RAND * player->radius * hit +
-		.3 * RAND * player->radius * player->vel[2] / MAX_VEL_Z
-	};
-	ADD2(display->cam, player->pos, shake);
-	ADDSCALE(display->cam, player->repulsion, hit * player->radius * 2);
-#else
 	COPY(display->cam, player->pos);
-#endif
+
+	if (display->shaking) {
+		float hit = ship_hit(player);
+		Vec3 shake = {
+			shake_hit    * RAND * player->radius * hit + 
+			shake_vel    * RAND * player->radius * player->vel[0] / MAX_VEL_X +
+			shake_thrust * RAND * player->radius * player->lefton + 
+			shake_thrust * RAND * player->radius * player->righton +
+			shake_velZ   * RAND * player->radius * player->vel[2] / MAX_VEL_Z,
+					 
+			shake_hit    * RAND * player->radius * hit + 
+			shake_vel    * RAND * player->radius * player->vel[1] / MAX_VEL_Y +
+			shake_velZ   * RAND * player->radius * player->vel[2] / MAX_VEL_Z,
+					 
+			shake_hit    * RAND * player->radius * hit +
+			shake_vel    * RAND * player->radius * player->vel[2] / MAX_VEL_Z
+		};
+		ADD(display->cam, shake);
+		ADDSCALE(display->cam, player->repulsion, hit * player->radius * 2);
+	}
+
 	ADD2(display->target, player->pos, player->lookAt);
 	//display->target[1]=display->target[1]*.5+player->pos[1]*.5;
 	//display->target[2]+=10;
@@ -616,6 +622,7 @@ void display_init (Display* display, Args* args)
 	display->ship_list = display_make_ship_list();
 
 	display->cockpit = args->cockpit;
+	display->shaking = !args->noshake;
 }
 
 // vim600:fdm=syntax:fdn=1:
