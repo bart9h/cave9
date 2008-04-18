@@ -27,10 +27,10 @@
 #include "display.h"
 #include "util.h"
 
-const float shake_hit = 1.0;
-const float shake_vel = 0.3;
-const float shake_velZ = 0.1;
-const float shake_thrust = 0.2;
+const float shake_hit = 3.0;
+const float shake_vel = 0.2;
+const float shake_velZ = 0.08;
+const float shake_thrust = 0.14;
 
 void viewport (Display* display, GLsizei w, GLsizei h, GLsizei bpp,
 		bool fullscreen, int aa)
