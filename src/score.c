@@ -127,7 +127,8 @@ void score_init (Score* score, Args* args)
 		fclose (fp);
 	}
 
-	score_net_init (score, args->server, args->port);
+	if (args != NULL)
+		score_net_init (score, args->server, args->port);
 }
 
 void score_finish (Score* score)
