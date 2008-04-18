@@ -20,6 +20,7 @@
 #include <sys/stat.h>
 #include <assert.h>
 #include "score.h"
+#include "util.h"
 
 static void score_net_finish (Score* score)
 {
@@ -48,7 +49,7 @@ static void score_net_init (Score* score)
 	if(SDLNet_ResolveHost(&addr,GLOBAL_SCORE_HOST, GLOBAL_SCORE_PORT) == -1) {
 		fprintf(stderr, "SDLNet_ResolveHost(): %s\n", SDLNet_GetError());
 	} else {
-		score->udp_sock=SDLNet_UDP_Open(0);
+		score->udp_sock = SDLNet_UDP_Open(0);
 		if(score->udp_sock == 0) {
 			fprintf(stderr, "SDLNet_UDP_Open(): %s\n", SDLNet_GetError());
 			score_net_finish(score);
@@ -99,16 +100,15 @@ void score_init (Score* score)
 	score->session = 0;
 	score->global = 0;
 
+	char cave9_home[FILENAME_MAX] = ".";
 	char* home = getenv("HOME");
 	if (home != NULL) {
-		size_t len = strlen(home) + strlen("/.cave/") + strlen(SCORE_FILE) + 1;
-		score->filename = malloc (len);
+		sprintf (cave9_home, "%s/.cave9", home);
+		mkdir (cave9_home, 0755);
 
-		char* dir = score->filename;
-		sprintf (dir, "%s/.cave9", home);
-		mkdir (dir, 0755);
-		strcat (score->filename, "/");
-		strcat (score->filename, SCORE_FILE);
+		size_t len = strlen(cave9_home) + strlen("/") + strlen(SCORE_FILE) + 1;
+		score->filename = malloc (len);
+		snprintf (score->filename, len, "%s/%s", cave9_home, SCORE_FILE);
 	}
 	else {
 		fprintf (stderr,
@@ -118,7 +118,9 @@ void score_init (Score* score)
 	}
 	assert (score->filename != NULL);
 
-	FILE* fp = fopen (score->filename, "r");
+	const char* paths[] = { cave9_home, ".", NULL };
+	const char* filename = find_file (SCORE_FILE, paths);
+	FILE* fp = fopen (filename, "r");
 	if (fp != NULL) {
 		fscanf (fp, "%d", &score->local);
 		fclose (fp);
