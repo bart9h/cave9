@@ -567,7 +567,7 @@ void display_init (Display* display, Args* args)
 
 	const char* font_filename = FIND (FONT_FILE);
 	int font_size = args->antialiasing ? 96 : 48;
-	display->font = TTF_OpenFont(font_filename, font_size); // FIXME path
+	display->font = TTF_OpenFont(font_filename, font_size);
 	if(display->font == NULL) {
 		fprintf(stderr, "TTF_OpenFont(%s): %s\n", font_filename, TTF_GetError());
 		exit(1);
