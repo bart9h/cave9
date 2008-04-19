@@ -25,6 +25,10 @@
 #define SECTOR_COUNT 32
 #define SEGMENT_COUNT 64
 
+#define ROOM_SPACING 1000
+#define ROOM_LEN 100.0
+#define ROOM_MUL 3.0
+
 enum DisplayMode
 {
 	DISPLAYMODE_NORMAL,

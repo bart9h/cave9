@@ -174,8 +174,13 @@ static void cave_model (Display* display, Cave* cave, int mode)
 			glNewList (id, GL_COMPILE);
 
 			int i1 = (i0 + 1)%SEGMENT_COUNT;
-			if (mode == DISPLAYMODE_NORMAL)
-				glBindTexture (GL_TEXTURE_2D, display->texture_id);
+			if (mode == DISPLAYMODE_NORMAL) {
+				glBindTexture (GL_TEXTURE_2D,
+						cave->segs[0][0][2] < ROOM_LEN/2
+						? display->outside_texture_id
+						: display->wall_texture_id
+				);
+			}
 
 			glBegin (GL_QUAD_STRIP);
 			for (int k = 0; k <= SECTOR_COUNT; ++k) {
@@ -526,6 +531,31 @@ static GLuint display_make_ship_list()
 	return ship_list;
 }
 
+static void load_texture (const char* filename, GLuint* id)
+{
+    glGenTextures(1, id);
+    glBindTexture(GL_TEXTURE_2D, *id);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	const char* texture_file = FIND (filename);
+	SDL_Surface* texture = IMG_Load (texture_file);
+	if(texture == NULL) {
+		fprintf(stderr, "IMG_Load(%s): %s\n", texture_file, IMG_GetError());
+		exit(1);
+	}
+
+	GLenum err = gluBuild2DMipmaps(GL_TEXTURE_2D,
+			GL_RGB, texture->w, texture->h,
+			GL_RGB, GL_UNSIGNED_BYTE,texture->pixels);
+	if(err) {
+		fprintf(stderr, "gluBuild2DMipmaps(): %s\n", gluErrorString(err));
+		exit(1);
+	}
+
+	SDL_FreeSurface(texture);
+}
+
 void display_init (Display* display, Args* args)
 {
 	memset(display, 0, sizeof(Display));
@@ -600,27 +630,8 @@ void display_init (Display* display, Args* args)
 	render_text(display, display->msg_id, "loading cave9", .5,.5,1,.25, 1,1,1);
 	display_end_frame(display);
 
-    glGenTextures(1, &display->texture_id);
-    glBindTexture(GL_TEXTURE_2D, display->texture_id);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	const char* texture_file = FIND (TEXTURE_FILE);
-	SDL_Surface* texture = IMG_Load (texture_file);
-	if(texture == NULL) {
-		fprintf(stderr, "IMG_Load(%s): %s\n", texture_file, IMG_GetError());
-		exit(1);
-	}
-
-	GLenum err = gluBuild2DMipmaps(GL_TEXTURE_2D,
-			GL_RGB, texture->w, texture->h,
-			GL_RGB, GL_UNSIGNED_BYTE,texture->pixels);
-	if(err) {
-		fprintf(stderr, "gluBuild2DMipmaps(): %s\n", gluErrorString(err));
-		exit(1);
-	}
-
-	SDL_FreeSurface(texture);
+	load_texture (WALL_TEXTURE_FILE, &display->wall_texture_id);
+	load_texture (OUTSIDE_TEXTURE_FILE, &display->outside_texture_id);
 
 	display->ship_list = display_make_ship_list();
 

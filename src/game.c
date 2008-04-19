@@ -169,18 +169,15 @@ void digger_control (Ship* ship, int game_mode)
 
 	float z = ship->pos[2] - ship->start;
 
-	// rooms
-#define ROOM_SPACING 1000
-#define ROOM_LEN 100.0
-#define ROOM_MUL 3.0
-	if (z < ROOM_LEN/2)
+	if (z < ROOM_LEN/2) { // outside
 #if 1
 		ship->radius *= (ROOM_MUL-1) + 1/(1e-9+2*z/ROOM_LEN);
 #else
 		//FIXME: why does the first room begins larger then others?
 		ship->radius *= ROOM_MUL;
 #endif
-	else {
+	}
+	else { // rooms
 		int r = ((int)z)%ROOM_SPACING;
 		if (r < ROOM_LEN)
 			ship->radius *= 1+(ROOM_MUL-1)*(cos(M_PI*(r-ROOM_LEN/2)/ROOM_LEN));
