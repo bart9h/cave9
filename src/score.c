@@ -123,10 +123,8 @@ void score_init (Score* score, Args* args)
 	const char* filename = find_file (SCORE_FILE, paths);
 	FILE* fp = fopen (filename, "r");
 	if (fp != NULL) {
-		if (fscanf (fp, "%d", &score->local) == 0)
-		{
+		if (fscanf (fp, "%d", &score->local) != 1)
 			score->local = 0;
-		}
 		fclose (fp);
 	}
 

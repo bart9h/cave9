@@ -30,7 +30,8 @@ INSTALL:
 cave9 depends on the following libraries:
 SDL, SDL_image, SDL_ttf, and SDL_net.
 
-To compile it, you must have the development version of all these libraries installed on your system (-dev on debian, -devel on fedora).
+To compile it, you must have the development version of all these libraries
+installed on your system (-dev on debian, -devel on fedora).
 
 After that, just get into the cave9 dir and run 'make'.
 If this don't work, please report to cave9@googlegroups.com
