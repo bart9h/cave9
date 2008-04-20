@@ -10,7 +10,13 @@ const char* find_file (const char* basename, const char* paths[])
 {
 	static char path[FILENAME_MAX];
 
-	for (int i = 0;  paths[i] != NULL;  ++i) {
+	for (int i = 0;  ;  ++i) {
+		if (paths[i] == NULL) {
+			fprintf (stderr, "ERROR: Could not find file \"%s\" on any of:\n", basename);
+			for (int j = 0;  paths[j] != NULL;  ++j)
+				fprintf (stderr, "       %s\n", paths[j]);
+			exit(1);
+		}
 		if (strncmp (paths[i], "~/", 2) != 0)
 			snprintf (path, FILENAME_MAX, "%s/%s", paths[i], basename);
 		else if (getenv("HOME"))
