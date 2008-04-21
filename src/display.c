@@ -560,6 +560,10 @@ void display_init (Display* display, Args* args)
 {
 	memset(display, 0, sizeof(Display));
 
+	// avoid crash on EeePC's Xandros
+	if (NULL == SDL_getenv ("SDL_VIDEO_X11_WMCLASS"))
+		SDL_putenv ("SDL_VIDEO_X11_WMCLASS=cave9");
+
 	Uint32 flags = SDL_INIT_VIDEO;
 	if (!args->nosound)
 		flags |= SDL_INIT_AUDIO;
