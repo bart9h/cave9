@@ -125,7 +125,7 @@ void score_init (Score* score, Args* args)
 	assert (score->filename != NULL);
 
 	const char* paths[] = { cave9_home, ".", NULL };
-	const char* filename = find_file (SCORE_FILE, paths);
+	const char* filename = find_file (SCORE_FILE, paths, false);
 	FILE* fp = fopen (filename, "r");
 	if (fp != NULL) {
 		if (fscanf (fp, "%d", &score->local) != 1)
