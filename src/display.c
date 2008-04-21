@@ -560,9 +560,12 @@ void display_init (Display* display, Args* args)
 {
 	memset(display, 0, sizeof(Display));
 
-	if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
-		fprintf(stderr, "SDL_Init(): %s\n", SDL_GetError());
-		exit(1);
+	Uint32 flags = SDL_INIT_VIDEO;
+	if (!args->nosound)
+		flags |= SDL_INIT_AUDIO;
+	if (SDL_Init (flags) != 0) {
+		fprintf (stderr, "SDL_Init(): %s\n", SDL_GetError());
+		exit (1);
 	}
 	atexit(SDL_Quit);
 
