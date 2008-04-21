@@ -34,8 +34,10 @@ typedef struct Args_struct
 	int game_mode;
 	int nosound;
 	int noshake;
+#ifdef USE_SDLNET
 	int port;
 	char server[ARG_STR_MAX];
+#endif
 } Args;
 
 #endif

@@ -18,16 +18,18 @@
 #ifndef score_h_included
 #define score_h_included
 
-#include <SDL_net.h>
 #include <stdbool.h>
 #include "args.h"
 
 #define SCORE_FILE "hiscore.txt"
 
+#ifdef USE_SDLNET
+#include <SDL_net.h>
 #define GLOBAL_SCORE_PORT 31559
 #define GLOBAL_SCORE_HOST "cave9.9hells.org"
 #define GLOBAL_SCORE_LEN 16
 #define GLOBAL_SCORE_WAIT 666
+#endif
 
 typedef struct Score_struct
 {
@@ -37,8 +39,10 @@ typedef struct Score_struct
 	int global;
 	char* filename;
 
+#ifdef USE_SDLNET
 	UDPsocket udp_sock;
 	UDPpacket* udp_pkt;
+#endif
 } Score;
 
 void score_init (Score*, Args*);

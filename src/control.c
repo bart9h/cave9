@@ -138,11 +138,13 @@ static void args_init (Args* args, int argc, char* argv[])
 	args->game_mode = TWO_BUTTONS;
 	args->nosound = 0;
 	args->noshake = 0;
+#ifdef USE_SDLNET
 	args->port = GLOBAL_SCORE_PORT;
 #ifdef NET_DEFAULT_ENABLED
 	snprintf (args->server, ARG_STR_MAX, "%s", GAME_SCORE_HOST);
 #else
 	args->server[0] = '\0';
+#endif
 #endif
 	int help_called = 0;
 
@@ -166,8 +168,10 @@ static void args_init (Args* args, int argc, char* argv[])
 		{ "-C", "--cockpit",      false, &args->cockpit,      NULL         },
 		{ "-N", "--nosound",      false, &args->nosound,      NULL         },
 		{ "-K", "--noshake",      false, &args->noshake,      NULL         },
+#ifdef USE_SDLNET
 		{ "-s", "--server",       true,  NULL,                args->server },
 		{ "-p", "--port",         true,  &args->port,         NULL         },
+#endif
 		{ 0, 0, 0, 0, 0 }
 	};
 

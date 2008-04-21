@@ -23,6 +23,8 @@
 #include "score.h"
 #include "util.h"
 
+#ifdef USE_SDLNET
+
 static void score_net_finish (Score* score)
 {
 	if(score->udp_pkt != NULL) {
@@ -98,6 +100,8 @@ static void score_net_update (Score* score)
 	}
 }
 
+#endif
+
 void score_init (Score* score, Args* args)
 {
 	memset (score, 0, sizeof(Score));
@@ -129,13 +133,17 @@ void score_init (Score* score, Args* args)
 		fclose (fp);
 	}
 
+#ifdef USE_SDLNET
 	if (args != NULL)
 		score_net_init (score, args->server, args->port);
+#endif
 }
 
 void score_finish (Score* score)
 {
+#ifdef USE_SDLNET
 	score_net_finish (score);
+#endif
 	free (score->filename);
 	memset (score, 0, sizeof(Score));
 }
@@ -160,7 +168,9 @@ void score_update (Score* score, int new_score, bool is_global)
 
 		if (new_score > score->global) {
 			score->global = new_score;
+#ifdef USE_SDLNET
 			score_net_update (score);
+#endif
 		}
 	}
 }
