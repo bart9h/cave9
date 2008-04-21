@@ -2,13 +2,16 @@
 
 TARGET = ../cave9
 
-CFLAGS += -std=c99 -Wall -Werror -ggdb `sdl-config --cflags` -I/usr/include/SDL -I/usr/local/include/SDL
+CFLAGS += -std=c99 -Wall -Werror -ggdb `sdl-config --cflags`
 LDFLAGS += `sdl-config --libs` -lm -L/usr/X11/lib -lGL -lGLU -lSDL_ttf -lSDL_image
 
 ifndef nonet
 CFLAGS += -DUSE_SDLNET
 LDFLAGS += -lSDL_net
 endif
+
+# necessary when some SDL libs are on /usr/local, and others on /usr
+CFLAGS += -I/usr/local/include/SDL -I/usr/include/SDL
 
 
 #{{{1  build rules
