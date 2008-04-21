@@ -4,6 +4,9 @@ all:
 clean:
 	$(MAKE) -C src clean
 
+dep:
+	$(MAKE) -C src dep
+
 release:
 	@set -e; \
 	which git tar gzip grep cut >/dev/null; \

@@ -45,9 +45,6 @@ typedef struct Display_struct
 
 	bool cockpit;
 	bool shaking;
-
-	UDPsocket udp_sock;
-	UDPpacket* udp_pkt;
 } Display;
 
 void viewport (Display*, GLsizei w, GLsizei h, GLsizei bpp, bool fullscreen, int aa);
