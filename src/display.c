@@ -168,8 +168,17 @@ static void cave_model (Display* display, Cave* cave, int mode)
 	for (int i = 0; i < SEGMENT_COUNT-1; ++i) {
 		int i0 = (cave->i + i)%SEGMENT_COUNT;
 
-		if (cave->gl_list[mode][i0] == 0) {
-			int id = cave->gl_list[mode][i0] = i0 + display->list_start[mode];
+		if(cave->dirty[i0]) {
+			for (int mode = 0; mode < DISPLAYMODE_COUNT; ++mode) {
+				if (glIsList (display->gl_list[mode][i0]))
+					glDeleteLists (display->gl_list[mode][i0], 1);
+				display->gl_list[mode][i0] = 0;
+			}
+			cave->dirty[i0] = false;
+		}
+
+		if (display->gl_list[mode][i0] == 0) {
+			int id = display->gl_list[mode][i0] = i0 + display->list_start[mode];
 
 			glNewList (id, GL_COMPILE);
 
@@ -248,7 +257,7 @@ static void cave_model (Display* display, Cave* cave, int mode)
 			glDisable (GL_TEXTURE_2D);
 		}
 
-		glCallList (cave->gl_list[mode][i0]);
+		glCallList (display->gl_list[mode][i0]);
 	}
 
 }

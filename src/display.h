@@ -28,6 +28,13 @@
 #define  OUTSIDE_TEXTURE_FILE  "grass.jpg"
 #define  FONT_FILE             "trashco.ttf"
 
+enum DisplayMode
+{
+	DISPLAYMODE_NORMAL,
+	DISPLAYMODE_MINIMAP,
+	DISPLAYMODE_COUNT
+};
+
 typedef struct Display_struct
 {
 	SDL_Surface* icon;
@@ -40,6 +47,7 @@ typedef struct Display_struct
 	Vec3 cam, target;
 	GLfloat near_plane, far_plane;
 
+	GLuint gl_list[DISPLAYMODE_COUNT][SEGMENT_COUNT];
 	GLuint list_start[DISPLAYMODE_COUNT];
 	GLuint ship_list;
 

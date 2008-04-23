@@ -49,11 +49,7 @@ void cave_gen (Cave* cave, Ship* digger)
 		return;
 
 	// invalidate GL list for this segment
-	for (int mode = 0; mode < DISPLAYMODE_COUNT; ++mode) {
-		if (glIsList (cave->gl_list[mode][cave->i]))
-			glDeleteLists (cave->gl_list[mode][cave->i], 1);
-		cave->gl_list[mode][cave->i] = 0;
-	}
+	cave->dirty[cave->i] = true;
 
 	// generate new segment
 	for( i = 0; i < SECTOR_COUNT; ++i ) {
