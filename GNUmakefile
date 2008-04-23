@@ -10,6 +10,7 @@ DATA = \
 	data/thrust.wav \
 	data/trashco.ttf \
 	data/trashco_Readme.txt \
+	data/TerminusBold.ttf \
 
 build: $(DATA)
 	$(MAKE) -C src

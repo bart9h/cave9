@@ -23,10 +23,14 @@
 #include <stdbool.h>
 #include "game.h"
 
+#define BASE_W 1024
+#define BASE_H 768
+
 #define  ICON_FILE             "icon.png"
 #define  WALL_TEXTURE_FILE     "rocky.jpg"
 #define  OUTSIDE_TEXTURE_FILE  "grass.jpg"
 #define  FONT_FILE             "trashco.ttf"
+#define  FONT_MENU_FILE        "TerminusBold.ttf"
 
 enum DisplayMode
 {
@@ -43,7 +47,7 @@ typedef struct Display_struct
 	GLuint wall_texture_id;
 	GLuint hud_id;
 	GLuint msg_id;
-	TTF_Font* font;
+	TTF_Font* font, *font_menu;
 	Vec3 cam, target;
 	GLfloat near_plane, far_plane;
 

@@ -239,14 +239,12 @@ int main_control (int argc, char* argv[])
 
 	args_init (&args, argc, argv);
 	display_init (&display, &args);
-
-	display_message (&display, NULL, "loading sounds");
 	audio_init (&audio, !args.nosound);
 
 	game_init (&game, &args);
 
 	input.state = WELCOME;
-	display_message (&display, &game, "welcome!  left+right for control.  [press space]");
+	display_message (&display, &game, "welcome! use arrows/space");
 
 	float dt = 1./FPS;
 	while (input.state != QUIT) {

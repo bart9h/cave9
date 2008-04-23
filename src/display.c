@@ -338,21 +338,34 @@ static void ship_model(Display* display, Ship* ship)
 	glPopMatrix();
 }
 
-static void render_text(Display* display, GLuint id, const char* text,
+static void render_text(Display* display, GLuint *id, 
+		TTF_Font *font, const char* text,
 		float x, float y, float w, float h,
 		float r, float g, float b)
 {
 	if(text == NULL || text[0] == '\0')
 		return;
+
+	if(*id == 0) {
+		glGenTextures(1, id);
+		glBindTexture(GL_TEXTURE_2D, *id);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	} else {
+		glBindTexture(GL_TEXTURE_2D, *id);
+	}
+
 	SDL_Color color = {0xff,0xff,0xff,0xff};
-	SDL_Surface* label = TTF_RenderText_Blended(display->font, text, color);
-	assert(label != NULL);
+	SDL_Surface* label = TTF_RenderText_Blended(font, text, color);
+	if(label == NULL)
+		return;
 
 	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glEnable(GL_TEXTURE_2D);
 
-    glBindTexture(GL_TEXTURE_2D, id);
 	gluBuild2DMipmaps(GL_TEXTURE_2D,
 			GL_RGBA, label->w, label->h,
 			GL_RGBA, GL_UNSIGNED_BYTE, label->pixels);
@@ -385,7 +398,7 @@ static void display_hud (Display* display, Game* game)
 #define GAUGE_MAX 10
 	char gauge[GAUGE_MAX+1];
 	int n = MIN(GAUGE_MAX, (int)(vel*20));
-	memset(gauge,'/',n);
+	memset(gauge,'>',n);
 	gauge[n] = '\0';
 
 	int score = game_score(game);
@@ -393,30 +406,30 @@ static void display_hud (Display* display, Game* game)
 #define HUD_TEXT_MAX 80
 	char buf[HUD_TEXT_MAX];
 	if(game->player.dist > 0) {
-		snprintf(buf, HUD_TEXT_MAX, "velocity %-10s  score %9d",
+		snprintf(buf, HUD_TEXT_MAX, "VELOCITY %-10s  SCORE %9d",
 			gauge, score
 		);
 	} else {
 		if (game_nocheat(game)) {
-			snprintf(buf, HUD_TEXT_MAX, "velocity %s  score %d (%d/%d/%d)",
-				gauge, score,
-				// FIXME: local > global  (which is it?)
+			snprintf(buf, HUD_TEXT_MAX, "SCORE %d (%d, %d, %d)",
+				score,
 				game->score.session,
 				game->score.local,
 				game->score.global
 			);
 		}
 		else {
-			snprintf(buf, HUD_TEXT_MAX, "velocity %s  score %d (%d) - %d",
-				gauge, score,
+			snprintf(buf, HUD_TEXT_MAX, "SCORE %d (%d) - %d",
+				score,
 				game->score.session,
 				(int)game->player.start
 			);
 		}
 	}
 
-	float white = game->player.dist <= 0 ? 1 : 1-vel;
-	render_text(display, display->hud_id, buf, .5,.9,1,.2, 1,white,white);
+	render_text(display, &display->hud_id, 
+			display->font_menu, buf, 
+			.5,.9,1,.1, 1,1,1);
 }
 
 static char display_message_buf[256];
@@ -493,7 +506,9 @@ void display_frame (Display* display, Game* game)
 		display_hud (display, game);
 	}
 
-	render_text (display, display->msg_id, display_message_buf, .5,.5,1,.25, 1,1,1);
+	render_text (display, &display->msg_id, 
+			display->font, display_message_buf, 
+			.5,.5,1,.25, 1,1,1);
 
 	display_end_frame(display);
 }
@@ -540,17 +555,18 @@ static GLuint display_make_ship_list()
 	return ship_list;
 }
 
-static void load_texture (const char* filename, GLuint* id)
+static GLuint load_texture (const char* filename)
 {
-    glGenTextures(1, id);
-    glBindTexture(GL_TEXTURE_2D, *id);
+	GLuint id;
+    glGenTextures(1, &id);
+    glBindTexture(GL_TEXTURE_2D, id);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	const char* texture_file = FIND (filename);
-	SDL_Surface* texture = IMG_Load (texture_file);
+	filename = FIND (filename);
+	SDL_Surface* texture = IMG_Load (filename);
 	if(texture == NULL) {
-		fprintf(stderr, "IMG_Load(%s): %s\n", texture_file, IMG_GetError());
+		fprintf(stderr, "IMG_Load(%s): %s\n", filename, IMG_GetError());
 		exit(1);
 	}
 
@@ -563,6 +579,18 @@ static void load_texture (const char* filename, GLuint* id)
 	}
 
 	SDL_FreeSurface(texture);
+	return id;
+}
+
+static TTF_Font *load_font (const char* filename, int size)
+{
+	filename = FIND (filename);
+	TTF_Font *font = TTF_OpenFont(filename, size);
+	if(font == NULL) {
+		fprintf(stderr, "TTF_OpenFont(%s,%d): %s\n", filename, size, TTF_GetError());
+		exit(1);
+	}
+	return font;
 }
 
 void display_init (Display* display, Args* args)
@@ -606,8 +634,8 @@ void display_init (Display* display, Args* args)
 		w = info->current_w;
 		h = info->current_h;
 #else
-		w = 1024;
-		h = 768;
+		w = BASE_W;
+		h = BASE_H;
 #endif
 		f = 1;
 	}
@@ -622,34 +650,25 @@ void display_init (Display* display, Args* args)
 	}
 	atexit(TTF_Quit);
 
-	const char* font_filename = FIND (FONT_FILE);
-	int font_size = args->antialiasing ? 96 : 48;
-	display->font = TTF_OpenFont(font_filename, font_size);
-	if(display->font == NULL) {
-		fprintf(stderr, "TTF_OpenFont(%s): %s\n", font_filename, TTF_GetError());
-		exit(1);
-	}
+    display->hud_id = 0;
+    display->msg_id = 0;
 
-    glGenTextures(1, &display->hud_id);
-    glBindTexture(GL_TEXTURE_2D, display->hud_id);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	float scale = MIN(
+			display->screen->w/(float)BASE_W, 
+			display->screen->h/(float)BASE_H
+		) * args->antialiasing ? 2 : 1;
 
-    glGenTextures(1, &display->msg_id);
-    glBindTexture(GL_TEXTURE_2D, display->msg_id);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	display->font      = load_font(FONT_FILE,      48*scale);
 
 	display_start_frame(display, 0,0,0);
-	render_text(display, display->msg_id, "loading cave9", .5,.5,1,.25, 1,1,1);
+	render_text(display, &display->msg_id, display->font, 
+			"loading cave9", .5,.5,1,.25, .75,.25,.25);
 	display_end_frame(display);
 
-	load_texture (WALL_TEXTURE_FILE, &display->wall_texture_id);
-	load_texture (OUTSIDE_TEXTURE_FILE, &display->outside_texture_id);
+	display->font_menu = load_font(FONT_MENU_FILE, 22*scale);
+
+	display->wall_texture_id    = load_texture (WALL_TEXTURE_FILE);
+	display->outside_texture_id = load_texture (OUTSIDE_TEXTURE_FILE);
 
 	display->ship_list = display_make_ship_list();
 
