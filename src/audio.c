@@ -17,6 +17,7 @@
 
 #include <SDL.h>
 #include <math.h>
+#include <stdlib.h>
 #include "audio.h"
 #include "util.h"
 

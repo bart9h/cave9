@@ -1,28 +1,29 @@
-TARGET=cave9.exe
+TARGET=../cave9.exe
 
-SRCS=\
-	 main.cpp \
-	 display.cpp \
-	 game.cpp \
+SRCS = \
+	 main.c \
+	 audio.c \
+	 control.c \
+	 display.c \
+	 game.c \
+	 score.c \
+	 util.c \
 
 MING=/opt/mingw
-CXX=$(MING)/bin/i586-mingw32msvc-gcc
+CC=$(MING)/bin/i586-mingw32msvc-gcc
 STRIP=$(MING)/bin/i586-mingw32msvc-strip
-CXXFLAGS=-Wall -Werror -ggdb -I$(MING)/include \
-	 -I$(MING)/include/SDL -D_REENTRANT -DUSE_TTF
-LDFLAGS=-L$(MING)/lib -lSDL_net -lSDL_ttf -lSDL_image -lSDL -ljpeg -lpng -lz \
+CFLAGS=-std=c99 -Wall -Werror -I$(MING)/include \
+	 -I$(MING)/include/SDL -D_REENTRANT -Isrc
+LDFLAGS=-static -L$(MING)/lib -lSDL_net -lSDL_ttf -lSDL_image -lSDL -ljpeg -lpng -lz \
 	  -lm -mwindows -lwinmm -lgdi32 -lmingw32 -lwsock32 -lSDLmain -lglu32 -lopengl32 \
-	  -lstdc++
 
-OBJS=$(subst .cpp,.o,$(SRCS))
-
-$(TARGET): $(OBJS)
-	$(CXX) -static $^ $(LDFLAGS) -o $@
+$(TARGET): $(SRCS)
+	$(CC) $(CFLAGS) $^ $(LDFLAGS) -o $@
 	$(STRIP) -s $@
 
-clean:
-	rm -f $(TARGET) *.o core*
+check:
+	test -d "$(MING)"
 
-game.o: game.cpp game.h vec.h
-display.o: display.cpp display.h game.h vec.h
-main.o: main.cpp vec.h display.h game.h
+clean:
+	rm -f $(TARGET)
+
