@@ -248,7 +248,7 @@ int main_control (int argc, char* argv[])
 	input.state = WELCOME;
 	display_message (&display, &game, "welcome!  left+right for control.  [press space]");
 
-	float dt = 0;
+	float dt = 1./FPS;
 	while (input.state != QUIT) {
 		int t0 = SDL_GetTicks();
 
@@ -290,7 +290,6 @@ int main_control (int argc, char* argv[])
 		SDL_Delay( MAX( 1, 1000/FPS-(t1-t0) ) );
 
 		dt = (SDL_GetTicks()-t0)/1000.;
-		//dt = 1./FPS;
 	}
 
 	display_message (&display, &game, "bye.");
