@@ -370,8 +370,8 @@ static void display_hud (Display* display, Game* game)
 
 	float max_vel[3] = { MAX_VEL_X, MAX_VEL_Y, MAX_VEL_Z };
 	float vel = MIN(1,
-			log(1+LEN(game->player.vel)-MAX_VEL_Z) /
-			log(1+LEN(max_vel)-MAX_VEL_Z));
+			log(1+MAX(0,LEN(game->player.vel)-MAX_VEL_Z)) /
+			log(1+MAX(0,LEN(max_vel)-MAX_VEL_Z)));
 
 #define GAUGE_MAX 10
 	char gauge[GAUGE_MAX+1];
