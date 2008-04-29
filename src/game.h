@@ -49,6 +49,7 @@ typedef struct  Ship_struct
 typedef struct  Cave_struct
 {
 	Vec3 segs[SEGMENT_COUNT][SECTOR_COUNT];
+	Vec3 centers[SEGMENT_COUNT];
 	GLuint gl_list[DISPLAYMODE_COUNT][SEGMENT_COUNT];
 	int i;  // circular array index
 
@@ -79,6 +80,7 @@ float cave_len (Cave*);
 void cave_gen (Cave*, Ship* digger);
 void ship_move (Ship*, float dt);
 void digger_control (Ship*, int game_mode);
+void autopilot (Game*, float dt);
 float collision (Cave*, Ship*);
 bool game_nocheat(Game *game);
 int game_score (Game *game);

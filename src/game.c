@@ -57,6 +57,7 @@ void cave_gen (Cave* cave, Ship* digger)
 			digger->pos[2]
 		);
 	}
+	COPY (cave->centers[cave->i], digger->pos);
 
 	// increment segment circular pointer
 	cave->i ++;
@@ -187,6 +188,23 @@ void digger_control (Ship* ship, int game_mode)
 		ship->lefton = ship->righton = false;
 }
 
+void autopilot (Game* game, float dt)
+{
+	Vec3 d;
+	SUB2 (d, game->player.pos, game->cave.centers[game->cave.i]);
+
+	bool* R = &game->player.righton;
+	bool* L = &game->player.lefton;
+
+	if (fabsf(d[1]) > fabsf(d[0])) {
+		*R = *L = (d[1] < 0);
+	}
+	else {
+		*R = d[0] < 0;
+		*L = !*R;
+	}
+}
+
 static float X (Cave* cave, int i, float xn, float yn, int k0, int k1)
 {// used by collision()
 
@@ -198,7 +216,6 @@ static float X (Cave* cave, int i, float xn, float yn, int k0, int k1)
 	if( t < 0 || t > 1 )
 		return 0;
 	float x = (x1 - xn)*t + (x2 - xn)*(1 - t);
-	//printf("t(%f), x(%f)\n", t, x);
 	return x;
 }
 
