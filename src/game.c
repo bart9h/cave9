@@ -52,9 +52,7 @@ void cave_gen (Cave* cave, Digger* digger)
 	for( i = 0; i < SECTOR_COUNT; ++i ) {
 		float a = M_PI_2+(i-1)*M_PI*2/SECTOR_COUNT;
 		float r = ship->radius;
-		printf("%f, %f\n", 
-				((3 + sin(digger->x_radius))/2),
-				((3 + sin(digger->y_radius))/2));
+
 		SET(cave->segs[cave->i][i],
 			ship->pos[0] + (r * ((3 + sin(digger->x_radius))/2)*cos(a)) + RAND,
 			ship->pos[1] + (r * ((3 + sin(digger->y_radius))/2)*sin(a)) + RAND,
