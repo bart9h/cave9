@@ -619,7 +619,7 @@ void display_init (Display* display, Args* args)
 		exit(1);
 	}
 
-	display->near_plane = MIN(SEGMENT_LEN,SHIP_RADIUS)/4.; // was EPSILON;
+	display->near_plane = MIN(SEGMENT_LEN,SHIP_RADIUS)/16.; // was EPSILON;
 	display->far_plane = SEGMENT_COUNT * SEGMENT_LEN;
 	SET(display->cam, 0,0,0);
 	SET(display->target, 0,0,1);
