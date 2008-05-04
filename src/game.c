@@ -201,6 +201,13 @@ void digger_control (Digger* digger, int game_mode)
 
 	digger->x_radius += RAND - 0.5;
 	digger->y_radius += RAND - 0.5;
+
+	if (RAND < 0.01)
+	{
+		GLfloat tmp = digger->x_radius;
+		digger->x_radius = digger->y_radius;
+		digger->y_radius = tmp;
+	}
 }
 
 static float X (Cave* cave, int i, float xn, float yn, int k0, int k1)
