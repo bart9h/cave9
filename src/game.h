@@ -50,11 +50,13 @@ typedef struct Digger_struct
 {
 	Ship ship; // parent class
 
-	float x_radius;
-	float y_radius;
+	float x_right_radius;
+	float x_left_radius;
+	float y_top_radius;
+	float y_bottom_radius;
 } Digger;
 
-#define SHIP(digger) ((Ship *)(digger))
+#define SHIP(digger) (&((digger)->ship))
 
 typedef struct  Cave_struct
 {

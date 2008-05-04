@@ -53,9 +53,19 @@ void cave_gen (Cave* cave, Digger* digger)
 		float a = M_PI_2+(i-1)*M_PI*2/SECTOR_COUNT;
 		float r = ship->radius;
 
+		float cos_a = cos(a);
+		float sin_a = sin(a);
+
+		float mult_x = (cos_a > 0)? digger->y_top_radius : digger->y_bottom_radius;
+		float mult_y = (sin_a > 0)? digger->x_left_radius: digger->x_right_radius;
+
+		// clamp the multipliers to [1 .. 2]
+		mult_x = (3 + sin(mult_x))/2;
+		mult_y = (3 + sin(mult_y))/2;
+
 		SET(cave->segs[cave->i][i],
-			ship->pos[0] + (r * ((3 + sin(digger->x_radius))/2)*cos(a)) + RAND,
-			ship->pos[1] + (r * ((3 + sin(digger->y_radius))/2)*sin(a)) + RAND,
+			ship->pos[0] + (r * mult_x * cos_a) + RAND,
+			ship->pos[1] + (r * mult_y * sin_a) + RAND,
 			ship->pos[2]
 		);
 	}
@@ -100,8 +110,10 @@ static void digger_init(Digger *digger, float radius)
 {
 	ship_init(SHIP(digger), radius);
 
-	digger->x_radius = 0.0;
-	digger->y_radius = 0.0;
+	digger->x_left_radius = 0.0;
+	digger->x_right_radius = 0.0;
+	digger->y_top_radius = 0.0;
+	digger->y_bottom_radius = 0.0;
 }
 
 void game_init (Game* game, Args* args)
@@ -199,15 +211,10 @@ void digger_control (Digger* digger, int game_mode)
 	if (z < .33*SEGMENT_COUNT*SEGMENT_LEN)
 		ship->lefton = ship->righton = false;
 
-	digger->x_radius += RAND - 0.5;
-	digger->y_radius += RAND - 0.5;
-
-	if (RAND < 0.01)
-	{
-		GLfloat tmp = digger->x_radius;
-		digger->x_radius = digger->y_radius;
-		digger->y_radius = tmp;
-	}
+	digger->x_right_radius += RAND - 0.5;
+	digger->y_top_radius += RAND - 0.5;
+	digger->x_left_radius += RAND - 0.5;
+	digger->y_bottom_radius += RAND - 0.5;
 }
 
 static float X (Cave* cave, int i, float xn, float yn, int k0, int k1)
