@@ -18,6 +18,8 @@
 #ifndef game_h_included
 #define game_h_included
 
+#include <assert.h>
+
 #include "score.h"
 #include "vec.h"
 #include "args.h"
@@ -38,6 +40,7 @@ enum DisplayMode
 
 typedef struct  Ship_struct
 {
+	int tipo;
 	float radius;
 	Vec3 pos, vel, lookAt;
 	bool lefton, righton;
@@ -56,7 +59,8 @@ typedef struct Digger_struct
 	float y_bottom_radius;
 } Digger;
 
-#define SHIP(digger) (&((digger)->ship))
+Ship* SHIP(Digger *digger);
+//#define SHIP(digger) ((Ship *)(digger))
 
 typedef struct  Cave_struct
 {

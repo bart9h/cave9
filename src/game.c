@@ -26,6 +26,14 @@
 #include "vec.h"
 #include "game.h"
 
+Ship* SHIP(Digger *digger)
+{
+	Ship *ship = (Ship *)digger;
+
+	assert(ship->tipo == 1);
+	return ship;
+}
+
 float cave_len (Cave *cave)
 {
 	int head = cave->i;
@@ -97,6 +105,7 @@ static void cave_init (Cave* cave, Digger* digger, int game_mode)
 
 static void ship_init (Ship* ship, float radius)
 {
+	ship->tipo = 0;
 	SET (ship->pos, 0,0,ship->start);
 	SET (ship->vel, 0,0,VELOCITY);
 	SET (ship->lookAt, 0,0,VELOCITY);
@@ -108,7 +117,8 @@ static void ship_init (Ship* ship, float radius)
 
 static void digger_init(Digger *digger, float radius)
 {
-	ship_init(SHIP(digger), radius);
+	ship_init(&digger->ship, radius);
+	digger->ship.tipo = 1;
 
 	digger->x_left_radius = 0.0;
 	digger->x_right_radius = 0.0;
