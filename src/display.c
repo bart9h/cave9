@@ -165,7 +165,22 @@ static void display_world_transform (Display* display, Ship* player)
 
 static void cave_model (Display* display, Cave* cave, int mode)
 {
+
 	for (int i = 0; i < SEGMENT_COUNT-1; ++i) {
+		if (mode == DISPLAYMODE_NORMAL && i != 0) {
+			glColor4f(0.5,0.5,1,1);
+			glBegin(GL_LINE_STRIP);
+
+#define SIZE 0.1
+			glVertex3f(cave->centers[i][0]-SIZE,cave->centers[i][1]-SIZE,cave->centers[i][2]);
+			glVertex3f(cave->centers[i][0]+SIZE,cave->centers[i][1]+SIZE,cave->centers[i][2]);
+			glVertex3fv(cave->centers[i]);
+			glVertex3f(cave->centers[i][0]+SIZE,cave->centers[i][1]-SIZE,cave->centers[i][2]);
+			glVertex3f(cave->centers[i][0]-SIZE,cave->centers[i][1]+SIZE,cave->centers[i][2]);
+
+			glEnd();
+		}
+
 		int i0 = (cave->i + i)%SEGMENT_COUNT;
 
 		if (cave->gl_list[mode][i0] == 0) {
