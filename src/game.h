@@ -53,8 +53,7 @@ typedef struct  Cave_struct
 	GLuint gl_list[DISPLAYMODE_COUNT][SEGMENT_COUNT];
 	int i;  // circular array index
 
-	float monolith_x;
-	float monolith_y;
+	Vec3  monolith_pos;
 	float monolith_yaw;
 } Cave;
 

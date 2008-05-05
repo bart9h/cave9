@@ -270,7 +270,7 @@ static void monolith_model (Display* display, Game* game)
 
 	glPushMatrix();
 
-		glTranslatef (game->cave.monolith_x, game->cave.monolith_y, game->cave.segs[0][0][2]);
+		glTranslatef (game->cave.monolith_pos[0], game->cave.monolith_pos[1], game->cave.monolith_pos[2]);
 		glRotatef (game->cave.monolith_yaw,   1, 0, 0);
 
 		glBegin (GL_QUAD_STRIP);

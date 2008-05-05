@@ -60,14 +60,15 @@ void cave_gen (Cave* cave, Ship* digger)
 	COPY (cave->centers[cave->i], digger->pos);
 
 	// increment segment circular pointer
-	cave->i ++;
-	if( cave->i >= SEGMENT_COUNT ) {
-		cave->i = 0;
+	cave->i = (cave->i + 1) % SEGMENT_COUNT;
 
-		// place monolith
-		cave->monolith_x = digger->pos[0] + (2*RAND-1)*(digger->radius-MONOLITH_WIDTH);
-		cave->monolith_y = digger->pos[1] + (2*RAND-1)*(digger->radius-MONOLITH_HEIGHT);
-		cave->monolith_yaw = atan2(digger->vel[0], digger->vel[2]);
+	// place monolith on rooms
+	if (digger->pos[2] > cave->monolith_pos[2]+ROOM_SPACING)
+	{
+		cave->monolith_pos[0] = digger->pos[0];
+		cave->monolith_pos[1] = digger->pos[1];
+		cave->monolith_pos[2] = ROOM_LEN/2 + ROOM_SPACING*(int)(digger->pos[2]/ROOM_SPACING);
+		cave->monolith_yaw = atan2 (digger->vel[0], digger->vel[2]);
 	}
 }
 
