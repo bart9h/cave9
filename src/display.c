@@ -112,7 +112,7 @@ void viewport (Display* display, GLsizei w, GLsizei h, GLsizei bpp,
 		GLfloat fog_color[] = {0,0,0,1};
 		glFogfv(GL_FOG_COLOR, fog_color);
 		glFogf(GL_FOG_START, display->near_plane);
-		glFogf(GL_FOG_END, display->far_plane);
+		glFogf(GL_FOG_END, 128);
 		glEnable(GL_FOG);
 	}
 
