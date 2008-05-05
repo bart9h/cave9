@@ -191,16 +191,16 @@ void digger_control (Ship* ship, int game_mode)
 void autopilot (Game* game, float dt)
 {
 	Vec3 d;
-	SUB2 (d, game->player.pos, game->cave.centers[game->cave.i]);
+	SUB2 (d, game->player.pos, game->cave.centers[(game->cave.i+2)%SEGMENT_COUNT]);
 
 	bool* R = &game->player.righton;
 	bool* L = &game->player.lefton;
 
 	if (fabsf(d[1]) > fabsf(d[0])) {
-		*R = *L = (d[1] < 0);
+		*R = *L = (d[1] < 0)  &&  (game->player.vel[1] < VELOCITY/8);
 	}
 	else {
-		*R = d[0] < 0;
+		*R = d[0] < 0  &&  (game->player.vel[0] < VELOCITY/8);
 		*L = !*R;
 	}
 }
