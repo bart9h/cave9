@@ -260,7 +260,7 @@ int main_control (int argc, char* argv[])
 		switch (input.state) {
 		case PLAY:
 			digger_control (&game.digger, game.mode);
-			ship_move (&game.digger, dt);
+			ship_move (SHIP(&game.digger), dt);
 			
 			if (args.autopilot)
 				autopilot (&game, dt);
@@ -271,7 +271,7 @@ int main_control (int argc, char* argv[])
 #ifndef NO_STRETCH_FIX
 			game.player.pos[2] = 
 				0.7 * (game.player.pos[2]) +
-				0.3 * (game.digger.pos[2] - cave_len(&game.cave)); 
+				0.3 * (game.digger.ship.pos[2] - cave_len(&game.cave));
 			// XXX fix player position in case digger moves differently
 #endif
 

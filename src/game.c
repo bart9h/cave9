@@ -33,11 +33,12 @@ float cave_len (Cave *cave)
 	return cave->segs[tail][0][2] - cave->segs[head][0][2];
 }
 
-void cave_gen (Cave* cave, Ship* digger)
+void cave_gen (Cave* cave, Digger* digger)
 {
-	// check if the digger advanced to the next segment
+	Ship *ship = SHIP(digger);
+	// check if the ship advanced to the next segment
 	int i = (cave->i - 1 + SEGMENT_COUNT) % SEGMENT_COUNT;
-	if (digger->pos[2] > digger->start+1  &&  digger->pos[2]-SEGMENT_LEN < cave->segs[i][0][2])
+	if (ship->pos[2] > ship->start+1  &&  ship->pos[2]-SEGMENT_LEN < cave->segs[i][0][2])
 		return;
 
 	// invalidate GL list for this segment
@@ -50,35 +51,47 @@ void cave_gen (Cave* cave, Ship* digger)
 	// generate new segment
 	for( i = 0; i < SECTOR_COUNT; ++i ) {
 		float a = M_PI_2+(i-1)*M_PI*2/SECTOR_COUNT;
-		float r = digger->radius;
+		float r = ship->radius;
+
+		float cos_a = cos(a);
+		float sin_a = sin(a);
+
+		float mult_x = (cos_a > 0)? digger->y_top_radius : digger->y_bottom_radius;
+		float mult_y = (sin_a > 0)? digger->x_left_radius: digger->x_right_radius;
+
+		// clamp the multipliers to [1 .. 2]
+		mult_x = (3 + sin(mult_x))/2;
+		mult_y = (3 + sin(mult_y))/2;
+
 		SET(cave->segs[cave->i][i],
-			digger->pos[0] + r*cos(a) + RAND,
-			digger->pos[1] + r*sin(a) + RAND,
-			digger->pos[2]
+			ship->pos[0] + (r * mult_x * cos_a) + RAND,
+			ship->pos[1] + (r * mult_y * sin_a) + RAND,
+			ship->pos[2]
 		);
 	}
-	COPY (cave->centers[cave->i], digger->pos);
+	COPY (cave->centers[cave->i], ship->pos);
 
 	// increment segment circular pointer
 	cave->i = (cave->i + 1) % SEGMENT_COUNT;
 
 	// place monolith on rooms
-	if (digger->pos[2] > cave->monolith_pos[2]+ROOM_SPACING)
+	if (ship->pos[2] > cave->monolith_pos[2]+ROOM_SPACING)
 	{
-		cave->monolith_pos[0] = digger->pos[0];
-		cave->monolith_pos[1] = digger->pos[1];
-		cave->monolith_pos[2] = ROOM_LEN/2 + ROOM_SPACING*(int)(digger->pos[2]/ROOM_SPACING);
-		cave->monolith_yaw = atan2 (digger->vel[0], digger->vel[2]);
+		cave->monolith_pos[0] = ship->pos[0];
+		cave->monolith_pos[1] = ship->pos[1];
+		cave->monolith_pos[2] = ROOM_LEN/2 + ROOM_SPACING*(int)(ship->pos[2]/ROOM_SPACING);
+		cave->monolith_yaw = atan2 (ship->vel[0], ship->vel[2]);
 	}
 }
 
-static void cave_init (Cave* cave, Ship* digger, int game_mode)
+static void cave_init (Cave* cave, Digger* digger, int game_mode)
 {
+	Ship *ship = SHIP(digger);
 	memset (cave, 0, sizeof(Cave));
 	cave->i = 0;
 	do {
 		digger_control(digger, game_mode);
-		ship_move(digger, 1./FPS);
+		ship_move(ship, 1./FPS);
 		cave_gen(cave, digger);
 	}
 	while(cave->i != 0);
@@ -95,16 +108,26 @@ static void ship_init (Ship* ship, float radius)
 	ship->lefton = ship->righton = false;
 }
 
+static void digger_init(Digger *digger, float radius)
+{
+	ship_init(SHIP(digger), radius);
+
+	digger->x_left_radius = 0.0;
+	digger->x_right_radius = 0.0;
+	digger->y_top_radius = 0.0;
+	digger->y_bottom_radius = 0.0;
+}
+
 void game_init (Game* game, Args* args)
 {
 	if (args != NULL) {
 		game->mode = args->game_mode;
 		game->monoliths = args->monoliths;
-		game->player.start = game->digger.start = (float)args->start;
+		game->player.start = game->digger.ship.start = (float)args->start;
 	}
 
 	ship_init (&game->player, SHIP_RADIUS);
-	ship_init (&game->digger, MAX_CAVE_RADIUS);
+	digger_init (&game->digger, MAX_CAVE_RADIUS);
 	cave_init (&game->cave, &game->digger, game->mode);
 	score_init (&game->score, args);
 }
@@ -135,8 +158,10 @@ void ship_move (Ship* ship, float dt)
 	}
 }
 
-void digger_control (Ship* ship, int game_mode)
+void digger_control (Digger* digger, int game_mode)
 {
+	Ship *ship = SHIP(digger);
+
 	float twist_factor = 500;
 	float noise = .1;
 	float twist = 1 - 1/(1 + ship->pos[2]/twist_factor);
@@ -187,6 +212,11 @@ void digger_control (Ship* ship, int game_mode)
 
 	if (z < .33*SEGMENT_COUNT*SEGMENT_LEN)
 		ship->lefton = ship->righton = false;
+
+	digger->x_right_radius += RAND - 0.5;
+	digger->y_top_radius += RAND - 0.5;
+	digger->x_left_radius += RAND - 0.5;
+	digger->y_bottom_radius += RAND - 0.5;
 }
 
 void autopilot (Game* game, float dt)
