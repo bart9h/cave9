@@ -175,11 +175,7 @@ static void cave_model (Display* display, Cave* cave, int mode)
 
 			int i1 = (i0 + 1)%SEGMENT_COUNT;
 			if (mode == DISPLAYMODE_NORMAL) {
-				glBindTexture (GL_TEXTURE_2D,
-						cave->segs[0][0][2] < ROOM_LEN/2
-						? display->outside_texture_id
-						: display->wall_texture_id
-				);
+				glBindTexture (GL_TEXTURE_2D, display->wall_texture_id);
 			}
 
 			glBegin (GL_QUAD_STRIP);
@@ -638,7 +634,6 @@ void display_init (Display* display, Args* args)
 	display_end_frame(display);
 
 	load_texture (WALL_TEXTURE_FILE, &display->wall_texture_id);
-	load_texture (OUTSIDE_TEXTURE_FILE, &display->outside_texture_id);
 
 	display->ship_list = display_make_ship_list();
 

@@ -26,6 +26,7 @@
 #define SEGMENT_COUNT 64
 
 #define ROOM_SPACING 1000
+#define ROOM_START (2*ROOM_SPACING)
 #define ROOM_LEN 100.0
 #define ROOM_MUL 3.0
 

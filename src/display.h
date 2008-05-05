@@ -25,14 +25,12 @@
 
 #define  ICON_FILE             "icon.png"
 #define  WALL_TEXTURE_FILE     "rocky.jpg"
-#define  OUTSIDE_TEXTURE_FILE  "grass.jpg"
 #define  FONT_FILE             "trashco.ttf"
 
 typedef struct Display_struct
 {
 	SDL_Surface* icon;
 	SDL_Surface* screen;
-	GLuint outside_texture_id;
 	GLuint wall_texture_id;
 	GLuint hud_id;
 	GLuint msg_id;

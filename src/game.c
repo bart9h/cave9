@@ -75,7 +75,7 @@ void cave_gen (Cave* cave, Digger* digger)
 	cave->i = (cave->i + 1) % SEGMENT_COUNT;
 
 	// place monolith on rooms
-	if (ship->pos[2] > cave->monolith_pos[2]+ROOM_SPACING)
+	if (ship->pos[2] > cave->monolith_pos[2]+ROOM_SPACING  &&  ship->pos[2] > ROOM_START)
 	{
 		cave->monolith_pos[0] = ship->pos[0];
 		cave->monolith_pos[1] = ship->pos[1];
@@ -194,23 +194,15 @@ void digger_control (Digger* digger, int game_mode)
 	float scale = 1-MIN(1,log(1+ship->pos[2])/log(1+MIN_CAVE_RADIUS_DEPTH));
 	ship->radius = MIN_CAVE_RADIUS+(MAX_CAVE_RADIUS-MIN_CAVE_RADIUS)*scale+RAND;
 
-	float z = ship->pos[2] - ship->start;
-
-	if (z < ROOM_LEN/2) { // outside
-#if 1
-		ship->radius *= (ROOM_MUL-1) + 1/(1e-9+2*z/ROOM_LEN);
-#else
-		//FIXME: why does the first room begins larger then others?
-		ship->radius *= ROOM_MUL;
-#endif
-	}
-	else { // rooms
-		int r = ((int)z)%ROOM_SPACING;
+	// rooms
+	if (ship->pos[2] >= ROOM_START) {
+		int r = ((int)ship->pos[2])%ROOM_SPACING;
 		if (r < ROOM_LEN)
 			ship->radius *= 1+(ROOM_MUL-1)*(cos(M_PI*(r-ROOM_LEN/2)/ROOM_LEN));
 	}
 
-	if (z < .33*SEGMENT_COUNT*SEGMENT_LEN)
+	// start falling
+	if (ship->pos[2] - ship->start  <  .33*SEGMENT_COUNT*SEGMENT_LEN)
 		ship->lefton = ship->righton = false;
 
 	digger->x_right_radius += RAND - 0.5;
