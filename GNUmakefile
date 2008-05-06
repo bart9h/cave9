@@ -8,6 +8,7 @@ DATA = \
 	data/wall.jpg \
 	data/thrust.wav \
 	data/hud.ttf \
+	data/README.txt
 
 build: $(DATA)
 	$(MAKE) -C src
