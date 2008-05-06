@@ -265,7 +265,6 @@ float collision (Cave* cave, Ship* ship)
 	int intersection_count[4];
 	memset(intersection_count, 0, sizeof(intersection_count));
 
-
 	int i = (cave->i + SEGMENT_COUNT) % SEGMENT_COUNT; // off-1
 	for(int off = 0; off < 3; ++off, i = (i+1) % SEGMENT_COUNT ) { // -1,0,1
 
