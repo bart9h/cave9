@@ -242,16 +242,14 @@ int main_control (int argc, char* argv[])
 
 	args_init (&args, argc, argv);
 	display_init (&display, &args);
-
-	display_message (&display, NULL, "loading sounds");
 	audio_init (&audio, !args.nosound);
 
 	game_init (&game, &args);
 
 	input.state = WELCOME;
-	display_message (&display, &game, "welcome!  left+right for control.  [press space]");
+	display_message (&display, &game, "welcome! use arrows/space");
 
-	float dt = 0;
+	float dt = 1./FPS;
 	while (input.state != QUIT) {
 		int t0 = SDL_GetTicks();
 
@@ -297,10 +295,9 @@ int main_control (int argc, char* argv[])
 		SDL_Delay( MAX( 1, 1000/FPS-(t1-t0) ) );
 
 		dt = (SDL_GetTicks()-t0)/1000.;
-		//dt = 1./FPS;
 	}
 
-	display_message (&display, &game, "bye.");
+	//display_message (&display, &game, "bye.");
 	score_finish (&game.score);
 
 	return 0;

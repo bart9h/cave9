@@ -42,11 +42,7 @@ void cave_gen (Cave* cave, Digger* digger)
 		return;
 
 	// invalidate GL list for this segment
-	for (int mode = 0; mode < DISPLAYMODE_COUNT; ++mode) {
-		if (glIsList (cave->gl_list[mode][cave->i]))
-			glDeleteLists (cave->gl_list[mode][cave->i], 1);
-		cave->gl_list[mode][cave->i] = 0;
-	}
+	cave->dirty[cave->i] = true;
 
 	// generate new segment
 	for( i = 0; i < SECTOR_COUNT; ++i ) {
@@ -260,42 +256,45 @@ float collision (Cave* cave, Ship* ship)
 	int intersection_count[4];
 	memset(intersection_count, 0, sizeof(intersection_count));
 
-	int i = cave->i;
-	int k;
-	for( k = 0; k < SECTOR_COUNT; ++k ) {
-		int i0 = (k+0)%SECTOR_COUNT;
-		int i1 = (k+1)%SECTOR_COUNT;
 
-		ADD(center,cave->segs[i][i0]);
+	int i = (cave->i + SEGMENT_COUNT) % SEGMENT_COUNT; // off-1
+	for(int off = 0; off < 3; ++off, i = (i+1) % SEGMENT_COUNT ) { // -1,0,1
 
-		Vec3 dist;
-		SUB2(dist, ship->pos, cave->segs[i][i0]);
-		float len = LEN(dist);
-		if(len < min)
-			min = len;
+		for(int j = 0; j < SECTOR_COUNT; ++j ) {
+			int j0 = (j+0)%SECTOR_COUNT;
+			int j1 = (j+1)%SECTOR_COUNT;
 
-		// optimize
-		if(cave->segs[i][i0][0] < ship->pos[0]-ship->radius &&
-				cave->segs[i][i1][0] < ship->pos[0]-ship->radius)
-			continue;
-		if(cave->segs[i][i0][1] > ship->pos[1]+ship->radius &&
-				cave->segs[i][i1][1] > ship->pos[1]+ship->radius)
-			continue;
-		if(cave->segs[i][i0][1] < ship->pos[1]-ship->radius &&
-				cave->segs[i][i1][1] < ship->pos[1]-ship->radius)
-			continue;
+			ADD(center,cave->segs[i][j0]);
 
-		if(X(cave, i, ship->pos[0] - ship->radius, ship->pos[1], i0, i1) > 0)
-			++intersection_count[0];
+			Vec3 dist;
+			SUB2(dist, ship->pos, cave->segs[i][j0]);
+			float len = LEN(dist);
+			if(len < min)
+				min = len;
 
-		if(X(cave, i, ship->pos[0], ship->pos[1] + ship->radius, i0, i1) > 0)
-			++intersection_count[1];
+			// optimize
+			if(cave->segs[i][j0][0] < ship->pos[0]-ship->radius &&
+					cave->segs[i][j1][0] < ship->pos[0]-ship->radius)
+				continue;
+			if(cave->segs[i][j0][1] > ship->pos[1]+ship->radius &&
+					cave->segs[i][j1][1] > ship->pos[1]+ship->radius)
+				continue;
+			if(cave->segs[i][j0][1] < ship->pos[1]-ship->radius &&
+					cave->segs[i][j1][1] < ship->pos[1]-ship->radius)
+				continue;
 
-		if(X(cave, i, ship->pos[0] + ship->radius, ship->pos[1], i0, i1) > 0)
-			++intersection_count[2];
+			if(X(cave, i, ship->pos[0] - ship->radius, ship->pos[1], j0, j1) > 0)
+				++intersection_count[0];
 
-		if(X(cave, i, ship->pos[0], ship->pos[1] - ship->radius, i0, i1) > 0)
-			++intersection_count[3];
+			if(X(cave, i, ship->pos[0], ship->pos[1] + ship->radius, j0, j1) > 0)
+				++intersection_count[1];
+
+			if(X(cave, i, ship->pos[0] + ship->radius, ship->pos[1], j0, j1) > 0)
+				++intersection_count[2];
+
+			if(X(cave, i, ship->pos[0], ship->pos[1] - ship->radius, j0, j1) > 0)
+				++intersection_count[3];
+		}
 	}
 
 	SCALE(center,SECTOR_COUNT);
@@ -303,7 +302,7 @@ float collision (Cave* cave, Ship* ship)
 	ship->repulsion[2] = 0;
 	NORM(ship->repulsion);
 
-	for(i = 0; i < 4; ++i) {
+	for(int i = 0; i < 4; ++i) {
 		if(intersection_count[i] % 2 == 0) {
 			return ship->dist = 0;  // hit
 		}

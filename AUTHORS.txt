@@ -18,8 +18,3 @@ collision detection idea:
 =========================
 Victor Bogado  <victor@bogado.net>
 
-
-font:
-=====
-font trashco TrueType Font (c) 2007 by loosydesign  <loosy@gmx.at>
-

@@ -1,6 +1,7 @@
 cave9
 hiscore.txt
 src/*.o
-data/
-.svn/
+src/.depend
+data
+.svn
 *.tmp
