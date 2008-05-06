@@ -10,8 +10,10 @@ DATA = \
 	data/hud.ttf \
 	data/README.txt
 
-build: $(DATA)
+build:
 	$(MAKE) -C src
+
+data: $(DATA)
 
 DATA_PKG=cave9_data-$(DATA_VERSION).tgz
 $(DATA):
