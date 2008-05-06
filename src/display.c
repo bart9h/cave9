@@ -342,7 +342,7 @@ static void ship_model(Display* display, Ship* ship)
 	glPopMatrix();
 }
 
-static void render_text(Display* display, GLuint *id, 
+static void render_text_box (Display* display, GLuint *id, 
 		TTF_Font *font, const char* text,
 		float x, float y, float w, float h,
 		float r, float g, float b)
@@ -389,34 +389,41 @@ static void render_text(Display* display, GLuint *id,
 	glPopMatrix();
 }
 
+static void render_text (Display* display, GLuint *id, 
+		TTF_Font *font, const char* text,
+		float x, float y, float scale,
+		float r, float g, float b)
+{
+	int w, h;
+	if (TTF_SizeText (font, text, &w, &h) == 0) {
+		float s = scale*.01;
+		render_text_box (display, id, font, text, x+w*s/2, y-h*s/2, w*s, h*s, r, g, b);
+	}
+	else {
+		fprintf (stderr,
+				"Error getting TTF size of string \"%s\":\n%s\n",
+				text,
+				TTF_GetError()
+		);
+	}
+}
+
 static void display_hud (Display* display, Game* game)
 {
 	if(game->player.dist == FLT_MAX)
 		return;
 
-	float max_vel[3] = { MAX_VEL_X, MAX_VEL_Y, MAX_VEL_Z };
-	float vel = MIN(1,
-			log(1+MAX(0,LEN(game->player.vel)-MAX_VEL_Z)) /
-			log(1+MAX(0,LEN(max_vel)-MAX_VEL_Z)));
-
-	char gauge[] = "FASTERESTEST";
-	int n = MIN(strlen(gauge), (int)(vel*20));
-	gauge[n] = '\0';
+#define HUD_TEXT_MAX 80
+	char buf[HUD_TEXT_MAX];
 
 
 	int score = game_score(game);
 
-#define HUD_TEXT_MAX 80
-	char buf[HUD_TEXT_MAX];
-	if(game->player.dist > 0) { // FIXME display hiscore before dead
+	if (game->player.dist > 0) { // FIXME display hiscore before dead
 #ifdef ROMAN_SCORE
-		snprintf(buf, HUD_TEXT_MAX, "SCORE %s %s",
-			roman(score), gauge 
-		);
+		snprintf (buf, HUD_TEXT_MAX, "SCORE %s", roman(score));
 #else
-		snprintf(buf, HUD_TEXT_MAX, "SCORE %9d %s",
-			gauge, score
-		);
+		snprintf (buf, HUD_TEXT_MAX, "SCORE %d", score);
 #endif
 	} else {
 		if (game_nocheat(game)) {
@@ -428,7 +435,7 @@ static void display_hud (Display* display, Game* game)
 			);
 		}
 		else {
-			snprintf(buf, HUD_TEXT_MAX, "SCORE %d (%d) - %d",
+			snprintf (buf, HUD_TEXT_MAX, "SCORE %d (%d) - %d",
 				score,
 				game->score.session,
 				(int)game->player.start
@@ -436,14 +443,34 @@ static void display_hud (Display* display, Game* game)
 		}
 	}
 
-	render_text(display, &display->hud_id, 
+	render_text (display, &display->hud_id, 
 #ifdef FONT_MENU_FILE
 			display->font_menu, 
 #else
 			display->font, 
 #endif
 			buf, 
-			.5,.9,1,.1, 1,1,1);
+			.6,.95, .1, 1,1,1);
+
+
+	float max_vel[3] = { MAX_VEL_X, MAX_VEL_Y, MAX_VEL_Z };
+	float vel = MIN(1,
+			log(1+MAX(0,LEN(game->player.vel)-MAX_VEL_Z)) /
+			log(1+MAX(0,LEN(max_vel)-MAX_VEL_Z)));
+
+	char gauge[] = "FASTERESTEST";
+	int n = MIN(strlen(gauge), (int)(vel*20));
+	gauge[n] = '\0';
+
+
+	render_text (display, &display->hud_id, 
+#ifdef FONT_MENU_FILE
+			display->font_menu, 
+#else
+			display->font, 
+#endif
+			gauge, 
+			.1,.95, .1, 1,1,1);
 }
 
 static char display_message_buf[256];
@@ -527,7 +554,7 @@ void display_frame (Display* display, Game* game)
 		display_hud (display, game);
 	}
 
-	render_text (display, &display->msg_id, 
+	render_text_box (display, &display->msg_id, 
 			display->font, display_message_buf, 
 			.5,.5,1,.25, 1,1,1);
 
@@ -682,7 +709,7 @@ void display_init (Display* display, Args* args)
 	display->font      = load_font(FONT_FILE,      48*scale);
 
 	display_start_frame(display, 0,0,0);
-	render_text(display, &display->msg_id, display->font, 
+	render_text_box(display, &display->msg_id, display->font, 
 			"loading cave9", .5,.5,1,.25, .75,.25,.25);
 	display_end_frame(display);
 
