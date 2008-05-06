@@ -15,7 +15,7 @@ build: $(DATA)
 DATA_PKG=cave9_data-$(DATA_VERSION).tgz
 $(DATA):
 	wget -c http://cave9.googlecode.com/files/$(DATA_PKG)
-	tar xzf $(DATA_PKG)
+	tar xzkf $(DATA_PKG)
 $(DATA_PKG): $(DATA)
 	tar c $(DATA) | gzip -9 > $(DATA_PKG)
 	tar tfvz $(DATA_PKG)
