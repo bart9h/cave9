@@ -408,9 +408,15 @@ static void display_hud (Display* display, Game* game)
 #define HUD_TEXT_MAX 80
 	char buf[HUD_TEXT_MAX];
 	if(game->player.dist > 0) { // FIXME display hiscore before dead
+#ifdef ROMAN_SCORE
+		snprintf(buf, HUD_TEXT_MAX, "VELOCITY %-10s  SCORE %s",
+			gauge, roman(score)
+		);
+#else
 		snprintf(buf, HUD_TEXT_MAX, "VELOCITY %-10s  SCORE %9d",
 			gauge, score
 		);
+#endif
 	} else {
 		if (game_nocheat(game)) {
 			snprintf(buf, HUD_TEXT_MAX, "SCORE %d (%d, %d, %d)",
