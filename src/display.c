@@ -27,6 +27,8 @@
 #include "display.h"
 #include "util.h"
 
+#define ROMAN_SCORE
+
 const float shake_hit = 3.0;
 const float shake_vel = 0.2;
 const float shake_velZ = 0.08;
@@ -397,11 +399,10 @@ static void display_hud (Display* display, Game* game)
 			log(1+MAX(0,LEN(game->player.vel)-MAX_VEL_Z)) /
 			log(1+MAX(0,LEN(max_vel)-MAX_VEL_Z)));
 
-#define GAUGE_MAX 10
-	char gauge[GAUGE_MAX+1];
-	int n = MIN(GAUGE_MAX, (int)(vel*20));
-	memset(gauge,'/',n);
+	char gauge[] = "FASTERESTEST";
+	int n = MIN(strlen(gauge), (int)(vel*20));
 	gauge[n] = '\0';
+
 
 	int score = game_score(game);
 
@@ -409,11 +410,11 @@ static void display_hud (Display* display, Game* game)
 	char buf[HUD_TEXT_MAX];
 	if(game->player.dist > 0) { // FIXME display hiscore before dead
 #ifdef ROMAN_SCORE
-		snprintf(buf, HUD_TEXT_MAX, "VELOCITY %-10s  SCORE %s",
-			gauge, roman(score)
+		snprintf(buf, HUD_TEXT_MAX, "SCORE %s %s",
+			roman(score), gauge 
 		);
 #else
-		snprintf(buf, HUD_TEXT_MAX, "VELOCITY %-10s  SCORE %9d",
+		snprintf(buf, HUD_TEXT_MAX, "SCORE %9d %s",
 			gauge, score
 		);
 #endif
