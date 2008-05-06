@@ -142,11 +142,11 @@ static void args_init (Args* args, int argc, char* argv[])
 	args->aidtrack = 0;
 #ifdef USE_SDLNET
 	args->port = GLOBAL_SCORE_PORT;
-#ifdef NET_DEFAULT_ENABLED
+# ifdef NET_DEFAULT_ENABLED
 	snprintf (args->server, ARG_STR_MAX, "%s", GAME_SCORE_HOST);
-#else
+# else
 	args->server[0] = '\0';
-#endif
+# endif
 #endif
 	int help_called = 0;
 
@@ -154,30 +154,31 @@ static void args_init (Args* args, int argc, char* argv[])
 		char* short_name;
 		char* long_name;
 		bool  has_arg;
+		bool  is_experimental;
 		int*  val_num;
 		char* val_str;
 	} options[] = {
-		//                        arg?    int-value            string-value
-		{ "-h", "--help",         false,  &help_called,        NULL         },
-		{ "-g", "--game_mode",    true,   &args->game_mode,    NULL         },
-		{ "-W", "--width",        true,   &args->width,        NULL         },
-		{ "-H", "--height",       true,   &args->height,       NULL         },
-		{ "-B", "--bpp",          true,   &args->bpp,          NULL         },
-		{ "-F", "--fullscreen",   false,  &args->fullscreen,   NULL         },
-		{ "-R", "--highres",      false,  &args->highres,      NULL         },
-		{ "-A", "--antialiasing", true,   &args->antialiasing, NULL         },
-		{ "-M", "--monoliths",    false,  &args->monoliths,    NULL         },
-		{ "-S", "--start",        true,   &args->start,        NULL         },
-		{ "-C", "--cockpit",      false,  &args->cockpit,      NULL         },
-		{ "-N", "--nosound",      false,  &args->nosound,      NULL         },
-		{ "-K", "--noshake",      false,  &args->noshake,      NULL         },
-		{ "-a", "--autopilot",    false,  &args->autopilot,    NULL         },
-		{ "-T", "--aidtrack",     false,  &args->aidtrack,     NULL         },
-#ifdef USE_SDLNET
-		{ "-s", "--server",       true,   NULL,                args->server },
-		{ "-p", "--port",         true,   &args->port,         NULL         },
+		//                        arg?    exp?    int-value            string-value
+		{ "-h", "--help",         false,  false,  &help_called,        NULL         },
+		{ "-g", "--game_mode",    true,   false,  &args->game_mode,    NULL         },
+		{ "-W", "--width",        true,   false,  &args->width,        NULL         },
+		{ "-H", "--height",       true,   false,  &args->height,       NULL         },
+		{ "-B", "--bpp",          true,   false,  &args->bpp,          NULL         },
+		{ "-F", "--fullscreen",   false,  false,  &args->fullscreen,   NULL         },
+		{ "-R", "--highres",      false,  false,  &args->highres,      NULL         },
+		{ "-A", "--antialiasing", true,   false,  &args->antialiasing, NULL         },
+		{ "-S", "--start",        true,   false,  &args->start,        NULL         },
+		{ "-C", "--cockpit",      false,  false,  &args->cockpit,      NULL         },
+		{ "-N", "--nosound",      false,  false,  &args->nosound,      NULL         },
+		{ "-K", "--noshake",      false,  false,  &args->noshake,      NULL         },
+		{ "-M", "--monoliths",    false,  true,   &args->monoliths,    NULL         },
+		{ "-a", "--autopilot",    false,  true,   &args->autopilot,    NULL         },
+		{ "-T", "--aidtrack",     false,  true,   &args->aidtrack,     NULL         },
+#ifdef USE_SDLNET                         
+		{ "-s", "--server",       true,   true,   NULL,                args->server },
+		{ "-p", "--port",         true,   true,   &args->port,         NULL         },
 #endif
-		{ 0, 0, 0, 0, 0 }
+		{ 0, 0, 0, 0, 0, 0 }
 	};
 
 	for (int i = 1;  i < argc;  ++i) {
@@ -224,6 +225,8 @@ static void args_init (Args* args, int argc, char* argv[])
 				else if (options[opt].val_str != NULL)
 					printf ("  <str>");
 			}
+			if (options[opt].is_experimental)
+				printf ("    (experimental)");
 			printf ("\n");
 		}
 		exit(1);
