@@ -26,6 +26,7 @@
 #define SEGMENT_COUNT 64
 
 #define ROOM_SPACING 1000
+#define ROOM_START (2*ROOM_SPACING)
 #define ROOM_LEN 100.0
 #define ROOM_MUL 3.0
 
@@ -39,14 +40,26 @@ typedef struct  Ship_struct
 	float start;
 } Ship;
 
+typedef struct Digger_struct
+{
+	Ship ship; // parent class
+
+	float x_right_radius;
+	float x_left_radius;
+	float y_top_radius;
+	float y_bottom_radius;
+} Digger;
+
+#define SHIP(digger) (&((digger)->ship))
+
 typedef struct  Cave_struct
 {
 	Vec3 segs[SEGMENT_COUNT][SECTOR_COUNT];
 	bool dirty[SEGMENT_COUNT];
+	Vec3 centers[SEGMENT_COUNT];
 	int i;  // circular array index
 
-	float monolith_x;
-	float monolith_y;
+	Vec3  monolith_pos;
 	float monolith_yaw;
 } Cave;
 
@@ -54,7 +67,7 @@ typedef struct Game_struct
 {
 	Cave cave;
 	Ship player;
-	Ship digger;
+	Digger digger;
 	Score score;
 
 	int mode;
@@ -69,9 +82,10 @@ enum GameMode
 
 void game_init (Game* game, Args* args);
 float cave_len (Cave*);
-void cave_gen (Cave*, Ship* digger);
+void cave_gen (Cave*, Digger* digger);
 void ship_move (Ship*, float dt);
-void digger_control (Ship*, int game_mode);
+void digger_control (Digger*, int game_mode);
+void autopilot (Game*, float dt);
 float collision (Cave*, Ship*);
 bool game_nocheat(Game *game);
 int game_score (Game *game);

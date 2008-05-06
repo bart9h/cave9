@@ -112,7 +112,7 @@ void viewport (Display* display, GLsizei w, GLsizei h, GLsizei bpp,
 		GLfloat fog_color[] = {0,0,0,1};
 		glFogfv(GL_FOG_COLOR, fog_color);
 		glFogf(GL_FOG_START, display->near_plane);
-		glFogf(GL_FOG_END, display->far_plane);
+		glFogf(GL_FOG_END, 128);
 		glEnable(GL_FOG);
 	}
 
@@ -281,7 +281,7 @@ static void monolith_model (Display* display, Game* game)
 
 	glPushMatrix();
 
-		glTranslatef (game->cave.monolith_x, game->cave.monolith_y, game->cave.segs[0][0][2]);
+		glTranslatef (game->cave.monolith_pos[0], game->cave.monolith_pos[1], game->cave.monolith_pos[2]);
 		glRotatef (game->cave.monolith_yaw,   1, 0, 0);
 
 		glBegin (GL_QUAD_STRIP);
@@ -394,8 +394,8 @@ static void display_hud (Display* display, Game* game)
 
 	float max_vel[3] = { MAX_VEL_X, MAX_VEL_Y, MAX_VEL_Z };
 	float vel = MIN(1,
-			log(1+LEN(game->player.vel)-MAX_VEL_Z) /
-			log(1+LEN(max_vel)-MAX_VEL_Z));
+			log(1+MAX(0,LEN(game->player.vel)-MAX_VEL_Z)) /
+			log(1+MAX(0,LEN(max_vel)-MAX_VEL_Z)));
 
 #define GAUGE_MAX 10
 	char gauge[GAUGE_MAX+1];
@@ -488,6 +488,13 @@ void display_frame (Display* display, Game* game)
 		float hit = ship_hit(&game->player);
 		if(hit < .9) { // avoid drawing the cave from outside
 			glPushMatrix();
+				if (game->player.lefton && !game->player.righton)
+				{
+					glRotatef(M_PI_2, 0, 0, 1);
+				} else if (game->player.righton && !game->player.lefton)
+				{
+					glRotatef(-M_PI_2, 0, 0, 1);
+				}
 				display_world_transform (display, &game->player);
 				cave_model (display, &game->cave, DISPLAYMODE_NORMAL);
 				monolith_model (display, game);

@@ -138,6 +138,7 @@ static void args_init (Args* args, int argc, char* argv[])
 	args->game_mode = TWO_BUTTONS;
 	args->nosound = 0;
 	args->noshake = 0;
+	args->autopilot = 0;
 #ifdef USE_SDLNET
 	args->port = GLOBAL_SCORE_PORT;
 #ifdef NET_DEFAULT_ENABLED
@@ -155,22 +156,24 @@ static void args_init (Args* args, int argc, char* argv[])
 		int*  val_num;
 		char* val_str;
 	} options[] = {
-		{ "-h", "--help",         false, &help_called,        NULL         },
-		{ "-g", "--game_mode",    true,  &args->game_mode,    NULL         },
-		{ "-W", "--width",        true,  &args->width,        NULL         },
-		{ "-H", "--height",       true,  &args->height,       NULL         },
-		{ "-B", "--bpp",          true,  &args->bpp,          NULL         },
-		{ "-F", "--fullscreen",   false, &args->fullscreen,   NULL         },
-		{ "-R", "--highres",      false, &args->highres,      NULL         },
-		{ "-A", "--antialiasing", true,  &args->antialiasing, NULL         },
-		{ "-M", "--monoliths",    false, &args->monoliths,    NULL         },
-		{ "-S", "--start",        true,  &args->start,        NULL         },
-		{ "-C", "--cockpit",      false, &args->cockpit,      NULL         },
-		{ "-N", "--nosound",      false, &args->nosound,      NULL         },
-		{ "-K", "--noshake",      false, &args->noshake,      NULL         },
+		//                        arg?    int-value            string-value
+		{ "-h", "--help",         false,  &help_called,        NULL         },
+		{ "-g", "--game_mode",    true,   &args->game_mode,    NULL         },
+		{ "-W", "--width",        true,   &args->width,        NULL         },
+		{ "-H", "--height",       true,   &args->height,       NULL         },
+		{ "-B", "--bpp",          true,   &args->bpp,          NULL         },
+		{ "-F", "--fullscreen",   false,  &args->fullscreen,   NULL         },
+		{ "-R", "--highres",      false,  &args->highres,      NULL         },
+		{ "-A", "--antialiasing", true,   &args->antialiasing, NULL         },
+		{ "-M", "--monoliths",    false,  &args->monoliths,    NULL         },
+		{ "-S", "--start",        true,   &args->start,        NULL         },
+		{ "-C", "--cockpit",      false,  &args->cockpit,      NULL         },
+		{ "-N", "--nosound",      false,  &args->nosound,      NULL         },
+		{ "-K", "--noshake",      false,  &args->noshake,      NULL         },
+		{ "-a", "--autopilot",    false,  &args->autopilot,    NULL         },
 #ifdef USE_SDLNET
-		{ "-s", "--server",       true,  NULL,                args->server },
-		{ "-p", "--port",         true,  &args->port,         NULL         },
+		{ "-s", "--server",       true,   NULL,                args->server },
+		{ "-p", "--port",         true,   &args->port,         NULL         },
 #endif
 		{ 0, 0, 0, 0, 0 }
 	};
@@ -255,15 +258,18 @@ int main_control (int argc, char* argv[])
 		switch (input.state) {
 		case PLAY:
 			digger_control (&game.digger, game.mode);
-			ship_move (&game.digger, dt);
+			ship_move (SHIP(&game.digger), dt);
 			
-			player_control (&game.player, &input, game.mode);
+			if (args.autopilot)
+				autopilot (&game, dt);
+			else
+				player_control (&game.player, &input, game.mode);
 			ship_move (&game.player, dt);
 			
 #ifndef NO_STRETCH_FIX
 			game.player.pos[2] = 
 				0.7 * (game.player.pos[2]) +
-				0.3 * (game.digger.pos[2] - cave_len(&game.cave)); 
+				0.3 * (game.digger.ship.pos[2] - cave_len(&game.cave));
 			// XXX fix player position in case digger moves differently
 #endif
 
@@ -277,6 +283,7 @@ int main_control (int argc, char* argv[])
 
 			display_frame (&display, &game);
 			break;
+
 		case WELCOME:
 		case PAUSE:
 		case GAMEOVER:
