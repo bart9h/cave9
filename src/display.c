@@ -167,7 +167,7 @@ static void cave_model (Display* display, Cave* cave, int mode)
 {
 
 	for (int i = 0; i < SEGMENT_COUNT-1; ++i) {
-		if (mode == DISPLAYMODE_NORMAL && i != 0) {
+		if (display->aidtrack  &&  mode == DISPLAYMODE_NORMAL && !(i&1)) {
 			glColor4f(0.5,0.5,1,1);
 			glBegin(GL_LINE_STRIP);
 
@@ -661,6 +661,7 @@ void display_init (Display* display, Args* args)
 
 	display->cockpit = args->cockpit;
 	display->shaking = !args->noshake;
+	display->aidtrack = args->aidtrack;
 }
 
 // vim600:fdm=syntax:fdn=1:
