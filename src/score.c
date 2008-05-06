@@ -15,13 +15,21 @@
 	along with cave9.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef _WIN32
+# undef __STRICT_ANSI__ // where did it come from? we're running C99 // for string.h: strdup
+#endif
+#include <string.h>
+
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <sys/stat.h>
 #include <assert.h>
 #include "score.h"
 #include "util.h"
+
+#ifdef _WIN32
+#include <io.h> // mkdir
+#endif
 
 #ifdef USE_SDLNET
 
@@ -110,7 +118,12 @@ void score_init (Score* score, Args* args)
 	char* home = getenv("HOME");
 	if (home != NULL) {
 		sprintf (cave9_home, "%s/.cave9", home);
-		mkdir (cave9_home, 0755);
+		mkdir (
+			cave9_home
+#ifndef _WIN32 // XXX no mode on win32
+			, 0755
+#endif
+		);
 
 		size_t len = strlen(cave9_home) + strlen("/") + strlen(SCORE_FILE) + 1;
 		score->filename = malloc (len);

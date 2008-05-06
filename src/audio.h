@@ -37,7 +37,7 @@ void audio_start (Audio*, Ship*);
 void audio_stop (Audio*);
 
 #define AUDIO_FILE "thrust.wav"
-#define AUDIO_HIT_FILE "crash.wav"
+#define AUDIO_HIT_FILE "hit.wav"
 
 #endif
 

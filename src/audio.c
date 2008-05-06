@@ -17,6 +17,7 @@
 
 #include <SDL.h>
 #include <math.h>
+#include <stdlib.h>
 #include "audio.h"
 #include "util.h"
 
@@ -108,8 +109,12 @@ void audio_init (Audio* audio, bool enabled)
 		fprintf(stderr, "SDL_LoadWAV(%s): %s\n", audio_hit_file, SDL_GetError());
 		return;
 	}
-	if(audio->hit_fmt.format != AUDIO_S16 && audio->hit_fmt.channels != 1) {
-		fprintf(stderr, "audio file '%s' expected to be 1ch and 16bit\n", audio_hit_file);
+	if(audio->hit_fmt.format != AUDIO_S16 && audio->hit_fmt.channels != 1 
+			&& audio->hit_fmt.freq == audio->fmt.freq) 
+	{
+		fprintf(stderr, "audio file '%s' expected to be 1ch and 16bit"
+				" and same sample-rate than '%s'\n", 
+				audio_hit_file, audio_file);
 		return;
 	}
 

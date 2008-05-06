@@ -30,13 +30,6 @@
 #define ROOM_LEN 100.0
 #define ROOM_MUL 3.0
 
-enum DisplayMode
-{
-	DISPLAYMODE_NORMAL,
-	DISPLAYMODE_MINIMAP,
-	DISPLAYMODE_COUNT
-};
-
 typedef struct  Ship_struct
 {
 	float radius;
@@ -62,8 +55,8 @@ typedef struct Digger_struct
 typedef struct  Cave_struct
 {
 	Vec3 segs[SEGMENT_COUNT][SECTOR_COUNT];
+	bool dirty[SEGMENT_COUNT];
 	Vec3 centers[SEGMENT_COUNT];
-	GLuint gl_list[DISPLAYMODE_COUNT][SEGMENT_COUNT];
 	int i;  // circular array index
 
 	Vec3  monolith_pos;

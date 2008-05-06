@@ -23,6 +23,15 @@
 
 #define EPSILON 0.000001
 
+//ifdef _WIN32 // XXX no M_PI on mingw???
+#ifndef M_PI
+# define M_PI		3.14159265358979323846	/* pi */
+#endif
+#ifndef M_PI_2
+# define M_PI_2		1.57079632679489661923	/* pi/2 */
+#endif
+
+
 typedef GLfloat Vec3[3];
 
 #define MAX(x,y) ((x)>(y)?(x):(y))

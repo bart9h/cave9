@@ -23,21 +23,40 @@
 #include <stdbool.h>
 #include "game.h"
 
+#define BASE_W 1024
+#define BASE_H 768
+
 #define  ICON_FILE             "icon.png"
-#define  WALL_TEXTURE_FILE     "rocky.jpg"
-#define  FONT_FILE             "trashco.ttf"
+#define  WALL_TEXTURE_FILE     "wall.jpg"
+//#define  OUTSIDE_TEXTURE_FILE  "outside.jpg"
+#define  FONT_FILE             "hud.ttf"
+//#define  FONT_MENU_FILE        "menu.ttf"
+
+enum DisplayMode
+{
+	DISPLAYMODE_NORMAL,
+	DISPLAYMODE_MINIMAP,
+	DISPLAYMODE_COUNT
+};
 
 typedef struct Display_struct
 {
 	SDL_Surface* icon;
 	SDL_Surface* screen;
+#ifdef OUTSIDE_TEXTURE_FILE
+	GLuint outside_texture_id;
+#endif
 	GLuint wall_texture_id;
 	GLuint hud_id;
 	GLuint msg_id;
-	TTF_Font* font;
+	TTF_Font *font;
+#ifdef FONT_MENU_FILE
+	TTF_Font *font_menu;
+#endif
 	Vec3 cam, target;
 	GLfloat near_plane, far_plane;
 
+	GLuint gl_list[DISPLAYMODE_COUNT][SEGMENT_COUNT];
 	GLuint list_start[DISPLAYMODE_COUNT];
 	GLuint ship_list;
 
