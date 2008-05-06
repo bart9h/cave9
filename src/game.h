@@ -114,6 +114,9 @@ extern const char* data_paths[];
 #define MIN_CAVE_RADIUS (SHIP_RADIUS*5)
 #define MIN_CAVE_RADIUS_DEPTH 10000
 
+#define WALL_MULT_MIN 1.0
+#define WALL_MULT_MAX 2.0
+
 #define MAX_VEL_X GRAVITY
 #define MAX_VEL_Y (GRAVITY*4)
 #define MAX_VEL_Z VELOCITY

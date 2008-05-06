@@ -48,6 +48,9 @@ void cave_gen (Cave* cave, Digger* digger)
 		cave->gl_list[mode][cave->i] = 0;
 	}
 
+	const float B = 2/(WALL_MULT_MAX - WALL_MULT_MIN);
+	const float A = B*WALL_MULT_MAX - 1;
+
 	// generate new segment
 	for( i = 0; i < SECTOR_COUNT; ++i ) {
 		float a = M_PI_2+(i-1)*M_PI*2/SECTOR_COUNT;
@@ -59,9 +62,9 @@ void cave_gen (Cave* cave, Digger* digger)
 		float mult_x = (cos_a > 0)? digger->y_top_radius : digger->y_bottom_radius;
 		float mult_y = (sin_a > 0)? digger->x_left_radius: digger->x_right_radius;
 
-		// clamp the multipliers to [1 .. 2]
-		mult_x = (3 + sin(mult_x))/2;
-		mult_y = (3 + sin(mult_y))/2;
+		// clamp the multipliers to [mult_min .. mult_max]
+		mult_x = (A + sin(mult_x))/B;
+		mult_y = (A + sin(mult_y))/B;
 
 		SET(cave->segs[cave->i][i],
 			ship->pos[0] + (r * mult_x * cos_a) + RAND,
