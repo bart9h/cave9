@@ -470,6 +470,7 @@ void display_frame (Display* display, Game* game)
 		float hit = ship_hit(&game->player);
 		if(hit < .5) { // avoid drawing the cave from outside
 			glPushMatrix();
+#if 1
 				if (game->player.lefton && !game->player.righton)
 				{
 					glRotatef(M_PI_2, 0, 0, 1);
@@ -477,6 +478,9 @@ void display_frame (Display* display, Game* game)
 				{
 					glRotatef(-M_PI_2, 0, 0, 1);
 				}
+#else
+				glRotatef (10*M_PI * game->player.vel[0]/LEN(game->player.vel), 0, 0, 1);
+#endif
 				display_world_transform (display, &game->player);
 				cave_model (display, &game->cave, DISPLAYMODE_NORMAL);
 				monolith_model (display, game);
