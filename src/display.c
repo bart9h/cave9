@@ -425,6 +425,34 @@ static void display_hud (Display* display, Game* game)
 #else
 		snprintf (buf, HUD_TEXT_MAX, "SCORE %d", score);
 #endif
+
+		render_text (display, &display->hud_id, 
+#ifdef FONT_MENU_FILE
+				display->font_menu, 
+#else
+				display->font, 
+#endif
+				buf, 
+				.6,.95, .1, 1,1,1);
+
+
+		float max_vel[3] = { MAX_VEL_X, MAX_VEL_Y, MAX_VEL_Z };
+		float vel = MIN(1,
+				log(1+MAX(0,LEN(game->player.vel)-MAX_VEL_Z)) /
+				log(1+MAX(0,LEN(max_vel)-MAX_VEL_Z)));
+
+		char gauge[] = "FASTERESTEST";
+		int n = MIN(strlen(gauge), (int)(vel*20));
+		gauge[n] = '\0';
+
+		render_text (display, &display->hud_id, 
+#ifdef FONT_MENU_FILE
+				display->font_menu, 
+#else
+				display->font, 
+#endif
+				gauge, 
+				.1,.95, .1, 1,1,1);
 	} else {
 		if (game_nocheat(game)) {
 			snprintf(buf, HUD_TEXT_MAX, "SCORE %d (%d, %d, %d)",
@@ -441,36 +469,17 @@ static void display_hud (Display* display, Game* game)
 				(int)game->player.start
 			);
 		}
+
+		render_text_box (display, &display->hud_id, 
+#ifdef FONT_MENU_FILE
+				display->font_menu, 
+#else
+				display->font, 
+#endif
+				buf, 
+				.5,.85,1,.2, 1,1,1);
 	}
 
-	render_text (display, &display->hud_id, 
-#ifdef FONT_MENU_FILE
-			display->font_menu, 
-#else
-			display->font, 
-#endif
-			buf, 
-			.6,.95, .1, 1,1,1);
-
-
-	float max_vel[3] = { MAX_VEL_X, MAX_VEL_Y, MAX_VEL_Z };
-	float vel = MIN(1,
-			log(1+MAX(0,LEN(game->player.vel)-MAX_VEL_Z)) /
-			log(1+MAX(0,LEN(max_vel)-MAX_VEL_Z)));
-
-	char gauge[] = "FASTERESTEST";
-	int n = MIN(strlen(gauge), (int)(vel*20));
-	gauge[n] = '\0';
-
-
-	render_text (display, &display->hud_id, 
-#ifdef FONT_MENU_FILE
-			display->font_menu, 
-#else
-			display->font, 
-#endif
-			gauge, 
-			.1,.95, .1, 1,1,1);
 }
 
 static char display_message_buf[256];
