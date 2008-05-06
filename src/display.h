@@ -27,10 +27,10 @@
 #define BASE_H 768
 
 #define  ICON_FILE             "icon.png"
-#define  WALL_TEXTURE_FILE     "rocky.jpg"
-#define  OUTSIDE_TEXTURE_FILE  "grass.jpg"
-#define  FONT_FILE             "trashco.ttf"
-#define  FONT_MENU_FILE        "TerminusBold.ttf"
+#define  WALL_TEXTURE_FILE     "wall.jpg"
+//#define  OUTSIDE_TEXTURE_FILE  "outside.jpg"
+#define  FONT_FILE             "hud.ttf"
+//#define  FONT_MENU_FILE        "menu.ttf"
 
 enum DisplayMode
 {
@@ -43,11 +43,16 @@ typedef struct Display_struct
 {
 	SDL_Surface* icon;
 	SDL_Surface* screen;
+#ifdef OUTSIDE_TEXTURE_FILE
 	GLuint outside_texture_id;
+#endif
 	GLuint wall_texture_id;
 	GLuint hud_id;
 	GLuint msg_id;
-	TTF_Font* font, *font_menu;
+	TTF_Font *font;
+#ifdef FONT_MENU_FILE
+	TTF_Font *font_menu;
+#endif
 	Vec3 cam, target;
 	GLfloat near_plane, far_plane;
 

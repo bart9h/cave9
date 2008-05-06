@@ -3,14 +3,11 @@ CODE_VERSION=$(shell grep CODE_VERSION $(VERSION) | cut -d \" -f 2)
 DATA_VERSION=$(shell grep DATA_VERSION $(VERSION) | cut -d \" -f 2)
 
 DATA = \
-	data/crash.wav \
-	data/grass.jpg \
+	data/hit.wav \
 	data/icon.png \
-	data/rocky.jpg \
+	data/wall.jpg \
 	data/thrust.wav \
-	data/trashco.ttf \
-	data/trashco_Readme.txt \
-	data/TerminusBold.ttf \
+	data/hud.ttf \
 
 build: $(DATA)
 	$(MAKE) -C src

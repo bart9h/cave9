@@ -185,9 +185,11 @@ static void cave_model (Display* display, Cave* cave, int mode)
 			int i1 = (i0 + 1)%SEGMENT_COUNT;
 			if (mode == DISPLAYMODE_NORMAL) {
 				glBindTexture (GL_TEXTURE_2D,
+#ifdef OUTSIDE_TEXTURE_FILE
 						cave->segs[0][0][2] < ROOM_LEN/2
-						? display->outside_texture_id
-						: display->wall_texture_id
+						? display->outside_texture_id : 
+#endif
+						display->wall_texture_id
 				);
 			}
 
@@ -398,14 +400,14 @@ static void display_hud (Display* display, Game* game)
 #define GAUGE_MAX 10
 	char gauge[GAUGE_MAX+1];
 	int n = MIN(GAUGE_MAX, (int)(vel*20));
-	memset(gauge,'>',n);
+	memset(gauge,'/',n);
 	gauge[n] = '\0';
 
 	int score = game_score(game);
 
 #define HUD_TEXT_MAX 80
 	char buf[HUD_TEXT_MAX];
-	if(game->player.dist > 0) {
+	if(game->player.dist > 0) { // FIXME display hiscore before dead
 		snprintf(buf, HUD_TEXT_MAX, "VELOCITY %-10s  SCORE %9d",
 			gauge, score
 		);
@@ -428,7 +430,12 @@ static void display_hud (Display* display, Game* game)
 	}
 
 	render_text(display, &display->hud_id, 
-			display->font_menu, buf, 
+#ifdef FONT_MENU_FILE
+			display->font_menu, 
+#else
+			display->font, 
+#endif
+			buf, 
 			.5,.9,1,.1, 1,1,1);
 }
 
@@ -479,7 +486,7 @@ void display_frame (Display* display, Game* game)
 
 	if (game != NULL) {
 		float hit = ship_hit(&game->player);
-		if(hit < .5) { // avoid drawing the cave from outside
+		if(hit < .9) { // avoid drawing the cave from outside
 			glPushMatrix();
 				display_world_transform (display, &game->player);
 				cave_model (display, &game->cave, DISPLAYMODE_NORMAL);
@@ -492,7 +499,7 @@ void display_frame (Display* display, Game* game)
 			glEnable  (GL_BLEND);
 			glDisable (GL_TEXTURE_2D);
 
-			glColor4f(1,0,0,hit);
+			glColor4f(1,0,0,hit/2.);
 			glBegin (GL_QUADS);
 			glVertex3f(-1,-1,-1);
 			glVertex3f(+1,-1,-1);
@@ -665,10 +672,14 @@ void display_init (Display* display, Args* args)
 			"loading cave9", .5,.5,1,.25, .75,.25,.25);
 	display_end_frame(display);
 
+#ifdef FONT_MENU_FILE
 	display->font_menu = load_font(FONT_MENU_FILE, 22*scale);
+#endif
 
 	display->wall_texture_id    = load_texture (WALL_TEXTURE_FILE);
+#ifdef OUTSIDE_TEXTURE_FILE
 	display->outside_texture_id = load_texture (OUTSIDE_TEXTURE_FILE);
+#endif
 
 	display->ship_list = display_make_ship_list();
 

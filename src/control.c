@@ -290,7 +290,7 @@ int main_control (int argc, char* argv[])
 		dt = (SDL_GetTicks()-t0)/1000.;
 	}
 
-	display_message (&display, &game, "bye.");
+	//display_message (&display, &game, "bye.");
 	score_finish (&game.score);
 
 	return 0;
