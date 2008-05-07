@@ -62,6 +62,7 @@ typedef struct Display_struct
 
 	bool cockpit;
 	bool shaking;
+	bool aidtrack;
 } Display;
 
 void viewport (Display*, GLsizei w, GLsizei h, GLsizei bpp, bool fullscreen, int aa);
