@@ -27,8 +27,6 @@
 #include "display.h"
 #include "util.h"
 
-#define ROMAN_SCORE
-
 const float shake_hit = 3.0;
 const float shake_vel = 0.2;
 const float shake_velZ = 0.08;
@@ -431,43 +429,40 @@ static void display_hud (Display* display, Game* game)
 #define HUD_TEXT_MAX 80
 	char buf[HUD_TEXT_MAX];
 
+#ifdef FONT_MENU_FILE
+	TTF_Font* font = display->font_menu;
+#else
+	TTF_Font* font = display->font;
+#endif
 
 	int score = game_score(game);
 
 	if (game->player.dist > 0) { // FIXME display hiscore before dead
-#ifdef ROMAN_SCORE
-		snprintf (buf, HUD_TEXT_MAX, "SCORE %s", roman(score));
-#else
-		snprintf (buf, HUD_TEXT_MAX, "SCORE %d", score);
-#endif
-
-		render_text (display, &display->hud_id, 
-#ifdef FONT_MENU_FILE
-				display->font_menu, 
-#else
-				display->font, 
-#endif
-				buf, 
-				.6,.95, .1, 1,1,1);
-
 
 		float max_vel[3] = { MAX_VEL_X, MAX_VEL_Y, MAX_VEL_Z };
 		float vel = MIN(1,
 				log(1+MAX(0,LEN(game->player.vel)-MAX_VEL_Z)) /
 				log(1+MAX(0,LEN(max_vel)-MAX_VEL_Z)));
+		float white = game->player.dist <= 0 ? 1 : 1-vel;
 
-		char gauge[] = "FASTERESTEST";
+#ifdef ROMAN_SCORE
+		snprintf (buf, HUD_TEXT_MAX, "SCORE  %s", roman(score));
+#else
+		snprintf (buf, HUD_TEXT_MAX, "SCORE  %d", score);
+#endif
+
+		render_text (display, &display->hud_id, font,
+				buf, 
+				.6,.95, .1, 1,white,white);
+
+		char gauge[] = "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\";
 		int n = MIN(strlen(gauge), (int)(vel*20));
 		gauge[n] = '\0';
+		snprintf (buf, HUD_TEXT_MAX, "velocity  %s", gauge);
 
-		render_text (display, &display->hud_id, 
-#ifdef FONT_MENU_FILE
-				display->font_menu, 
-#else
-				display->font, 
-#endif
-				gauge, 
-				.1,.95, .1, 1,1,1);
+		render_text (display, &display->hud_id, font,
+				buf, 
+				.1,.95, .1, 1,white,white);
 	} else {
 		if (game_nocheat(game)) {
 			snprintf(buf, HUD_TEXT_MAX, "SCORE %d (%d, %d, %d)",
@@ -485,12 +480,7 @@ static void display_hud (Display* display, Game* game)
 			);
 		}
 
-		render_text_box (display, &display->hud_id, 
-#ifdef FONT_MENU_FILE
-				display->font_menu, 
-#else
-				display->font, 
-#endif
+		render_text_box (display, &display->hud_id, font,
 				buf, 
 				.5,.85,1,.2, 1,1,1);
 	}
