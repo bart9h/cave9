@@ -34,7 +34,7 @@ typedef struct  Ship_struct
 {
 	float radius;
 	Vec3 pos, vel, lookAt;
-	float angle;
+	int angle;
 	bool lefton, righton;
 	float dist;  // distance to cave wall
 	Vec3 repulsion;  // normal to collision

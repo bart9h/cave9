@@ -111,6 +111,7 @@ static void ship_init (Ship* ship, float radius)
 	ship->dist = FLT_MAX;
 	SET(ship->repulsion,0,1,0);
 	ship->lefton = ship->righton = false;
+	ship->angle=0;
 }
 
 static void digger_init(Digger *digger, float radius)
@@ -144,11 +145,23 @@ void ship_move (Ship* ship, float dt)
 	if(ship->lefton) {
 		Vec3 leftup = {-a,a/2,0};
 		ADD(ship->vel, leftup);
+		if (ship->angle > -10)
+			ship->angle--;
 	}
 
 	if(ship->righton) {
 		Vec3 rightup = {+a,a/2,0};
 		ADD(ship->vel, rightup);
+		if (ship->angle < 10)
+			ship->angle++;
+	}
+
+	if (ship->angle != 0 && ((ship->righton && ship->lefton) || (!ship->righton && !ship->lefton)))
+	{
+		if (ship->angle < 0)
+			ship->angle++;
+		else
+			ship->angle--;
 	}
 
 	ship->vel[1] -= GRAVITY*dt;
