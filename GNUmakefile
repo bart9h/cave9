@@ -1,3 +1,5 @@
+SHELL = /bin/bash
+
 VERSION=src/version.h
 CODE_VERSION=$(shell grep CODE_VERSION $(VERSION) | cut -d \" -f 2)
 DATA_VERSION=$(shell grep DATA_VERSION $(VERSION) | cut -d \" -f 2)
@@ -61,7 +63,8 @@ clean:
 all: build release
 
 test:
-	@echo -n "dep: " && make clean dep 2>/dev/null 1>/dev/null && echo OK
-	@echo -n "build: " && make clean build 2>/dev/null 1>/dev/null && echo OK
-	@echo -n "release: " && make clean release 2>/dev/null 1>/dev/null && echo OK && ls -1sh $(RELEASE)
-	@make clean 2>/dev/null 1>/dev/null
+	@echo -n "dep: "     && make clean dep     &>/dev/null && echo OK
+	@echo -n "build: "   && make clean build   &>/dev/null && echo OK
+	@echo -n "release: " && make clean release &>/dev/null && echo OK && ls -1sh $(RELEASE)
+	@echo -n "cleanup: " && make clean         &>/dev/null
+
