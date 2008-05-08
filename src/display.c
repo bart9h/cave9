@@ -447,11 +447,10 @@ static void display_hud (Display* display, Game* game)
 				log(1+MAX(0,LEN(max_vel)-MAX_VEL_Z)));
 		float white = game->player.dist <= 0 ? 1 : 1-vel;
 
-#ifdef ROMAN_SCORE
-		snprintf (buf, HUD_TEXT_MAX, "SCORE  %s", roman(score));
-#else
-		snprintf (buf, HUD_TEXT_MAX, "SCORE  %d", score);
-#endif
+		if (display->arabic)
+			snprintf (buf, HUD_TEXT_MAX, "SCORE  %d", score);
+		else
+			snprintf (buf, HUD_TEXT_MAX, "SCORE  %s", roman(score));
 
 		render_text (display, &display->hud_id, font,
 				buf, 
@@ -736,6 +735,7 @@ void display_init (Display* display, Args* args)
 	display->cockpit = args->cockpit;
 	display->shaking = !args->noshake;
 	display->aidtrack = args->aidtrack;
+	display->arabic = args->arabic;
 }
 
 // vim600:fdm=syntax:fdn=1:

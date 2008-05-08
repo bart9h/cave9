@@ -140,6 +140,7 @@ static void args_init (Args* args, int argc, char* argv[])
 	args->noshake = 0;
 	args->autopilot = 0;
 	args->aidtrack = 0;
+	args->arabic = 0;
 #ifdef USE_SDLNET
 	args->port = GLOBAL_SCORE_PORT;
 # ifdef NET_DEFAULT_ENABLED
@@ -174,6 +175,7 @@ static void args_init (Args* args, int argc, char* argv[])
 		{ "-M", "--monoliths",    false,  true,   &args->monoliths,    NULL         },
 		{ "-a", "--autopilot",    false,  true,   &args->autopilot,    NULL         },
 		{ "-T", "--aidtrack",     false,  true,   &args->aidtrack,     NULL         },
+		{ "",   "--arabic",       false,  false,  &args->arabic,       NULL         },
 #ifdef USE_SDLNET                         
 		{ "-s", "--server",       true,   true,   NULL,                args->server },
 		{ "-p", "--port",         true,   true,   &args->port,         NULL         },
