@@ -45,6 +45,7 @@ typedef struct Digger_struct
 {
 	Ship ship; // parent class
 
+	unsigned int rand_state;
 	float x_right_radius;
 	float x_left_radius;
 	float y_top_radius;
@@ -72,6 +73,7 @@ typedef struct Game_struct
 	Score score;
 
 	int mode;
+	int seed;
 	bool monoliths;
 } Game;
 
@@ -83,7 +85,7 @@ enum GameMode
 
 void game_init (Game* game, Args* args);
 float cave_len (Cave*);
-void cave_gen (Cave*, Digger* digger);
+bool cave_gen (Cave*, Digger* digger);
 void ship_move (Ship*, float dt);
 void digger_control (Digger*, int game_mode);
 void autopilot (Game*, float dt);

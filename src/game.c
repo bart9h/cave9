@@ -20,11 +20,14 @@
 #include <string.h>
 #include <math.h>
 #include <float.h>
+#include <time.h>
 #include <assert.h>
 #include <SDL_opengl.h>
 #include <GL/gl.h>
 #include "vec.h"
 #include "game.h"
+
+#define RANDR (rand_r(&digger->rand_state)/(float)RAND_MAX)
 
 float cave_len (Cave *cave)
 {
@@ -33,13 +36,13 @@ float cave_len (Cave *cave)
 	return cave->segs[tail][0][2] - cave->segs[head][0][2];
 }
 
-void cave_gen (Cave* cave, Digger* digger)
+bool cave_gen (Cave* cave, Digger* digger)
 {
 	Ship *ship = SHIP(digger);
 	// check if the ship advanced to the next segment
 	int i = (cave->i - 1 + SEGMENT_COUNT) % SEGMENT_COUNT;
 	if (ship->pos[2] > ship->start+1  &&  ship->pos[2]-SEGMENT_LEN < cave->segs[i][0][2])
-		return;
+		return false;
 
 	// invalidate GL list for this segment
 	cave->dirty[cave->i] = true;
@@ -69,8 +72,8 @@ void cave_gen (Cave* cave, Digger* digger)
 		}
 
 		SET(cave->segs[cave->i][i],
-			ship->pos[0] + (r * mult_x * cos_a) + 2 * RAND,
-			ship->pos[1] + (r * mult_y * sin_a) + 2 * RAND,
+			ship->pos[0] + (r * mult_x * cos_a) + 2 * RANDR,
+			ship->pos[1] + (r * mult_y * sin_a) + 2 * RANDR,
 			ship->pos[2]
 		);
 	}
@@ -87,6 +90,8 @@ void cave_gen (Cave* cave, Digger* digger)
 		cave->monolith_pos[2] = ROOM_LEN/2 + ROOM_SPACING*(int)(ship->pos[2]/ROOM_SPACING);
 		cave->monolith_yaw = atan2 (ship->vel[0], ship->vel[2]);
 	}
+
+	return true;
 }
 
 static void cave_init (Cave* cave, Digger* digger, int game_mode)
@@ -130,6 +135,15 @@ void game_init (Game* game, Args* args)
 		game->mode = args->game_mode;
 		game->monoliths = args->monoliths;
 		game->player.start = game->digger.ship.start = (float)args->start;
+		game->seed = args->seed;
+	}
+
+	if (game->seed != 0) {
+		game->digger.rand_state = game->seed;
+	}
+	else {
+		game->digger.rand_state = time(NULL);
+		printf ("using seed %d\n", game->digger.rand_state);
 	}
 
 	ship_init (&game->player, SHIP_RADIUS);
@@ -186,15 +200,15 @@ void digger_control (Digger* digger, int game_mode)
 			ship->vel[1] < -max_vel[1] || 
 			ship->vel[0] >  max_vel[0] ||
 			ship->vel[0] < -max_vel[0] ||
-			RAND < twist*noise
+			RANDR < twist*noise
 		) 
 	{
-		if(RAND>twist/2)
-			ship->lefton = RAND<twist*noise ? rand()%2 :
+		if(RANDR>twist/2)
+			ship->lefton = RANDR<twist*noise ? rand_r(&digger->rand_state)%2 :
 				ship->vel[1] < 0 || ship->vel[0] > +max_vel[0]; 
 
-		if(RAND>twist/2)
-			ship->righton = RAND<twist*noise ? rand()%2 :
+		if(RANDR>twist/2)
+			ship->righton = RANDR<twist*noise ? rand_r(&digger->rand_state)%2 :
 				ship->vel[1] < 0 || ship->vel[0] < -max_vel[0];
 
 		if (game_mode == ONE_BUTTON)
@@ -215,10 +229,10 @@ void digger_control (Digger* digger, int game_mode)
 	if (ship->pos[2] - ship->start  <  .33*SEGMENT_COUNT*SEGMENT_LEN)
 		ship->lefton = ship->righton = false;
 
-	digger->x_right_radius += RAND - 0.5;
-	digger->y_top_radius += RAND - 0.5;
-	digger->x_left_radius += RAND - 0.5;
-	digger->y_bottom_radius += RAND - 0.5;
+	digger->x_right_radius += RANDR - 0.5;
+	digger->y_top_radius += RANDR - 0.5;
+	digger->x_left_radius += RANDR - 0.5;
+	digger->y_bottom_radius += RANDR - 0.5;
 }
 
 void autopilot (Game* game, float dt)

@@ -37,6 +37,7 @@ typedef struct Args_struct
 	int autopilot;
 	int aidtrack;
 	int arabic;
+	int seed;
 #ifdef USE_SDLNET
 	int port;
 	char server[ARG_STR_MAX];

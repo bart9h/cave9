@@ -16,7 +16,6 @@
  */
 
 #include <stdlib.h>
-#include <time.h>
 #include <string.h>
 #include <stdbool.h>
 #include <assert.h>
@@ -141,6 +140,7 @@ static void args_init (Args* args, int argc, char* argv[])
 	args->autopilot = 0;
 	args->aidtrack = 0;
 	args->arabic = 0;
+	args->seed = 0;
 #ifdef USE_SDLNET
 	args->port = GLOBAL_SCORE_PORT;
 # ifdef NET_DEFAULT_ENABLED
@@ -168,6 +168,7 @@ static void args_init (Args* args, int argc, char* argv[])
 		{ "-F", "--fullscreen",   false,  false,  &args->fullscreen,   NULL         },
 		{ "-R", "--highres",      false,  false,  &args->highres,      NULL         },
 		{ "-A", "--antialiasing", true,   false,  &args->antialiasing, NULL         },
+		{ "-s", "--seed",         true,   false,  &args->seed,         NULL         },
 		{ "-S", "--start",        true,   false,  &args->start,        NULL         },
 		{ "-C", "--cockpit",      false,  false,  &args->cockpit,      NULL         },
 		{ "-N", "--nosound",      false,  false,  &args->nosound,      NULL         },
@@ -243,8 +244,6 @@ int main_control (int argc, char* argv[])
 	Input input;
 	memset (input.pressed, 0, sizeof(input.pressed));
 
-	srand(time(NULL));
-
 	Game game;
 
 	args_init (&args, argc, argv);
@@ -264,7 +263,6 @@ int main_control (int argc, char* argv[])
 
 		switch (input.state) {
 		case PLAY:
-			digger_control (&game.digger, game.mode);
 			ship_move (SHIP(&game.digger), dt);
 			
 			if (args.autopilot)
@@ -286,7 +284,8 @@ int main_control (int argc, char* argv[])
 				audio_stop (&audio);
 				game_score_update (&game);
 			}
-			cave_gen (&game.cave, &game.digger);
+			if (cave_gen (&game.cave, &game.digger))
+				digger_control (&game.digger, game.mode);
 
 			display_frame (&display, &game);
 			break;
