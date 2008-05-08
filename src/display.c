@@ -449,7 +449,7 @@ static void display_hud (Display* display, Game* game)
 		if (display->arabic)
 			snprintf (buf, HUD_TEXT_MAX, "SCORE  %d", score);
 		else
-			snprintf (buf, HUD_TEXT_MAX, "SCORE  %s", roman(score));
+			snprintf (buf, HUD_TEXT_MAX, "SCORE  %s", roman(.1*score));
 
 		render_text (display, &display->hud_id, font,
 				buf, 
