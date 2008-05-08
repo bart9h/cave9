@@ -62,9 +62,15 @@ void cave_gen (Cave* cave, Digger* digger)
 		mult_x = (A + sin(mult_x))/B;
 		mult_y = (A + sin(mult_y))/B;
 
+		// cos_a == 0.7 +/- 45°
+		if (RAND < 0.01 && cos_a > -0.7 && cos_a < 0.7)
+		{
+			mult_y = 1;
+		}
+
 		SET(cave->segs[cave->i][i],
-			ship->pos[0] + (r * mult_x * cos_a) + RAND,
-			ship->pos[1] + (r * mult_y * sin_a) + RAND,
+			ship->pos[0] + (r * mult_x * cos_a) + 2 * RAND,
+			ship->pos[1] + (r * mult_y * sin_a) + 2 * RAND,
 			ship->pos[2]
 		);
 	}
