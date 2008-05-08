@@ -202,7 +202,7 @@ void digger_control (Digger* digger, int game_mode)
 	}
 
 	float scale = 1-MIN(1,log(1+ship->pos[2])/log(1+MIN_CAVE_RADIUS_DEPTH));
-	ship->radius = MIN_CAVE_RADIUS+(MAX_CAVE_RADIUS-MIN_CAVE_RADIUS)*scale+RAND;
+	ship->radius = MIN_CAVE_RADIUS+(MAX_CAVE_RADIUS-MIN_CAVE_RADIUS)*scale;
 
 	// rooms
 	if (ship->pos[2] >= ROOM_START) {

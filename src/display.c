@@ -235,11 +235,7 @@ static void cave_model (Display* display, Cave* cave, int mode)
 #endif
 							(float)k/SECTOR_COUNT);
 				} else if (mode == DISPLAYMODE_MINIMAP) {
-					glColor4f(
-							(float)i0/SEGMENT_COUNT,
-							1-(float)i0/SEGMENT_COUNT,
-							(float)k0/SECTOR_COUNT,
-							0.5);
+					glColor4f (.5, .5, .5, .3);
 				}
 				glVertex3fv(cave->segs[i0][k0]);
 
@@ -252,11 +248,7 @@ static void cave_model (Display* display, Cave* cave, int mode)
 #endif
 							(float)k/SECTOR_COUNT);
 				} else if (mode == DISPLAYMODE_MINIMAP) {
-					glColor4f(
-							(float)i1/SEGMENT_COUNT,
-							1-(float)i1/SEGMENT_COUNT,
-							(float)k0/SECTOR_COUNT,
-							0.5);
+					glColor4f (.5, .5, .5, .3);
 				}
 				glVertex3fv(cave->segs[i1][k0]);
 			}
