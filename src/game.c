@@ -107,11 +107,11 @@ static void ship_init (Ship* ship, float radius)
 	SET (ship->pos, 0,0,ship->start);
 	SET (ship->vel, 0,0,VELOCITY);
 	SET (ship->lookAt, 0,0,VELOCITY);
+	ship->roll = 0;
 	ship->radius = radius;
 	ship->dist = FLT_MAX;
-	SET(ship->repulsion,0,1,0);
+	SET (ship->repulsion,0,1,0);
 	ship->lefton = ship->righton = false;
-	ship->angle=0;
 }
 
 static void digger_init(Digger *digger, float radius)
@@ -140,40 +140,32 @@ void game_init (Game* game, Args* args)
 
 void ship_move (Ship* ship, float dt)
 {
-	float a = THRUST*dt;
+	float acc = THRUST*dt;
+	int roll = 0;
 
 	if(ship->lefton) {
-		Vec3 leftup = {-a,a/2,0};
+		Vec3 leftup = { -acc, acc/2, 0 };
 		ADD(ship->vel, leftup);
-		if (ship->angle > -10)
-			ship->angle--;
+		roll--;
 	}
 
 	if(ship->righton) {
-		Vec3 rightup = {+a,a/2,0};
+		Vec3 rightup = { +acc, acc/2, 0 };
 		ADD(ship->vel, rightup);
-		if (ship->angle < 10)
-			ship->angle++;
-	}
-
-	if (ship->angle != 0 && ((ship->righton && ship->lefton) || (!ship->righton && !ship->lefton)))
-	{
-		if (ship->angle < 0)
-			ship->angle++;
-		else
-			ship->angle--;
+		roll++;
 	}
 
 	ship->vel[1] -= GRAVITY*dt;
 
 	ADDSCALE(ship->pos, ship->vel, dt);
 
-	{
-		float smoothness = 0.2;
-		Vec3 d;
-		SUB2 (d, ship->vel, ship->lookAt);
-		ADDSCALE (ship->lookAt, d, smoothness);
-	}
+	// smooth lookAt
+	Vec3 d;
+	SUB2 (d, ship->vel, ship->lookAt);
+	ADDSCALE (ship->lookAt, d, .2);
+
+	// smooth roll
+	ship->roll += (roll?.015:.06)*(roll - ship->roll);
 }
 
 void digger_control (Digger* digger, int game_mode)

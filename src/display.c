@@ -156,12 +156,11 @@ static void display_world_transform (Display* display, Ship* player)
 	ADD2(display->target, player->pos, player->lookAt);
 	//display->target[1]=display->target[1]*.5+player->pos[1]*.5;
 	//display->target[2]+=10;
-	float ang = M_PI_2 * (0.25 - 0.5/(exp((float)player->angle)+1));
 
 	gluLookAt(
 		display->cam[0], display->cam[1], display->cam[2],
 		display->target[0], display->target[1], display->target[2],
-			sin(ang), cos(ang), 0
+			sin(player->roll), cos(player->roll), 0
 	);
 }
 
