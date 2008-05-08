@@ -168,6 +168,8 @@ static void cave_model (Display* display, Cave* cave, int mode)
 {
 
 	for (int i = 0; i < SEGMENT_COUNT-1; ++i) {
+
+		// aid bread-crumb track
 		if (display->aidtrack  &&  mode == DISPLAYMODE_NORMAL && !(i&1)) {
 			glColor4f(0.5,0.5,1,1);
 			glBegin(GL_LINE_STRIP);
@@ -184,7 +186,7 @@ static void cave_model (Display* display, Cave* cave, int mode)
 
 		int i0 = (cave->i + i)%SEGMENT_COUNT;
 
-		if(cave->dirty[i0]) {
+		if (cave->dirty[i0]) {
 			for (int mode = 0; mode < DISPLAYMODE_COUNT; ++mode) {
 				if (glIsList (display->gl_list[mode][i0]))
 					glDeleteLists (display->gl_list[mode][i0], 1);
@@ -207,6 +209,11 @@ static void cave_model (Display* display, Cave* cave, int mode)
 #endif
 						display->wall_texture_id
 				);
+
+				glColor4f (1, 1, 1, 0.5);
+			}
+			else if (mode == DISPLAYMODE_MINIMAP) {
+				glColor4f (.5, .5, .6, .5);
 			}
 
 			glBegin (GL_QUAD_STRIP);
@@ -221,9 +228,6 @@ static void cave_model (Display* display, Cave* cave, int mode)
 					else
 						glColor4f(1, 1, 1, 0.5);
 				}
-#else
-				//glColor4f(1, .8, .7, 0.5);
-				glColor4f(1, 1, 1, 0.5);
 #endif
 
 				if (mode == DISPLAYMODE_NORMAL) {
@@ -234,8 +238,6 @@ static void cave_model (Display* display, Cave* cave, int mode)
 							(float)(cave->i+i)/SEGMENT_COUNT,
 #endif
 							(float)k/SECTOR_COUNT);
-				} else if (mode == DISPLAYMODE_MINIMAP) {
-					glColor4f (.5, .5, .5, .3);
 				}
 				glVertex3fv(cave->segs[i0][k0]);
 
@@ -247,8 +249,6 @@ static void cave_model (Display* display, Cave* cave, int mode)
 							((float)(cave->i+i+1))/SEGMENT_COUNT,
 #endif
 							(float)k/SECTOR_COUNT);
-				} else if (mode == DISPLAYMODE_MINIMAP) {
-					glColor4f (.5, .5, .5, .3);
 				}
 				glVertex3fv(cave->segs[i1][k0]);
 			}
