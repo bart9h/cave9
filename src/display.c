@@ -27,8 +27,6 @@
 #include "display.h"
 #include "util.h"
 
-#define ROMAN_SCORE
-
 const float shake_hit = 3.0;
 const float shake_vel = 0.2;
 const float shake_velZ = 0.08;
@@ -158,16 +156,33 @@ static void display_world_transform (Display* display, Ship* player)
 	ADD2(display->target, player->pos, player->lookAt);
 	//display->target[1]=display->target[1]*.5+player->pos[1]*.5;
 	//display->target[2]+=10;
+	float ang = M_PI_2 * (0.25 - 0.5/(exp((float)player->angle)+1));
+
 	gluLookAt(
 		display->cam[0], display->cam[1], display->cam[2],
 		display->target[0], display->target[1], display->target[2],
-		0,1,0
+			sin(ang), cos(ang), 0
 	);
 }
 
 static void cave_model (Display* display, Cave* cave, int mode)
 {
+
 	for (int i = 0; i < SEGMENT_COUNT-1; ++i) {
+		if (display->aidtrack  &&  mode == DISPLAYMODE_NORMAL && !(i&1)) {
+			glColor4f(0.5,0.5,1,1);
+			glBegin(GL_LINE_STRIP);
+
+#define SIZE 0.1
+			glVertex3f(cave->centers[i][0]-SIZE,cave->centers[i][1]-SIZE,cave->centers[i][2]);
+			glVertex3f(cave->centers[i][0]+SIZE,cave->centers[i][1]+SIZE,cave->centers[i][2]);
+			glVertex3fv(cave->centers[i]);
+			glVertex3f(cave->centers[i][0]+SIZE,cave->centers[i][1]-SIZE,cave->centers[i][2]);
+			glVertex3f(cave->centers[i][0]-SIZE,cave->centers[i][1]+SIZE,cave->centers[i][2]);
+
+			glEnd();
+		}
+
 		int i0 = (cave->i + i)%SEGMENT_COUNT;
 
 		if(cave->dirty[i0]) {
@@ -342,7 +357,7 @@ static void ship_model(Display* display, Ship* ship)
 	glPopMatrix();
 }
 
-static void render_text(Display* display, GLuint *id, 
+static void render_text_box (Display* display, GLuint *id, 
 		TTF_Font *font, const char* text,
 		float x, float y, float w, float h,
 		float r, float g, float b)
@@ -389,35 +404,67 @@ static void render_text(Display* display, GLuint *id,
 	glPopMatrix();
 }
 
+static void render_text (Display* display, GLuint *id, 
+		TTF_Font *font, const char* text,
+		float x, float y, float scale,
+		float r, float g, float b)
+{
+	int w, h;
+	if (TTF_SizeText (font, text, &w, &h) == 0) {
+		float s = scale*.01;
+		render_text_box (display, id, font, text, x+w*s/2, y-h*s/2, w*s, h*s, r, g, b);
+	}
+	else {
+		fprintf (stderr,
+				"Error getting TTF size of string \"%s\":\n%s\n",
+				text,
+				TTF_GetError()
+		);
+	}
+}
+
 static void display_hud (Display* display, Game* game)
 {
 	if(game->player.dist == FLT_MAX)
 		return;
 
-	float max_vel[3] = { MAX_VEL_X, MAX_VEL_Y, MAX_VEL_Z };
-	float vel = MIN(1,
-			log(1+MAX(0,LEN(game->player.vel)-MAX_VEL_Z)) /
-			log(1+MAX(0,LEN(max_vel)-MAX_VEL_Z)));
+#define HUD_TEXT_MAX 80
+	char buf[HUD_TEXT_MAX];
 
-	char gauge[] = "FASTERESTEST";
-	int n = MIN(strlen(gauge), (int)(vel*20));
-	gauge[n] = '\0';
-
+#ifdef FONT_MENU_FILE
+	TTF_Font* font = display->font_menu;
+#else
+	TTF_Font* font = display->font;
+#endif
 
 	int score = game_score(game);
 
-#define HUD_TEXT_MAX 80
-	char buf[HUD_TEXT_MAX];
-	if(game->player.dist > 0) { // FIXME display hiscore before dead
+	if (game->player.dist > 0) { // FIXME display hiscore before dead
+
+		float max_vel[3] = { MAX_VEL_X, MAX_VEL_Y, MAX_VEL_Z };
+		float vel = MIN(1,
+				log(1+MAX(0,LEN(game->player.vel)-MAX_VEL_Z)) /
+				log(1+MAX(0,LEN(max_vel)-MAX_VEL_Z)));
+		float white = game->player.dist <= 0 ? 1 : 1-vel;
+
 #ifdef ROMAN_SCORE
-		snprintf(buf, HUD_TEXT_MAX, "SCORE %s %s",
-			roman(score), gauge 
-		);
+		snprintf (buf, HUD_TEXT_MAX, "SCORE  %s", roman(score));
 #else
-		snprintf(buf, HUD_TEXT_MAX, "SCORE %9d %s",
-			gauge, score
-		);
+		snprintf (buf, HUD_TEXT_MAX, "SCORE  %d", score);
 #endif
+
+		render_text (display, &display->hud_id, font,
+				buf, 
+				.6,.95, .1, 1,white,white);
+
+		char gauge[] = "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\";
+		int n = MIN(strlen(gauge), (int)(vel*20));
+		gauge[n] = '\0';
+		snprintf (buf, HUD_TEXT_MAX, "velocity  %s", gauge);
+
+		render_text (display, &display->hud_id, font,
+				buf, 
+				.1,.95, .1, 1,white,white);
 	} else {
 		if (game_nocheat(game)) {
 			snprintf(buf, HUD_TEXT_MAX, "SCORE %d (%d, %d, %d)",
@@ -428,22 +475,18 @@ static void display_hud (Display* display, Game* game)
 			);
 		}
 		else {
-			snprintf(buf, HUD_TEXT_MAX, "SCORE %d (%d) - %d",
+			snprintf (buf, HUD_TEXT_MAX, "SCORE %d (%d) - %d",
 				score,
 				game->score.session,
 				(int)game->player.start
 			);
 		}
+
+		render_text_box (display, &display->hud_id, font,
+				buf, 
+				.5,.85,1,.2, 1,1,1);
 	}
 
-	render_text(display, &display->hud_id, 
-#ifdef FONT_MENU_FILE
-			display->font_menu, 
-#else
-			display->font, 
-#endif
-			buf, 
-			.5,.9,1,.1, 1,1,1);
 }
 
 static char display_message_buf[256];
@@ -495,13 +538,6 @@ void display_frame (Display* display, Game* game)
 		float hit = ship_hit(&game->player);
 		if(hit < .9) { // avoid drawing the cave from outside
 			glPushMatrix();
-				if (game->player.lefton && !game->player.righton)
-				{
-					glRotatef(M_PI_2, 0, 0, 1);
-				} else if (game->player.righton && !game->player.lefton)
-				{
-					glRotatef(-M_PI_2, 0, 0, 1);
-				}
 				display_world_transform (display, &game->player);
 				cave_model (display, &game->cave, DISPLAYMODE_NORMAL);
 				monolith_model (display, game);
@@ -527,7 +563,7 @@ void display_frame (Display* display, Game* game)
 		display_hud (display, game);
 	}
 
-	render_text (display, &display->msg_id, 
+	render_text_box (display, &display->msg_id, 
 			display->font, display_message_buf, 
 			.5,.5,1,.25, 1,1,1);
 
@@ -682,7 +718,7 @@ void display_init (Display* display, Args* args)
 	display->font      = load_font(FONT_FILE,      48*scale);
 
 	display_start_frame(display, 0,0,0);
-	render_text(display, &display->msg_id, display->font, 
+	render_text_box(display, &display->msg_id, display->font, 
 			"loading cave9", .5,.5,1,.25, .75,.25,.25);
 	display_end_frame(display);
 
@@ -699,6 +735,7 @@ void display_init (Display* display, Args* args)
 
 	display->cockpit = args->cockpit;
 	display->shaking = !args->noshake;
+	display->aidtrack = args->aidtrack;
 }
 
 // vim600:fdm=syntax:fdn=1:

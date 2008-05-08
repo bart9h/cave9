@@ -44,6 +44,9 @@ void cave_gen (Cave* cave, Digger* digger)
 	// invalidate GL list for this segment
 	cave->dirty[cave->i] = true;
 
+	const float B = 2/(WALL_MULT_MAX - WALL_MULT_MIN);
+	const float A = B*WALL_MULT_MAX - 1;
+
 	// generate new segment
 	for( i = 0; i < SECTOR_COUNT; ++i ) {
 		float a = M_PI_2+(i-1)*M_PI*2/SECTOR_COUNT;
@@ -55,13 +58,19 @@ void cave_gen (Cave* cave, Digger* digger)
 		float mult_x = (cos_a > 0)? digger->y_top_radius : digger->y_bottom_radius;
 		float mult_y = (sin_a > 0)? digger->x_left_radius: digger->x_right_radius;
 
-		// clamp the multipliers to [1 .. 2]
-		mult_x = (3 + sin(mult_x))/2;
-		mult_y = (3 + sin(mult_y))/2;
+		// clamp the multipliers to [mult_min .. mult_max]
+		mult_x = (A + sin(mult_x))/B;
+		mult_y = (A + sin(mult_y))/B;
+
+		// cos_a == 0.7 +/- 45°
+		if (RAND < 0.01 && cos_a > -0.7 && cos_a < 0.7)
+		{
+			mult_y = 1;
+		}
 
 		SET(cave->segs[cave->i][i],
-			ship->pos[0] + (r * mult_x * cos_a) + RAND,
-			ship->pos[1] + (r * mult_y * sin_a) + RAND,
+			ship->pos[0] + (r * mult_x * cos_a) + 2 * RAND,
+			ship->pos[1] + (r * mult_y * sin_a) + 2 * RAND,
 			ship->pos[2]
 		);
 	}
@@ -102,6 +111,7 @@ static void ship_init (Ship* ship, float radius)
 	ship->dist = FLT_MAX;
 	SET(ship->repulsion,0,1,0);
 	ship->lefton = ship->righton = false;
+	ship->angle=0;
 }
 
 static void digger_init(Digger *digger, float radius)
@@ -135,11 +145,23 @@ void ship_move (Ship* ship, float dt)
 	if(ship->lefton) {
 		Vec3 leftup = {-a,a/2,0};
 		ADD(ship->vel, leftup);
+		if (ship->angle > -10)
+			ship->angle--;
 	}
 
 	if(ship->righton) {
 		Vec3 rightup = {+a,a/2,0};
 		ADD(ship->vel, rightup);
+		if (ship->angle < 10)
+			ship->angle++;
+	}
+
+	if (ship->angle != 0 && ((ship->righton && ship->lefton) || (!ship->righton && !ship->lefton)))
+	{
+		if (ship->angle < 0)
+			ship->angle++;
+		else
+			ship->angle--;
 	}
 
 	ship->vel[1] -= GRAVITY*dt;
@@ -255,7 +277,6 @@ float collision (Cave* cave, Ship* ship)
 
 	int intersection_count[4];
 	memset(intersection_count, 0, sizeof(intersection_count));
-
 
 	int i = (cave->i + SEGMENT_COUNT) % SEGMENT_COUNT; // off-1
 	for(int off = 0; off < 3; ++off, i = (i+1) % SEGMENT_COUNT ) { // -1,0,1

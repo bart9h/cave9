@@ -28,12 +28,13 @@
 #define ROOM_SPACING 1000
 #define ROOM_START (2*ROOM_SPACING)
 #define ROOM_LEN 100.0
-#define ROOM_MUL 3.0
+#define ROOM_MUL 4.0
 
 typedef struct  Ship_struct
 {
 	float radius;
 	Vec3 pos, vel, lookAt;
+	int angle;
 	bool lefton, righton;
 	float dist;  // distance to cave wall
 	Vec3 repulsion;  // normal to collision
@@ -104,8 +105,11 @@ extern const char* data_paths[];
 #define VELOCITY 30.0
 
 #define MAX_CAVE_RADIUS (SHIP_RADIUS*30)
-#define MIN_CAVE_RADIUS (SHIP_RADIUS*5)
+#define MIN_CAVE_RADIUS (SHIP_RADIUS*4)
 #define MIN_CAVE_RADIUS_DEPTH 10000
+
+#define WALL_MULT_MIN 1.0
+#define WALL_MULT_MAX 2.0
 
 #define MAX_VEL_X GRAVITY
 #define MAX_VEL_Y (GRAVITY*4)

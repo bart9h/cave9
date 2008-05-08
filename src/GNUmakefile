@@ -5,7 +5,7 @@ TARGET = ../cave9
 CFLAGS += -std=c99 -Wall -Werror -ggdb `sdl-config --cflags`
 LDFLAGS += `sdl-config --libs` -lm -L/usr/X11/lib -lGL -lGLU -lSDL_ttf -lSDL_image
 
-ifndef nonet
+ifdef USE_SDLNET
 CFLAGS += -DUSE_SDLNET
 LDFLAGS += -lSDL_net
 endif
