@@ -38,7 +38,7 @@ $(WIN_PKG): $(WIN_TARGET) $(DATA)
 
 
 RELEASE = \
-	$(shell make -C src -f Makefile.cross check &>/dev/null && echo $(WIN_PKG) ) \
+	$(shell make -C src -f Makefile.cross check 2>/dev/null 1>/dev/null && echo $(WIN_PKG) ) \
 	$(DATA_PKG) \
 	$(SRC_PKG) \
 
@@ -59,7 +59,7 @@ clean:
 all: build release
 
 test:
-	@echo -n "dep: " && make clean dep &>/dev/null && echo OK
-	@echo -n "build: " && make clean build &>/dev/null && echo OK
-	@echo -n "release: " && make clean release &>/dev/null && echo OK && ls -1sh $(RELEASE)
-	@make clean &>/dev/null
+	@echo -n "dep: " && make clean dep 2>/dev/null 1>/dev/null && echo OK
+	@echo -n "build: " && make clean build 2>/dev/null 1>/dev/null && echo OK
+	@echo -n "release: " && make clean release 2>/dev/null 1>/dev/null && echo OK && ls -1sh $(RELEASE)
+	@make clean 2>/dev/null 1>/dev/null
