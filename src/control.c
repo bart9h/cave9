@@ -222,7 +222,11 @@ static void args_init (Args* args, int argc, char* argv[])
 	if (help_called) {
 		printf ("command-line options:\n");
 		for (int opt = 0;  options[opt].long_name != NULL;  ++opt) {
-			printf ("%s  or  %s", options[opt].short_name, options[opt].long_name);
+			if (options[opt].short_name[0])
+				printf ("%2s  or", options[opt].short_name);
+			else
+				printf ("      ");
+			printf ("  %s", options[opt].long_name);
 			if (options[opt].has_arg) {
 				if (options[opt].val_num != NULL)
 					printf ("  <num>");
