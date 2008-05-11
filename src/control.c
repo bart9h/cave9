@@ -138,6 +138,7 @@ static void args_init (Args* args, int argc, char* argv[])
 	args->game_mode = TWO_BUTTONS;
 	args->nosound = 0;
 	args->noshake = 0;
+	args->stalactites = 0;
 	args->autopilot = 0;
 	args->aidtrack = 0;
 	args->arabic = 0;
@@ -173,6 +174,7 @@ static void args_init (Args* args, int argc, char* argv[])
 		{ "-N", "--nosound",      false,  false,  &args->nosound,      NULL         },
 		{ "-K", "--noshake",      false,  false,  &args->noshake,      NULL         },
 		{ "-M", "--monoliths",    false,  true,   &args->monoliths,    NULL         },
+		{ "",   "--stalactites",  false,  true,   &args->stalactites,  NULL         },
 		{ "-a", "--autopilot",    false,  true,   &args->autopilot,    NULL         },
 		{ "-T", "--aidtrack",     false,  true,   &args->aidtrack,     NULL         },
 		{ "",   "--arabic",       false,  false,  &args->arabic,       NULL         },

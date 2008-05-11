@@ -62,10 +62,10 @@ void cave_gen (Cave* cave, Digger* digger)
 		mult_x = (A + sin(mult_x))/B;
 		mult_y = (A + sin(mult_y))/B;
 
-		// cos_a == 0.7 +/- 45°
-		if (RAND < 0.01 && cos_a > -0.7 && cos_a < 0.7)
-		{
-			mult_y = 1;
+		if (cave->has_stalactites) {
+			// cos_a == 0.7 +/- 45°
+			if (RAND < 0.01 && cos_a > -0.7 && cos_a < 0.7)
+				mult_y = 1;
 		}
 
 		SET(cave->segs[cave->i][i],
@@ -89,10 +89,17 @@ void cave_gen (Cave* cave, Digger* digger)
 	}
 }
 
-static void cave_init (Cave* cave, Digger* digger, int game_mode)
+static void cave_init (Cave* cave, Digger* digger, Args* args)
 {
-	Ship *ship = SHIP(digger);
 	memset (cave, 0, sizeof(Cave));
+
+	int game_mode = TWO_BUTTONS;
+	if (args != NULL) {
+		game_mode = args->game_mode;
+		cave->has_stalactites = args->stalactites;
+	}
+
+	Ship *ship = SHIP(digger);
 	cave->i = 0;
 	do {
 		digger_control(digger, game_mode);
@@ -134,7 +141,7 @@ void game_init (Game* game, Args* args)
 
 	ship_init (&game->player, SHIP_RADIUS);
 	digger_init (&game->digger, MAX_CAVE_RADIUS);
-	cave_init (&game->cave, &game->digger, game->mode);
+	cave_init (&game->cave, &game->digger, args);
 	score_init (&game->score, args);
 }
 

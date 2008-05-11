@@ -34,6 +34,7 @@ typedef struct Args_struct
 	int game_mode;
 	int nosound;
 	int noshake;
+	int stalactites;
 	int autopilot;
 	int aidtrack;
 	int arabic;

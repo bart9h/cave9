@@ -62,6 +62,8 @@ typedef struct  Cave_struct
 
 	Vec3  monolith_pos;
 	float monolith_yaw;
+
+	bool has_stalactites;
 } Cave;
 
 typedef struct Game_struct
