@@ -152,7 +152,7 @@ static void args_init (Args* args, int argc, char* argv[])
 #endif
 	int help_called = 0;
 
-	struct {
+	struct Option {
 		char* short_name;
 		char* long_name;
 		bool  has_arg;
@@ -161,7 +161,6 @@ static void args_init (Args* args, int argc, char* argv[])
 		char* val_str;
 	} options[] = {
 		//                        arg?    exp?    int-value            string-value
-		{ "-h", "--help",         false,  false,  &help_called,        NULL         },
 		{ "-g", "--game_mode",    true,   false,  &args->game_mode,    NULL         },
 		{ "-W", "--width",        true,   false,  &args->width,        NULL         },
 		{ "-H", "--height",       true,   false,  &args->height,       NULL         },
@@ -170,49 +169,55 @@ static void args_init (Args* args, int argc, char* argv[])
 		{ "-R", "--highres",      false,  false,  &args->highres,      NULL         },
 		{ "-A", "--antialiasing", true,   false,  &args->antialiasing, NULL         },
 		{ "-S", "--start",        true,   false,  &args->start,        NULL         },
-		{ "-C", "--cockpit",      false,  false,  &args->cockpit,      NULL         },
 		{ "-N", "--nosound",      false,  false,  &args->nosound,      NULL         },
 		{ "-K", "--noshake",      false,  false,  &args->noshake,      NULL         },
-		{ "-M", "--monoliths",    false,  true,   &args->monoliths,    NULL         },
+		{ "",   "--cockpit",      false,  true,   &args->cockpit,      NULL         },
+		{ "",   "--monoliths",    false,  true,   &args->monoliths,    NULL         },
 		{ "",   "--stalactites",  false,  true,   &args->stalactites,  NULL         },
-		{ "-a", "--autopilot",    false,  true,   &args->autopilot,    NULL         },
-		{ "-T", "--aidtrack",     false,  true,   &args->aidtrack,     NULL         },
+		{ "",   "--autopilot",    false,  true,   &args->autopilot,    NULL         },
+		{ "",   "--aidtrack",     false,  true,   &args->aidtrack,     NULL         },
 		{ "",   "--arabic",       false,  false,  &args->arabic,       NULL         },
 #ifdef USE_SDLNET                         
 		{ "-s", "--server",       true,   true,   NULL,                args->server },
 		{ "-p", "--port",         true,   true,   &args->port,         NULL         },
 #endif
-		{ 0, 0, 0, 0, 0, 0 }
+		{ "-h", "--help",         false,  false,  &help_called,        NULL         },
+		{ 0, 0, 0, 0, 0, 0 } // --help must be the last for help alignment to work
 	};
 
+	unsigned max_len = 0;
 	for (int i = 1;  i < argc;  ++i) {
-		for (int opt = 0; ; ++opt) {
-			if (options[opt].long_name == NULL) {
+		for (struct Option* opt = options;  ; ++opt) {
+			if (opt->long_name == NULL) {
 				fprintf(stderr, "invalid argument %s\n", argv[i]);
 				help_called = 1;
 				break;
 			}
 
-			assert (options[opt].long_name != NULL);
-			if ((options[opt].short_name != NULL && strcmp (argv[i], options[opt].short_name) == 0)
-					|| (strcmp (argv[i], options[opt].long_name) == 0))
+			assert (opt->long_name != NULL);
+			unsigned len = strlen (opt->long_name);
+			if (max_len < len)
+				max_len = len;
+
+			if ((opt->short_name != NULL && strcmp (argv[i], opt->short_name) == 0)
+					|| (strcmp (argv[i], opt->long_name) == 0))
 			{
-				if (options[opt].has_arg) {
+				if (opt->has_arg) {
 					if (++i == argc) {
 						fprintf(stderr, "argument required for %s\n", argv[i-1]);
 						exit(1);
 					}
 
-					if (options[opt].val_num != NULL)
-						*(options[opt].val_num) = atoi(argv[i]);
-					else if (options[opt].val_str != NULL)
-						snprintf (options[opt].val_str, ARG_STR_MAX, "%s", argv[i]);
+					if (opt->val_num != NULL)
+						*(opt->val_num) = atoi(argv[i]);
+					else if (opt->val_str != NULL)
+						snprintf (opt->val_str, ARG_STR_MAX, "%s", argv[i]);
 					else
 						assert (0=="has_arg && !(val_num||val_str)");
 				}
 				else {
-					assert (options[opt].val_num != NULL);
-					*(options[opt].val_num) = 1;
+					assert (opt->val_num != NULL);
+					*(opt->val_num) = 1;
 				}
 				break;
 			}
@@ -220,21 +225,24 @@ static void args_init (Args* args, int argc, char* argv[])
 	}
 
 	if (help_called) {
-		printf ("command-line options:\n");
-		for (int opt = 0;  options[opt].long_name != NULL;  ++opt) {
-			if (options[opt].short_name[0])
-				printf ("%2s  or", options[opt].short_name);
+		printf ("command-line options:%d\n", max_len);
+		for (struct Option* opt = options;  (opt+1)->long_name != NULL;  ++opt) {
+			if (opt->short_name[0])
+				printf ("%2s  or", opt->short_name);
 			else
 				printf ("      ");
-			printf ("  %s", options[opt].long_name);
-			if (options[opt].has_arg) {
-				if (options[opt].val_num != NULL)
+			printf ("  %-*.*s", max_len, max_len, opt->long_name);
+			if (opt->has_arg) {
+				if (opt->val_num != NULL)
 					printf ("  <num>");
-				else if (options[opt].val_str != NULL)
+				else if (opt->val_str != NULL)
 					printf ("  <str>");
 			}
-			if (options[opt].is_experimental)
-				printf ("    (experimental)");
+			if (opt->is_experimental) {
+				if (!opt->has_arg)
+					printf ("       ");
+				printf ("  (experimental)");
+			}
 			printf ("\n");
 		}
 		exit(1);
