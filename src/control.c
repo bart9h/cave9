@@ -165,6 +165,7 @@ static void args_init (Args* args, int argc, char* argv[])
 		char* val_str;
 	} options[] = {
 		//                        arg?    exp?    int-value            string-value
+		{ "-h", "--help",         false,  false,  &help_called,        NULL         },
 		{ "-g", "--game_mode",    true,   false,  &args->game_mode,    NULL         },
 		{ "-W", "--width",        true,   false,  &args->width,        NULL         },
 		{ "-H", "--height",       true,   false,  &args->height,       NULL         },
@@ -185,11 +186,9 @@ static void args_init (Args* args, int argc, char* argv[])
 		{ "-s", "--server",       true,   true,   NULL,                args->server },
 		{ "-p", "--port",         true,   true,   &args->port,         NULL         },
 #endif
-		{ "-h", "--help",         false,  false,  &help_called,        NULL         },
-		{ 0, 0, 0, 0, 0, 0 } // --help must be the last for help alignment to work
+		{ 0, 0, 0, 0, 0, 0 }
 	};
 
-	unsigned max_len = 0;
 	for (int i = 1;  i < argc;  ++i) {
 		for (struct Option* opt = options;  ; ++opt) {
 			if (opt->long_name == NULL) {
@@ -197,11 +196,6 @@ static void args_init (Args* args, int argc, char* argv[])
 				help_called = 1;
 				break;
 			}
-
-			assert (opt->long_name != NULL);
-			unsigned len = strlen (opt->long_name);
-			if (max_len < len)
-				max_len = len;
 
 			if ((opt->short_name != NULL && strcmp (argv[i], opt->short_name) == 0)
 					|| (strcmp (argv[i], opt->long_name) == 0))
@@ -229,13 +223,20 @@ static void args_init (Args* args, int argc, char* argv[])
 	}
 
 	if (help_called) {
-		printf ("command-line options:%d\n", max_len);
-		for (struct Option* opt = options;  (opt+1)->long_name != NULL;  ++opt) {
+
+		unsigned max_len = 0;
+		for (struct Option* opt = options;  opt->long_name != NULL;  ++opt) {
+			unsigned len = strlen (opt->long_name);
+			if (max_len < len)
+				max_len = len;
+		}
+
+		for (struct Option* opt = options;  opt->long_name != NULL;  ++opt) {
 			if (opt->short_name[0])
 				printf ("%2s  or", opt->short_name);
 			else
 				printf ("      ");
-			printf ("  %-*.*s", max_len, max_len, opt->long_name);
+			printf ("  %-*s", max_len, opt->long_name);
 			if (opt->has_arg) {
 				if (opt->val_num != NULL)
 					printf ("  <num>");
