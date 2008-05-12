@@ -55,6 +55,7 @@ static void control (Display* display, Audio* audio, Game* game, Input* input)
 				if(input->state == PLAY)  {
 					input->state = PAUSE;
 					display_message(display, game, "paused");
+					audio_stop (audio);
 				}
 				SDL_WM_ToggleFullScreen(display->screen);
 				break;
@@ -74,8 +75,8 @@ static void control (Display* display, Audio* audio, Game* game, Input* input)
 					if(input->state == PLAY)  {
 						input->state = PAUSE;
 						display_message (display, game, "paused");
+						audio_stop (audio);
 					}
-					audio_stop (audio);
 				}
 				break;
 			case SDLK_RETURN:
