@@ -93,7 +93,7 @@ static void score_net_update (Score* score)
 	score->udp_pkt->len = GLOBAL_SCORE_LEN;
 	if (SDLNet_UDP_Send (score->udp_sock, 0, score->udp_pkt) == 1)
 	{
-		SDL_Delay (666); // XXX only wait 666ms for hiscores
+		SDL_Delay (GLOBAL_SCORE_WAIT); // XXX only wait GLOBAL_SCORE_WAIT for hiscores
 		int n = SDLNet_UDP_Recv (score->udp_sock, score->udp_pkt);
 		if (n == 1) {
 			sscanf ((char*)score->udp_pkt->data, "%d", &score->global);
@@ -179,8 +179,9 @@ void score_update (Score* score, int new_score, bool is_global)
 			}
 		}
 
-		if (new_score > score->global) {
-			score->global = new_score;
+		int new_global = MAX(new_score, score->local);
+		if (new_global > score->global) {
+			score->global = new_global;
 #ifdef USE_SDLNET
 			score_net_update (score);
 #endif

@@ -34,12 +34,6 @@
 
 typedef GLfloat Vec3[3];
 
-#define MAX(x,y) ((x)>(y)?(x):(y))
-#define MIN(x,y) ((x)<(y)?(x):(y))
-#define CLAMP(x,y,z) ((x)<(y)?(y):((x)>(z)?(z):(x)))
-
-#define RAND (rand()/(float)RAND_MAX)
-
 #define COPY(a,b) \
 	(a)[0]=(b)[0]; \
 	(a)[1]=(b)[1]; \

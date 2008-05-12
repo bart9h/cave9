@@ -7,6 +7,8 @@
 #include <unistd.h>
 #include <assert.h>
 
+#include "util.h"
+
 const char* find_file (const char* basename, const char* paths[], bool required)
 {
 	static char path[FILENAME_MAX];
@@ -33,7 +35,12 @@ const char* find_file (const char* basename, const char* paths[], bool required)
 	return path;
 }
 
-const char* roman (unsigned int n)
+void arabic (char *buf, unsigned int n)
+{
+	snprintf(buf,NUMBER_STR_MAX,"%d",n);
+}
+
+void roman (char *buf, unsigned int n)
 {
 	static const struct {
 		char* str;
@@ -55,21 +62,17 @@ const char* roman (unsigned int n)
 		{ NULL,    0 }
 	};
 
-#define ROMAN_STR_MAX 80
-	static char str[ROMAN_STR_MAX];
-	str[0] = '\0';
+	buf[0] = '\0';
 
 	for (unsigned int i = 0;  symbols[i].val > 0;  ++i) {
 		while (n >= symbols[i].val) {
-			assert (strlen(str) + strlen(symbols[i].str) < ROMAN_STR_MAX);
-			strcat (str, symbols[i].str);
+			assert (strlen(buf) + strlen(symbols[i].str) < NUMBER_STR_MAX);
+			strcat (buf, symbols[i].str);
 			n -= symbols[i].val;
 		}
 	}
 
 	assert (n == 0);
-
-	return str;
 }
 
 // vim600:fdm=syntax:fdn=1:

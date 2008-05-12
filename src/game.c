@@ -25,6 +25,9 @@
 #include <GL/gl.h>
 #include "vec.h"
 #include "game.h"
+#include "util.h"
+
+float score_scale = .1;
 
 float cave_len (Cave *cave)
 {
@@ -111,7 +114,7 @@ static void cave_init (Cave* cave, Digger* digger, Args* args)
 
 static void ship_init (Ship* ship, float radius)
 {
-	SET (ship->pos, 0,0,ship->start);
+	SET (ship->pos, 0,0,ship->start * score_scale);
 	SET (ship->vel, 0,0,VELOCITY);
 	SET (ship->lookAt, 0,0,VELOCITY);
 	ship->roll = 0;
@@ -339,7 +342,7 @@ bool game_nocheat (Game *game)
 
 int game_score (Game *game)
 {
-	return game->player.pos[2] / (game->mode==ONE_BUTTON?2:1);
+	return game->player.pos[2] / (game->mode==ONE_BUTTON?2:1) * score_scale;
 }
 
 void game_score_update (Game *game)

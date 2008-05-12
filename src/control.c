@@ -23,6 +23,7 @@
 #include "display.h"
 #include "game.h"
 #include "audio.h"
+#include "util.h"
 
 const char* data_paths[] =
 {
@@ -39,6 +40,16 @@ typedef struct Input_struct
 	enum { WELCOME, PLAY, PAUSE, GAMEOVER, QUIT } state;
 } Input;
 
+
+static void pause(Display* display, Audio* audio, Game* game, Input* input)
+{
+	if(input->state == PLAY)  {
+		input->state = PAUSE;
+		display_message(display, game, "PAUSED");
+		audio_stop (audio);
+	}
+}
+
 static void control (Display* display, Audio* audio, Game* game, Input* input)
 {
 	SDL_Event event;
@@ -52,11 +63,7 @@ static void control (Display* display, Audio* audio, Game* game, Input* input)
 				input->state = QUIT;
 				break;
 			case SDLK_f:
-				if(input->state == PLAY)  {
-					input->state = PAUSE;
-					display_message(display, game, "paused");
-					audio_stop (audio);
-				}
+				pause(display, audio, game, input);
 				SDL_WM_ToggleFullScreen(display->screen);
 				break;
 			case SDLK_p:
@@ -72,11 +79,7 @@ static void control (Display* display, Audio* audio, Game* game, Input* input)
 					audio_start (audio, &game->player);
 				}
 				else {
-					if(input->state == PLAY)  {
-						input->state = PAUSE;
-						display_message (display, game, "paused");
-						audio_stop (audio);
-					}
+					pause(display, audio, game, input);
 				}
 				break;
 			case SDLK_RETURN:
@@ -269,7 +272,7 @@ int main_control (int argc, char* argv[])
 	game_init (&game, &args);
 
 	input.state = WELCOME;
-	display_message (&display, &game, "welcome! use arrows/space");
+	display_message (&display, &game, "WELCOME! use arrows and space");
 
 	float dt = 1./FPS;
 	while (input.state != QUIT) {
@@ -297,9 +300,10 @@ int main_control (int argc, char* argv[])
 
 			if (collision (&game.cave, &game.player) <= 0) {
 				input.state = GAMEOVER;
-				display_message (&display, &game, "gameover.  [press space]");
-				audio_stop (&audio);
+				SDL_Delay(66); audio_stop (&audio); // time to listen hit sound
+				display_message (&display, &game, "GAMEOVER. press space");
 				game_score_update (&game);
+				game.player.dist = -1;
 			}
 			cave_gen (&game.cave, &game.digger);
 

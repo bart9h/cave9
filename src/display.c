@@ -176,12 +176,12 @@ static void cave_model (Display* display, Cave* cave, int mode)
 			glColor4f(0.5,0.5,1,1);
 			glBegin(GL_LINE_STRIP);
 
-#define SIZE 0.1
-			glVertex3f(cave->centers[i][0]-SIZE,cave->centers[i][1]-SIZE,cave->centers[i][2]);
-			glVertex3f(cave->centers[i][0]+SIZE,cave->centers[i][1]+SIZE,cave->centers[i][2]);
+			#define CRUMB_SIZE 0.1
+			glVertex3f(cave->centers[i][0]-CRUMB_SIZE,cave->centers[i][1]-CRUMB_SIZE,cave->centers[i][2]);
+			glVertex3f(cave->centers[i][0]+CRUMB_SIZE,cave->centers[i][1]+CRUMB_SIZE,cave->centers[i][2]);
 			glVertex3fv(cave->centers[i]);
-			glVertex3f(cave->centers[i][0]+SIZE,cave->centers[i][1]-SIZE,cave->centers[i][2]);
-			glVertex3f(cave->centers[i][0]-SIZE,cave->centers[i][1]+SIZE,cave->centers[i][2]);
+			glVertex3f(cave->centers[i][0]+CRUMB_SIZE,cave->centers[i][1]-CRUMB_SIZE,cave->centers[i][2]);
+			glVertex3f(cave->centers[i][0]-CRUMB_SIZE,cave->centers[i][1]+CRUMB_SIZE,cave->centers[i][2]);
 
 			glEnd();
 		}
@@ -220,33 +220,16 @@ static void cave_model (Display* display, Cave* cave, int mode)
 
 				int k0 = k%SECTOR_COUNT;
 
-#if TEXTURE_BOUNDARY_DEBUG
-				if (mode == DISPLAYMODE_NORMAL) {
-					if(i0==0||i1==0||k==3*SECTOR_COUNT/4)
-						glColor4f(1, 0, 0, 0.5);
-					else
-						glColor4f(1, 1, 1, 0.5);
-				}
-#endif
-
 				if (mode == DISPLAYMODE_NORMAL) {
 					glTexCoord2f(
-#ifndef NO_STRETCH_FIX
 							cave->segs[i0][k0][2]/SEGMENT_LEN/SEGMENT_COUNT, 
-#else
-							(float)(cave->i+i)/SEGMENT_COUNT,
-#endif
 							(float)k/SECTOR_COUNT);
 				}
 				glVertex3fv(cave->segs[i0][k0]);
 
 				if (mode == DISPLAYMODE_NORMAL) {
 					glTexCoord2f(
-#ifndef NO_STRETCH_FIX
 							cave->segs[i1][k0][2]/SEGMENT_LEN/SEGMENT_COUNT, 
-#else
-							((float)(cave->i+i+1))/SEGMENT_COUNT,
-#endif
 							(float)k/SECTOR_COUNT);
 				}
 				glVertex3fv(cave->segs[i1][k0]);
@@ -267,9 +250,9 @@ static void cave_model (Display* display, Cave* cave, int mode)
 		}
 
 		if (mode == DISPLAYMODE_MINIMAP) {
-			float alpha = .333;
+			float alpha = .5;
 			if(i > display->gauge * SEGMENT_COUNT)
-				glColor4f (1, 1, 1, alpha);
+				glColor4f (.5, .5, .5, alpha);
 			else
 				glColor4f (
 					huemap[i][0],
@@ -425,6 +408,8 @@ static void render_text (Display* display, GLuint *id,
 	}
 }
 
+
+
 static void display_hud (Display* display, Game* game)
 {
 	if(game->player.dist == FLT_MAX)
@@ -439,41 +424,44 @@ static void display_hud (Display* display, Game* game)
 	TTF_Font* font = display->font;
 #endif
 
-	int score = game_score(game);
+	void (*number) (char *, unsigned int) = display->arabic ? arabic : roman;
 
-	if (game->player.dist > 0) { // FIXME display hiscore before dead
+	char score[NUMBER_STR_MAX];
+	number(score,game_score(game));
 
-		if (display->arabic)
-			snprintf (buf, HUD_TEXT_MAX, "%d", score);
-		else
-			snprintf (buf, HUD_TEXT_MAX, "%s", roman(.1*score));
+	if (game->player.dist > 0) {
+		snprintf (buf, HUD_TEXT_MAX, "%s", score);
+
+		char session[NUMBER_STR_MAX];
+		number(session,game->score.session);
 
 		render_text (display, &display->hud_id, font, buf, 
-				0.25,1, .25, 
-				1, 1, 1);
+				0.25,1, .25, 1,1,1);
 
 		display->gauge = ship_speed(&game->player);
 
-	} else {
+	} else if (game->player.dist == -1) {
+		char session[NUMBER_STR_MAX];
+		number(session,game->score.session);
 		if (game_nocheat(game)) {
-			snprintf(buf, HUD_TEXT_MAX, "SCORE %d (%d, %d, %d)",
-				score,
-				game->score.session,
-				game->score.local,
-				game->score.global
+			char local[NUMBER_STR_MAX];
+			char global[NUMBER_STR_MAX];
+			number(local,game->score.local);
+			number(global,game->score.global);
+			snprintf(buf, HUD_TEXT_MAX, "score %s session %s local %s global %s",
+				score, session, local, global
 			);
 		}
 		else {
-			snprintf (buf, HUD_TEXT_MAX, "SCORE %d (%d) - %d",
-				score,
-				game->score.session,
-				(int)game->player.start
+			char start[NUMBER_STR_MAX];
+			number(start, game->player.start);
+			snprintf (buf, HUD_TEXT_MAX, "score %s session %s starting at  %s",
+				score, session, start
 			);
 		}
 
-		render_text_box (display, &display->hud_id, font,
-				buf, 
-				.5,.85,1,.2, 1,1,1);
+		render_text_box (display, &display->hud_id, font, buf, 
+			.5,.85, 1,.1, 1,1,1);
 	}
 
 }
@@ -637,76 +625,6 @@ static TTF_Font *load_font (const char* filename, int size)
 		exit(1);
 	}
 	return font;
-}
-
-
-// ######################################################################
-// http://ilab.usc.edu/wiki/index.php/HSV_And_H2SV_Color_Space
-// T. Nathan Mundhenk
-// mundhenk@usc.edu
-// C/C++ Macro HSV to RGB
-#define PIX_HSV_TO_RGB_COMMON(H,S,V,R,G,B)                          \
-if( V == 0 )                                                        \
-{ R = 0; G = 0; B = 0; }                                            \
-else if( S == 0 )                                                   \
-{                                                                   \
-  R = V;                                                            \
-  G = V;                                                            \
-  B = V;                                                            \
-}                                                                   \
-else                                                                \
-{                                                                   \
-  const double hf = H / 60.0;                                       \
-  const int    i  = (int) floor( hf );                              \
-  const double f  = hf - i;                                         \
-  const double pv  = V * ( 1 - S );                                 \
-  const double qv  = V * ( 1 - S * f );                             \
-  const double tv  = V * ( 1 - S * ( 1 - f ) );                     \
-  switch( i )                                                       \
-    {                                                               \
-    case 0:                                                         \
-      R = V;                                                        \
-      G = tv;                                                       \
-      B = pv;                                                       \
-      break;                                                        \
-    case 1:                                                         \
-      R = qv;                                                       \
-      G = V;                                                        \
-      B = pv;                                                       \
-      break;                                                        \
-    case 2:                                                         \
-      R = pv;                                                       \
-      G = V;                                                        \
-      B = tv;                                                       \
-      break;                                                        \
-    case 3:                                                         \
-      R = pv;                                                       \
-      G = qv;                                                       \
-      B = V;                                                        \
-      break;                                                        \
-    case 4:                                                         \
-      R = tv;                                                       \
-      G = pv;                                                       \
-      B = V;                                                        \
-      break;                                                        \
-    case 5:                                                         \
-      R = V;                                                        \
-      G = pv;                                                       \
-      B = qv;                                                       \
-      break;                                                        \
-    case 6:                                                         \
-      R = V;                                                        \
-      G = tv;                                                       \
-      B = pv;                                                       \
-      break;                                                        \
-    case -1:                                                        \
-      R = V;                                                        \
-      G = pv;                                                       \
-      B = qv;                                                       \
-      break;                                                        \
-    default:                                                        \
-      break;                                                        \
-    }                                                               \
 }
 
 void display_init (Display* display, Args* args)
