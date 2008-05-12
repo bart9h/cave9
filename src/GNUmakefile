@@ -22,6 +22,7 @@ SRCS = \
 	 control.c \
 	 display.c \
 	 game.c \
+	 render.c \
 	 score.c \
 	 util.c \
 

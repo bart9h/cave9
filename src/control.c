@@ -20,7 +20,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <assert.h>
-#include "display.h"
+#include "render.h"
 #include "game.h"
 #include "audio.h"
 #include "util.h"
@@ -40,31 +40,30 @@ typedef struct Input_struct
 	enum { WELCOME, PLAY, PAUSE, GAMEOVER, QUIT } state;
 } Input;
 
-
-static void pause(Display* display, Audio* audio, Game* game, Input* input)
+static void pause (Render* render, Audio* audio, Game* game, Input* input)
 {
-	if(input->state == PLAY)  {
+	if (input->state == PLAY)  {
 		input->state = PAUSE;
-		display_message(display, game, "PAUSED");
+		render_message (render, game, "PAUSED");
 		audio_stop (audio);
 	}
 }
 
-static void control (Display* display, Audio* audio, Game* game, Input* input)
+static void control (Render* render, Audio* audio, Game* game, Input* input)
 {
 	SDL_Event event;
 
-	while(SDL_PollEvent(&event)) {
-		switch(event.type) {
+	while (SDL_PollEvent (&event)) {
+		switch (event.type) {
 		case SDL_KEYDOWN:
-			switch(event.key.keysym.sym) {
+			switch (event.key.keysym.sym) {
 			case SDLK_ESCAPE:
 			case SDLK_q:
 				input->state = QUIT;
 				break;
 			case SDLK_f:
-				pause(display, audio, game, input);
-				SDL_WM_ToggleFullScreen(display->screen);
+				pause (render, audio, game, input);
+				SDL_WM_ToggleFullScreen (render->display.screen);
 				break;
 			case SDLK_p:
 			case SDLK_PAUSE:
@@ -74,17 +73,17 @@ static void control (Display* display, Audio* audio, Game* game, Input* input)
 				|| input->state == GAMEOVER) {
 					if(input->state == GAMEOVER)
 						game_init (game, NULL);
-					display_message (display, game, "");
+					render_message (render, game, "");
 					input->state = PLAY;
 					audio_start (audio, &game->player);
 				}
 				else {
-					pause(display, audio, game, input);
+					pause (render, audio, game, input);
 				}
 				break;
 			case SDLK_RETURN:
-				if(SDL_GetModState() & KMOD_ALT)
-					SDL_WM_ToggleFullScreen(display->screen);
+				if (SDL_GetModState() & KMOD_ALT)
+					SDL_WM_ToggleFullScreen (render->display.screen);
 				break;
 			default:
 				break;
@@ -99,12 +98,12 @@ static void control (Display* display, Audio* audio, Game* game, Input* input)
 			{
 				int aa;
 				SDL_GL_GetAttribute (SDL_GL_MULTISAMPLESAMPLES, &aa);
-				viewport (display, event.resize.w, event.resize.h, 0, 
-						display->screen->flags & SDL_FULLSCREEN, aa);
+				viewport (&render->display, event.resize.w, event.resize.h, 0, 
+						render->display.screen->flags & SDL_FULLSCREEN, aa);
 			}
 			break;
 		case SDL_VIDEOEXPOSE:
-			display_frame (display, game);
+			render_frame (render, game);
 			break;
 		default:
 			break;
@@ -257,29 +256,29 @@ static void args_init (Args* args, int argc, char* argv[])
 int main_control (int argc, char* argv[])
 {
 	Args args;
-	Display display;
+	Render render;
 	Audio audio;
 	Input input;
 	memset (input.pressed, 0, sizeof(input.pressed));
 
-	srand(time(NULL));
+	srand (time(NULL));
 
 	Game game;
 
 	args_init (&args, argc, argv);
-	display_init (&display, &args);
+	render_init (&render, &args);
 	audio_init (&audio, !args.nosound);
 
 	game_init (&game, &args);
 
 	input.state = WELCOME;
-	display_message (&display, &game, "WELCOME! use arrows and space");
+	render_message (&render, &game, "WELCOME! use arrows and space");
 
 	float dt = 1./FPS;
 	while (input.state != QUIT) {
 		int t0 = SDL_GetTicks();
 
-		control (&display, &audio, &game, &input);
+		control (&render, &audio, &game, &input);
 
 		switch (input.state) {
 		case PLAY:
@@ -302,13 +301,13 @@ int main_control (int argc, char* argv[])
 			if (collision (&game.cave, &game.player) <= 0) {
 				input.state = GAMEOVER;
 				SDL_Delay(66); audio_stop (&audio); // time to listen hit sound
-				display_message (&display, &game, "GAMEOVER. press space");
+				render_message (&render, &game, "GAMEOVER. press space");
 				game_score_update (&game);
 				game.player.dist = -1;
 			}
 			cave_gen (&game.cave, &game.digger);
 
-			display_frame (&display, &game);
+			render_frame (&render, &game);
 			break;
 
 		case WELCOME:
@@ -324,7 +323,7 @@ int main_control (int argc, char* argv[])
 		dt = (SDL_GetTicks()-t0)/1000.;
 	}
 
-	//display_message (&display, &game, "bye.");
+	//render_message (&render, &game, "bye.");
 	score_finish (&game.score);
 
 	return 0;

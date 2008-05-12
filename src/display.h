@@ -43,35 +43,28 @@ typedef struct Display_struct
 {
 	SDL_Surface* icon;
 	SDL_Surface* screen;
-#ifdef OUTSIDE_TEXTURE_FILE
-	GLuint outside_texture_id;
-#endif
-	GLuint wall_texture_id;
-	GLuint hud_id;
-	GLuint msg_id;
-	TTF_Font *font;
-#ifdef FONT_MENU_FILE
-	TTF_Font *font_menu;
-#endif
-	Vec3 cam, target;
 	GLfloat near_plane, far_plane;
-
-	GLuint gl_list[DISPLAYMODE_COUNT][SEGMENT_COUNT];
-	GLuint list_start[DISPLAYMODE_COUNT];
-	GLuint ship_list;
-
-	bool cockpit;
-	bool shaking;
-	bool aidtrack;
-	bool arabic;
-
-	float gauge;
 } Display;
 
+void display_init (Display*, GLfloat near_plane, GLfloat far_plane, Args*);
 void viewport (Display*, GLsizei w, GLsizei h, GLsizei bpp, bool fullscreen, int aa);
-void display_init (Display*, Args*);
-void display_message (Display*, Game*, const char* buf);
-void display_frame (Display*, Game*);
+
+void display_text_box (Display* display, GLuint *id, 
+		TTF_Font *font, const char* text,
+		float x, float y, float w, float h,
+		float r, float g, float b);
+
+void display_text (Display* display, GLuint *id, 
+		TTF_Font *font, const char* text,
+		float x, float y, float scale,
+		float r, float g, float b);
+
+void display_start_frame (float r, float g, float b);
+void display_end_frame();
+
+GLuint load_texture (const char* filename);
+
+TTF_Font *load_font (const char* filename, int size);
 
 #endif
 
