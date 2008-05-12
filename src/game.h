@@ -94,6 +94,7 @@ bool game_nocheat(Game *game);
 int game_score (Game *game);
 void game_score_update (Game *game);
 float ship_hit (Ship*);
+float ship_speed (Ship*);
 
 extern const char* data_paths[];
 #define FIND(f) find_file(f,data_paths,true)

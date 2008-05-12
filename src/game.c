@@ -352,4 +352,12 @@ float ship_hit (Ship *ship)
 	return 1-CLAMP(ship->dist / (2*SHIP_RADIUS),0,1);
 }
 
+float MAX_VEL[3] = { MAX_VEL_X, MAX_VEL_Y, MAX_VEL_Z };
+float ship_speed (Ship *ship)
+{
+	return MIN(1,
+			log(1+MAX(0,LEN(ship->vel)-MAX_VEL_Z)) /
+			log(1+MAX(0,LEN(MAX_VEL  )-MAX_VEL_Z)));
+}
+
 // vim600:fdm=syntax:fdn=1:

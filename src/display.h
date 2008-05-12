@@ -65,6 +65,7 @@ typedef struct Display_struct
 	bool aidtrack;
 	bool arabic;
 
+	float gauge;
 } Display;
 
 void viewport (Display*, GLsizei w, GLsizei h, GLsizei bpp, bool fullscreen, int aa);

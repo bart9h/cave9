@@ -32,6 +32,8 @@ const float shake_vel = 0.2;
 const float shake_velZ = 0.08;
 const float shake_thrust = 0.14;
 
+Vec3 huemap[SEGMENT_COUNT];
+
 void viewport (Display* display, GLsizei w, GLsizei h, GLsizei bpp,
 		bool fullscreen, int aa)
 {
@@ -212,9 +214,6 @@ static void cave_model (Display* display, Cave* cave, int mode)
 
 				glColor4f (1, 1, 1, 0.5);
 			}
-			else if (mode == DISPLAYMODE_MINIMAP) {
-				glColor4f (.5, .5, .6, .5);
-			}
 
 			glBegin (GL_QUAD_STRIP);
 			for (int k = 0; k <= SECTOR_COUNT; ++k) {
@@ -267,6 +266,16 @@ static void cave_model (Display* display, Cave* cave, int mode)
 			glDisable (GL_TEXTURE_2D);
 		}
 
+		if (mode == DISPLAYMODE_MINIMAP) {
+			float alpha = .333;
+			if(i > display->gauge * SEGMENT_COUNT)
+				glColor4f (1, 1, 1, alpha);
+			else
+				glColor4f (
+					huemap[i][0],
+					huemap[i][1],
+					huemap[i][2], alpha);
+		}
 		glCallList (display->gl_list[mode][i0]);
 	}
 
@@ -376,6 +385,8 @@ static void render_text_box (Display* display, GLuint *id,
 	glEnable(GL_BLEND);
 	glEnable(GL_TEXTURE_2D);
 
+	// FIXME dont rebuild the texture when it didnt changed
+	// FIXME dont make mipmaps for someting that does not move on z-axis
 	gluBuild2DMipmaps(GL_TEXTURE_2D,
 			GL_RGBA, label->w, label->h,
 			GL_RGBA, GL_UNSIGNED_BYTE, label->pixels);
@@ -386,10 +397,10 @@ static void render_text_box (Display* display, GLuint *id,
 		glColor3f(r,g,b);
 		glTranslatef(0,0,-2.65); // XXX magic number
 		glBegin(GL_QUAD_STRIP);
-			glTexCoord2f(0,1);  glVertex3f(1-x*2+w,1-y*2-h,.5);
+			glTexCoord2f(0,1);  glVertex3f(1-x*2+w,1-y*2-h,0);
 			glTexCoord2f(0,0);  glVertex3f(1-x*2+w,1-y*2+h,0);
 
-			glTexCoord2f(1,1);  glVertex3f(1-x*2-w,1-y*2-h,.5);
+			glTexCoord2f(1,1);  glVertex3f(1-x*2-w,1-y*2-h,0);
 			glTexCoord2f(1,0);  glVertex3f(1-x*2-w,1-y*2+h,0);
 		glEnd();
 	glPopMatrix();
@@ -432,29 +443,17 @@ static void display_hud (Display* display, Game* game)
 
 	if (game->player.dist > 0) { // FIXME display hiscore before dead
 
-		float max_vel[3] = { MAX_VEL_X, MAX_VEL_Y, MAX_VEL_Z };
-		float vel = MIN(1,
-				log(1+MAX(0,LEN(game->player.vel)-MAX_VEL_Z)) /
-				log(1+MAX(0,LEN(max_vel)-MAX_VEL_Z)));
-		float white = game->player.dist <= 0 ? 1 : 1-vel;
-
 		if (display->arabic)
-			snprintf (buf, HUD_TEXT_MAX, "SCORE  %d", score);
+			snprintf (buf, HUD_TEXT_MAX, "%d", score);
 		else
-			snprintf (buf, HUD_TEXT_MAX, "SCORE  %s", roman(.1*score));
+			snprintf (buf, HUD_TEXT_MAX, "%s", roman(.1*score));
 
-		render_text (display, &display->hud_id, font,
-				buf, 
-				.6,.95, .1, 1,white,white);
+		render_text (display, &display->hud_id, font, buf, 
+				0.25,1, .25, 
+				1, 1, 1);
 
-		char gauge[] = "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\";
-		int n = MIN(strlen(gauge), (int)(vel*20));
-		gauge[n] = '\0';
-		snprintf (buf, HUD_TEXT_MAX, "velocity  %s", gauge);
+		display->gauge = ship_speed(&game->player);
 
-		render_text (display, &display->hud_id, font,
-				buf, 
-				.1,.95, .1, 1,white,white);
 	} else {
 		if (game_nocheat(game)) {
 			snprintf(buf, HUD_TEXT_MAX, "SCORE %d (%d, %d, %d)",
@@ -640,6 +639,76 @@ static TTF_Font *load_font (const char* filename, int size)
 	return font;
 }
 
+
+// ######################################################################
+// http://ilab.usc.edu/wiki/index.php/HSV_And_H2SV_Color_Space
+// T. Nathan Mundhenk
+// mundhenk@usc.edu
+// C/C++ Macro HSV to RGB
+#define PIX_HSV_TO_RGB_COMMON(H,S,V,R,G,B)                          \
+if( V == 0 )                                                        \
+{ R = 0; G = 0; B = 0; }                                            \
+else if( S == 0 )                                                   \
+{                                                                   \
+  R = V;                                                            \
+  G = V;                                                            \
+  B = V;                                                            \
+}                                                                   \
+else                                                                \
+{                                                                   \
+  const double hf = H / 60.0;                                       \
+  const int    i  = (int) floor( hf );                              \
+  const double f  = hf - i;                                         \
+  const double pv  = V * ( 1 - S );                                 \
+  const double qv  = V * ( 1 - S * f );                             \
+  const double tv  = V * ( 1 - S * ( 1 - f ) );                     \
+  switch( i )                                                       \
+    {                                                               \
+    case 0:                                                         \
+      R = V;                                                        \
+      G = tv;                                                       \
+      B = pv;                                                       \
+      break;                                                        \
+    case 1:                                                         \
+      R = qv;                                                       \
+      G = V;                                                        \
+      B = pv;                                                       \
+      break;                                                        \
+    case 2:                                                         \
+      R = pv;                                                       \
+      G = V;                                                        \
+      B = tv;                                                       \
+      break;                                                        \
+    case 3:                                                         \
+      R = pv;                                                       \
+      G = qv;                                                       \
+      B = V;                                                        \
+      break;                                                        \
+    case 4:                                                         \
+      R = tv;                                                       \
+      G = pv;                                                       \
+      B = V;                                                        \
+      break;                                                        \
+    case 5:                                                         \
+      R = V;                                                        \
+      G = pv;                                                       \
+      B = qv;                                                       \
+      break;                                                        \
+    case 6:                                                         \
+      R = V;                                                        \
+      G = tv;                                                       \
+      B = pv;                                                       \
+      break;                                                        \
+    case -1:                                                        \
+      R = V;                                                        \
+      G = pv;                                                       \
+      B = qv;                                                       \
+      break;                                                        \
+    default:                                                        \
+      break;                                                        \
+    }                                                               \
+}
+
 void display_init (Display* display, Args* args)
 {
 	memset(display, 0, sizeof(Display));
@@ -727,6 +796,20 @@ void display_init (Display* display, Args* args)
 	display->shaking = !args->noshake;
 	display->aidtrack = args->aidtrack;
 	display->arabic = args->arabic;
+
+	{ // huemap for velocity gauge
+		int base = 1;
+		for (int h = 0; h < SEGMENT_COUNT; ++h) {
+			int hue = (int)(720-2*360/3-360/3*
+					log(h+base) / log(SEGMENT_COUNT+base)
+					)%360;
+			PIX_HSV_TO_RGB_COMMON(
+				hue,1,1,
+				huemap[h][0],
+				huemap[h][1],
+				huemap[h][2]);
+		}
+	}
 }
 
 // vim600:fdm=syntax:fdn=1:
