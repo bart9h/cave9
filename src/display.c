@@ -125,7 +125,7 @@ void viewport (Display* display, GLsizei w, GLsizei h, GLsizei bpp,
 void display_text_box (Display* display, GLuint* id, 
 		TTF_Font *font, const char* text,
 		float x, float y, float w, float h,
-		float r, float g, float b)
+		float r, float g, float b, float a)
 {
 	if(text == NULL || text[0] == '\0')
 		return;
@@ -159,7 +159,7 @@ void display_text_box (Display* display, GLuint* id,
 	SDL_FreeSurface(label);
 
 	glPushMatrix();
-		glColor3f(r,g,b);
+		glColor4f(r,g,b,a);
 		glTranslatef(0,0,-2.65); // XXX magic number
 		glBegin(GL_QUAD_STRIP);
 			glTexCoord2f(0,1);  glVertex3f(1-x*2+w,1-y*2-h,0);
@@ -174,12 +174,12 @@ void display_text_box (Display* display, GLuint* id,
 void display_text (Display* display, GLuint* id, 
 		TTF_Font *font, const char* text,
 		float x, float y, float scale,
-		float r, float g, float b)
+		float r, float g, float b, float a)
 {
 	int w, h;
 	if (TTF_SizeText (font, text, &w, &h) == 0) {
 		float s = scale*.01;
-		display_text_box (display, id, font, text, x+w*s/2, y-h*s/2, w*s, h*s, r, g, b);
+		display_text_box (display, id, font, text, x+w*s/2, y-h*s/2, w*s, h*s, r,g,b,a);
 	}
 	else {
 		fprintf (stderr,

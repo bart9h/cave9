@@ -96,7 +96,7 @@ void render_init (Render* render, Args* args)
 
 	display_start_frame (0,0,0);
 	display_text_box(display, &render->msg_id, render->font, 
-			"loading cave9", .5,.5,1,.25, .75,.25,.25);
+			"loading cave9", .5,.5,1,.25, .75,.25,.25,1);
 	display_end_frame();
 
 #ifdef FONT_MENU_FILE
@@ -257,9 +257,9 @@ static void cave_model (Render* render, Cave* cave, int mode)
 		}
 
 		if (mode == DISPLAYMODE_MINIMAP) {
-			float alpha = .5;
+			float alpha = .12;
 			if(i > render->gauge * SEGMENT_COUNT)
-				glColor4f (.5, .5, .5, alpha);
+				glColor4f (1, 1, 1, alpha);
 			else
 				glColor4f (
 					huemap[i][0],
@@ -373,7 +373,7 @@ static void render_hud (Render* render, Game* game)
 		number(session,game->score.session);
 
 		display_text (&render->display, &render->hud_id, font, buf, 
-				0.25,1, .25, 1,1,1);
+				0.25,1, .25, 1,1,1,.5);
 
 		render->gauge = ship_speed(&game->player);
 
@@ -398,7 +398,7 @@ static void render_hud (Render* render, Game* game)
 		}
 
 		display_text_box (&render->display, &render->hud_id, font, buf, 
-			.5,.85, 1,.1, 1,1,1);
+			.5,.85, 1,.1, 1,1,1,1);
 	}
 
 }
@@ -456,7 +456,7 @@ void render_frame (Render* render, Game* game)
 
 	display_text_box (&render->display, &render->msg_id, 
 			render->font, render_message_buf, 
-			.5,.5,1,.25, 1,1,1);
+			.5,.5,1,.25, 1,1,1,1);
 
 	display_end_frame();
 }

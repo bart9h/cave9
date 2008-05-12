@@ -52,12 +52,12 @@ void viewport (Display*, GLsizei w, GLsizei h, GLsizei bpp, bool fullscreen, int
 void display_text_box (Display* display, GLuint *id, 
 		TTF_Font *font, const char* text,
 		float x, float y, float w, float h,
-		float r, float g, float b);
+		float r, float g, float b, float a);
 
 void display_text (Display* display, GLuint *id, 
 		TTF_Font *font, const char* text,
 		float x, float y, float scale,
-		float r, float g, float b);
+		float r, float g, float b, float a);
 
 void display_start_frame (float r, float g, float b);
 void display_end_frame();
