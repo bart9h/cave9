@@ -114,7 +114,7 @@ static void cave_init (Cave* cave, Digger* digger, Args* args)
 
 static void ship_init (Ship* ship, float radius)
 {
-	SET (ship->pos, 0,0,ship->start * score_scale);
+	SET (ship->pos, 0,0,ship->start/score_scale);
 	SET (ship->vel, 0,0,VELOCITY);
 	SET (ship->lookAt, 0,0,VELOCITY);
 	ship->roll = 0;

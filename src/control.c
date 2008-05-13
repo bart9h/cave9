@@ -147,8 +147,8 @@ static void args_init (Args* args, int argc, char* argv[])
 	args->arabic = 0;
 #ifdef USE_SDLNET
 	args->port = GLOBAL_SCORE_PORT;
-# ifdef NET_DEFAULT_ENABLED
-	snprintf (args->server, ARG_STR_MAX, "%s", GAME_SCORE_HOST);
+# ifndef NET_DEFAULT_DISABLED
+	snprintf (args->server, ARG_STR_MAX, "%s", GLOBAL_SCORE_HOST);
 # else
 	args->server[0] = '\0';
 # endif

@@ -40,9 +40,9 @@ static void score_net_finish (Score* score)
 		score->udp_pkt = NULL;
 	}
 
-	if(score->udp_sock != 0) {
+	if(score->udp_sock != NULL) {
 		SDLNet_UDP_Close(score->udp_sock);
-		score->udp_sock = 0;
+		score->udp_sock = NULL;
 	}
 }
 
@@ -58,13 +58,13 @@ static void score_net_init (Score* score, const char* server, int port)
 	atexit (SDLNet_Quit);
 
 	IPaddress addr;
-	score->udp_sock = 0;
+	score->udp_sock = NULL;
 	score->udp_pkt = NULL;
 	if (SDLNet_ResolveHost (&addr, server, port) == -1) {
 		fprintf(stderr, "SDLNet_ResolveHost(): %s\n", SDLNet_GetError());
 	} else {
 		score->udp_sock = SDLNet_UDP_Open(0);
-		if(score->udp_sock == 0) {
+		if(score->udp_sock == NULL) {
 			fprintf(stderr, "SDLNet_UDP_Open(): %s\n", SDLNet_GetError());
 			score_net_finish (score);
 		} else {
@@ -73,10 +73,8 @@ static void score_net_init (Score* score, const char* server, int port)
 				score_net_finish (score);
 			} else {
 				score->udp_pkt = SDLNet_AllocPacket (GLOBAL_SCORE_LEN);
-				if(score->udp_pkt != NULL) {
-					memset (score->udp_pkt->data, 0, GLOBAL_SCORE_LEN);
-				}
-				else {
+				if(score->udp_pkt == NULL) {
+					fprintf(stderr, "SDLNet_AllocPacket(): %s\n", SDLNet_GetError());
 					score_net_finish (score);
 				}
 			}
@@ -86,17 +84,21 @@ static void score_net_init (Score* score, const char* server, int port)
 
 static void score_net_update (Score* score)
 {
-	if (score->udp_sock == 0)
+	if (score->udp_sock == NULL) {
 		return;
+	}
 
-	snprintf ((char*)score->udp_pkt->data,GLOBAL_SCORE_LEN, "%d", score->global);
+	printf("score global send %d\n", score->global);
+	snprintf ((char*)score->udp_pkt->data,GLOBAL_SCORE_LEN, "%d\n", score->global);
 	score->udp_pkt->len = GLOBAL_SCORE_LEN;
 	if (SDLNet_UDP_Send (score->udp_sock, 0, score->udp_pkt) == 1)
 	{
 		SDL_Delay (GLOBAL_SCORE_WAIT); // XXX only wait GLOBAL_SCORE_WAIT for hiscores
 		int n = SDLNet_UDP_Recv (score->udp_sock, score->udp_pkt);
 		if (n == 1) {
+			score->udp_pkt->data[GLOBAL_SCORE_LEN-1] = '\0'; // XXX safeguard
 			sscanf ((char*)score->udp_pkt->data, "%d", &score->global);
+			printf("score global recv %d\n", score->global);
 		}
 		else if (n < 0) {
 			fprintf (stderr, "SDLNet_UDP_Recv(%s,%d): %s\n",
@@ -112,6 +114,9 @@ static void score_net_update (Score* score)
 
 void score_init (Score* score, Args* args)
 {
+	if (args == NULL)
+		return;
+
 	memset (score, 0, sizeof(Score));
 
 	char cave9_home[FILENAME_MAX] = ".";
@@ -147,8 +152,7 @@ void score_init (Score* score, Args* args)
 	}
 
 #ifdef USE_SDLNET
-	if (args != NULL)
-		score_net_init (score, args->server, args->port);
+	score_net_init (score, args->server, args->port);
 #endif
 }
 
@@ -158,7 +162,7 @@ void score_finish (Score* score)
 	score_net_finish (score);
 #endif
 	free (score->filename);
-	memset (score, 0, sizeof(Score));
+	score->filename = NULL;
 }
 
 void score_update (Score* score, int new_score, bool is_global)
