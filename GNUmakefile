@@ -5,11 +5,12 @@ CODE_VERSION=$(shell grep CODE_VERSION $(VERSION) | cut -d \" -f 2)
 DATA_VERSION=$(shell grep DATA_VERSION $(VERSION) | cut -d \" -f 2)
 
 DATA = \
-	data/hit.wav \
-	data/icon.png \
 	data/wall.jpg \
-	data/thrust.wav \
 	data/hud.ttf \
+	data/thrust.wav \
+	data/hit.wav \
+	data/crash.wav \
+	data/icon.png \
 	data/README.txt
 
 build:

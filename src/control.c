@@ -300,10 +300,12 @@ int main_control (int argc, char* argv[])
 
 			if (collision (&game.cave, &game.player) <= 0) {
 				input.state = GAMEOVER;
-				SDL_Delay(66); audio_stop (&audio); // time to listen hit sound
+				game.player.dist = -1;
+				game.player.lefton =
+				game.player.righton = 0;
 				render_message (&render, &game, "GAMEOVER. press space");
 				game_score_update (&game);
-				game.player.dist = -1;
+				SDL_Delay(500); audio_stop (&audio); // time to listen hit sound
 			}
 			cave_gen (&game.cave, &game.digger);
 

@@ -15,6 +15,7 @@
 	along with cave9.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdlib.h>
 #include <math.h>
 #include <float.h>
 #include "render.h"

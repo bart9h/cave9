@@ -5,6 +5,7 @@ SRCS = \
 	 audio.c \
 	 control.c \
 	 display.c \
+	 render.c \
 	 game.c \
 	 score.c \
 	 util.c \

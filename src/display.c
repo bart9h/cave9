@@ -220,6 +220,11 @@ GLuint load_texture (const char* filename)
 		exit(1);
 	}
 
+	if(texture->format->BitsPerPixel != 24) {
+		fprintf(stderr, "texture '%s' format must be 24bits\n", filename);
+		exit(1);
+	}
+
 	GLenum err = gluBuild2DMipmaps(GL_TEXTURE_2D,
 			GL_RGB, texture->w, texture->h,
 			GL_RGB, GL_UNSIGNED_BYTE,texture->pixels);
@@ -227,6 +232,9 @@ GLuint load_texture (const char* filename)
 		fprintf(stderr, "gluBuild2DMipmaps(): %s\n", gluErrorString(err));
 		exit(1);
 	}
+
+	fprintf(stderr, "Texture '%s' %dx%d-24bits\n", 
+			filename, texture->w, texture->h);
 
 	SDL_FreeSurface(texture);
 	return id;
