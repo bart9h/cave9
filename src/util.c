@@ -9,30 +9,63 @@
 
 #include "util.h"
 
-const char* find_file (const char* basename, const char* paths[], bool required)
+char bin_path[FILENAME_MAX];
+void find_init (const char* argv0)
+{
+	char *p = strrchr(argv0, '/');
+	if(p == NULL) {
+		bin_path[0] = '.';
+		bin_path[1] = '\0';
+	} else {
+		int len = p - argv0;
+		int max = FILENAME_MAX-1;
+		if(len > max) {
+			fprintf (stderr, "ERROR: call path (%d) "
+				"longer than maximum allowed search path (%d)\n", 
+				len, max);
+			exit(1);
+		}
+		memcpy(bin_path, argv0, len);
+		bin_path[len] = '\0';
+	}
+}
+
+const char* find_file (const char* basename, 
+		const char* paths[], 
+		bool required)
 {
 	static char path[FILENAME_MAX];
 
-	for (int i = 0;  ;  ++i) {
-		if (paths[i] == NULL) {
-			if (required) {
-				fprintf (stderr, "ERROR: Could not find file \"%s\" on any of:\n", basename);
-				for (int j = 0;  paths[j] != NULL;  ++j)
-					fprintf (stderr, "       %s\n", paths[j]);
-				exit(1);
-			}
-			else break;
-		}
-		if (strncmp (paths[i], "~/", 2) != 0)
+	for (int i = 0; paths[i];  ++i) {
+
+		if (strncmp (paths[i], "/", 1) == 0) { // root
 			snprintf (path, FILENAME_MAX, "%s/%s", paths[i], basename);
-		else if (getenv("HOME"))
-			snprintf (path, FILENAME_MAX, "%s/%s/%s", getenv("HOME"), paths[i]+2, basename);
-		else continue;
+		}
+		else if (strncmp (paths[i], "~/", 2) == 0) { // home
+		   	if(getenv("HOME"))
+				snprintf (path, FILENAME_MAX, "%s/%s/%s", getenv("HOME"), paths[i]+2, basename);
+			else
+				continue;
+		}
+		else if (strncmp (paths[i], ".", 1) == 0) { // cwd
+			snprintf (path, FILENAME_MAX, "%s/%s", paths[i], basename);
+		}
+		else { // bin
+			snprintf (path, FILENAME_MAX, "%s/%s/%s", bin_path, paths[i], basename);
+		}
+
 		if (access (path, R_OK) == 0)
-			break;
+			return path;
 	}
 
-	return path;
+	if (required) {
+		fprintf (stderr, "ERROR: Could not find file \"%s\" on any of:\n", basename);
+		for (int j = 0;  paths[j] != NULL;  ++j)
+			fprintf (stderr, "       %s\n", paths[j]);
+		exit(1);
+	}
+
+	return NULL;
 }
 
 void arabic (char *buf, unsigned int n)

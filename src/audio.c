@@ -167,7 +167,7 @@ bool audio_load(Audio *audio, Wave *wave, const char *filename)
 	wave->index = rand()%wave->size;
 	wave->enabled = true;
 
-	fprintf(stderr, "Wave '%s' %dHz 1ch 16bit-signed\n", 
+	fprintf(stderr, "Audio Wave '%s' %dHz 1ch 16bit-signed\n", 
 			filename, wave->fmt.freq);
 
 	return true;

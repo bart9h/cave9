@@ -29,6 +29,16 @@
 
 float score_scale = .1;
 
+const char* data_paths[] =
+{
+	"data",
+	"./data",
+	"~/.cave9/data",
+	"/usr/local/share/cave9",
+	"/usr/share/cave9",
+	NULL
+};
+
 float cave_len (Cave *cave)
 {
 	int head = cave->i;

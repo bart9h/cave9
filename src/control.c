@@ -25,15 +25,6 @@
 #include "audio.h"
 #include "util.h"
 
-const char* data_paths[] =
-{
-	"./data",
-	"~/.cave9/data",
-	"/usr/local/share/cave9",
-	"/usr/share/cave9",
-	NULL
-};
-
 typedef struct Input_struct
 {
 	bool pressed[SDLK_LAST];
@@ -260,6 +251,8 @@ int main_control (int argc, char* argv[])
 	Audio audio;
 	Input input;
 	memset (input.pressed, 0, sizeof(input.pressed));
+
+	find_init(argv[0]);
 
 	srand (time(NULL));
 

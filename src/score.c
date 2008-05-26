@@ -88,7 +88,7 @@ static void score_net_update (Score* score)
 		return;
 	}
 
-	printf("score global send %d\n", score->global);
+	printf("Score Global send %d\n", score->global);
 	snprintf ((char*)score->udp_pkt->data,GLOBAL_SCORE_LEN, "%d\n", score->global);
 	score->udp_pkt->len = GLOBAL_SCORE_LEN;
 	if (SDLNet_UDP_Send (score->udp_sock, 0, score->udp_pkt) == 1)
@@ -98,7 +98,7 @@ static void score_net_update (Score* score)
 		if (n == 1) {
 			score->udp_pkt->data[GLOBAL_SCORE_LEN-1] = '\0'; // XXX safeguard
 			sscanf ((char*)score->udp_pkt->data, "%d", &score->global);
-			printf("score global recv %d\n", score->global);
+			printf("Score Global recv %d\n", score->global);
 		}
 		else if (n < 0) {
 			fprintf (stderr, "SDLNet_UDP_Recv(%s,%d): %s\n",
@@ -119,7 +119,7 @@ void score_init (Score* score, Args* args)
 
 	memset (score, 0, sizeof(Score));
 
-	char cave9_home[FILENAME_MAX] = ".";
+	char cave9_home[FILENAME_MAX];
 	char* home = getenv("HOME");
 	if (home != NULL) {
 		sprintf (cave9_home, "%s/.cave9", home);
@@ -129,26 +129,30 @@ void score_init (Score* score, Args* args)
 			, 0755
 #endif
 		);
-
-		size_t len = strlen(cave9_home) + strlen("/") + strlen(SCORE_FILE) + 1;
-		score->filename = malloc (len);
-		snprintf (score->filename, len, "%s/%s", cave9_home, SCORE_FILE);
 	}
 	else {
 		fprintf (stderr,
-			"HOME environment variable not set, using current dir to save %s\n",
-			SCORE_FILE);
-		score->filename = strdup (SCORE_FILE);
+			"HOME environment variable not set, using '%s' to save\n",
+			bin_path);
+
+		strncpy(cave9_home, bin_path, FILENAME_MAX-1);
+		cave9_home[FILENAME_MAX-1] = '\0';
 	}
+	size_t len = strlen(cave9_home) + strlen("/") + strlen(SCORE_FILE) + 1;
+	score->filename = malloc (len);
+	snprintf (score->filename, len, "%s/%s", cave9_home, SCORE_FILE);
 	assert (score->filename != NULL);
 
-	const char* paths[] = { cave9_home, ".", NULL };
+	const char* paths[] = { "", ".", "~/.cave9", NULL };
 	const char* filename = find_file (SCORE_FILE, paths, false);
-	FILE* fp = fopen (filename, "r");
-	if (fp != NULL) {
-		if (fscanf (fp, "%d", &score->local) != 1)
-			score->local = 0;
-		fclose (fp);
+	score->local = 0;
+	if(filename != NULL) {
+		FILE* fp = fopen (filename, "r");
+		if (fp != NULL) {
+			fscanf (fp, "%d", &score->local);
+			printf("Score '%s' %d\n", filename, score->local);
+			fclose (fp);
+		}
 	}
 
 #ifdef USE_SDLNET

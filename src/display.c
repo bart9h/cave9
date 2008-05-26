@@ -53,7 +53,9 @@ void viewport (Display* display, GLsizei w, GLsizei h, GLsizei bpp,
 	}
 
 	bpp = display->screen->format->BitsPerPixel;
-	//printf("%dx%dx%d\n", display->screen->w, display->screen->h, display->screen->format->BitsPerPixel);
+	printf("Display %dx%d-%dbit\n", 
+			display->screen->w, display->screen->h, 
+			display->screen->format->BitsPerPixel);
 
 #if 0
 	if(aa) {
@@ -233,7 +235,7 @@ GLuint load_texture (const char* filename)
 		exit(1);
 	}
 
-	fprintf(stderr, "Texture '%s' %dx%d-24bits\n", 
+	fprintf(stderr, "Display Texture '%s' %dx%d-24bit\n", 
 			filename, texture->w, texture->h);
 
 	SDL_FreeSurface(texture);
