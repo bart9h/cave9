@@ -365,37 +365,60 @@ static void render_hud (Render* render, Game* game)
 	void (*number) (char *, unsigned int) = render->roman ? roman : arabic;
 
 	char score[NUMBER_STR_MAX];
-	number(score,game_score(game));
+	char session[NUMBER_STR_MAX];
+	number (score, game_score(game));
+	number (session, game->score.session);
 
 	if (game->player.dist > 0) {
 		snprintf (buf, HUD_TEXT_MAX, "%s", score);
 
 		char session[NUMBER_STR_MAX];
-		number(session,game->score.session);
+		number (session,game->score.session);
 
 		display_text (&render->display, &render->hud_id, font, buf, 
 				0.25,1, .25, 1,1,1,.5);
 
 		render->gauge = ship_speed(&game->player);
 
-	} else if (game->player.dist == -1) {
-		char session[NUMBER_STR_MAX];
-		number(session,game->score.session);
+	}
+	else if (game->player.dist == -1) {
+
+		snprintf (buf, HUD_TEXT_MAX, "score %s", score);
+
+		if (game->score.session != game_score(game)) {
+			strcat (buf, "  session ");
+			strcat (buf, session);
+		}
+
 		if (game_nocheat(game)) {
-			char local[NUMBER_STR_MAX];
-			char global[NUMBER_STR_MAX];
-			number(local,game->score.local);
-			number(global,game->score.global);
-			snprintf(buf, HUD_TEXT_MAX, "score %s session %s local %s global %s",
-				score, session, local, global
-			);
+
+			if (game->score.session != game->score.local) {
+				char local[NUMBER_STR_MAX];
+				number (local, game->score.local);
+				strcat (buf, "  local ");
+				strcat (buf, local);
+			}
+
+			if (game->score.local != game->score.global) {
+				char global[NUMBER_STR_MAX];
+				number (global, game->score.global);
+				strcat (buf, "  global ");
+				strcat (buf, global);
+			}
 		}
 		else {
+
+			if (game->score.session != game->score.local) {
+				char local[NUMBER_STR_MAX];
+				number (local, game->score.local);
+				strcat (buf, "  local ");
+				strcat (buf, local);
+			}
+
 			char start[NUMBER_STR_MAX];
-			number(start, game->player.start);
-			snprintf (buf, HUD_TEXT_MAX, "score %s session %s starting at  %s",
-				score, session, start
-			);
+			number (start, game->player.start);
+			strcat (buf, "  starting at ");
+			strcat (buf, start);
 		}
 
 		display_text_box (&render->display, &render->hud_id, font, buf, 
