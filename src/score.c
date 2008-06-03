@@ -61,7 +61,8 @@ static void score_net_init (Score* score, const char* server, int port)
 	score->udp_sock = NULL;
 	score->udp_pkt = NULL;
 	if (SDLNet_ResolveHost (&addr, server, port) == -1) {
-		fprintf(stderr, "SDLNet_ResolveHost(): %s\n", SDLNet_GetError());
+		fprintf(stderr, "SDLNet_ResolveHost('%s',%d): %s\n", 
+				server, port, SDLNet_GetError());
 	} else {
 		score->udp_sock = SDLNet_UDP_Open(0);
 		if(score->udp_sock == NULL) {
@@ -74,8 +75,11 @@ static void score_net_init (Score* score, const char* server, int port)
 			} else {
 				score->udp_pkt = SDLNet_AllocPacket (GLOBAL_SCORE_LEN);
 				if(score->udp_pkt == NULL) {
-					fprintf(stderr, "SDLNet_AllocPacket(): %s\n", SDLNet_GetError());
+					fprintf(stderr, "SDLNet_AllocPacket(%d): %s\n", 
+							GLOBAL_SCORE_LEN, SDLNet_GetError());
 					score_net_finish (score);
+				} else {
+					printf("Score Global init UDP port %d\n", port);
 				}
 			}
 		}
