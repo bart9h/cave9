@@ -38,7 +38,7 @@ typedef struct Args_struct
 	int autopilot;
 	int aidtrack;
 	int arabic;
-#ifdef USE_SDLNET
+#ifdef GLOBAL_SCORE
 	int port;
 	char server[ARG_STR_MAX];
 #endif

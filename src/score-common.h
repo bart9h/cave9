@@ -15,35 +15,17 @@
 	along with cave9.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef score_h_included
-#define score_h_included
+#ifndef score_global_h_included
+#define score_global_h_included
 
-#include <stdbool.h>
-#include "args.h"
-
-#ifdef GLOBAL_SCORE
-#include <SDL_net.h>
-#endif
-
-#include "score-common.h"
-
-typedef struct Score_struct
-{
-	int current;
-	int session;
-	int local;
-	int global;
-	char* filename;
+#define SCORE_FILE "hiscore.txt"
 
 #ifdef GLOBAL_SCORE
-	UDPsocket udp_sock;
-	UDPpacket* udp_pkt;
+# define GLOBAL_SCORE_PORT 31559
+# define GLOBAL_SCORE_HOST "cave9.9hells.org"
+# define GLOBAL_SCORE_LEN 16
+# define GLOBAL_SCORE_WAIT 666
 #endif
-} Score;
-
-void score_init (Score*, Args*);
-void score_finish (Score*);
-void score_update (Score*, int new_score, bool is_global);
 
 #endif
 

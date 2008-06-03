@@ -136,7 +136,7 @@ static void args_init (Args* args, int argc, char* argv[])
 	args->autopilot = 0;
 	args->aidtrack = 0;
 	args->arabic = 0;
-#ifdef USE_SDLNET
+#ifdef GLOBAL_SCORE
 	args->port = GLOBAL_SCORE_PORT;
 # ifndef NET_DEFAULT_DISABLED
 	snprintf (args->server, ARG_STR_MAX, "%s", GLOBAL_SCORE_HOST);
@@ -172,7 +172,7 @@ static void args_init (Args* args, int argc, char* argv[])
 		{ "",   "--autopilot",    false,  true,   &args->autopilot,    NULL         },
 		{ "",   "--aidtrack",     false,  true,   &args->aidtrack,     NULL         },
 		{ "",   "--arabic",       false,  false,  &args->arabic,       NULL         },
-#ifdef USE_SDLNET                         
+#ifdef GLOBAL_SCORE                         
 		{ "-s", "--server",       true,   true,   NULL,                args->server },
 		{ "-p", "--port",         true,   true,   &args->port,         NULL         },
 #endif

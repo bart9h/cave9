@@ -31,7 +31,7 @@
 #include <io.h> // mkdir
 #endif
 
-#ifdef USE_SDLNET
+#ifdef GLOBAL_SCORE
 
 static void score_net_finish (Score* score)
 {
@@ -155,14 +155,14 @@ void score_init (Score* score, Args* args)
 		}
 	}
 
-#ifdef USE_SDLNET
+#ifdef GLOBAL_SCORE
 	score_net_init (score, args->server, args->port);
 #endif
 }
 
 void score_finish (Score* score)
 {
-#ifdef USE_SDLNET
+#ifdef GLOBAL_SCORE
 	score_net_finish (score);
 #endif
 	free (score->filename);
@@ -190,7 +190,7 @@ void score_update (Score* score, int new_score, bool is_global)
 		int new_global = MAX(new_score, score->local);
 		if (new_global > score->global) {
 			score->global = new_global;
-#ifdef USE_SDLNET
+#ifdef GLOBAL_SCORE
 			score_net_update (score);
 #endif
 		}
