@@ -290,20 +290,34 @@ float collision (Cave* cave, Ship* ship)
 	int intersection_count[4];
 	memset(intersection_count, 0, sizeof(intersection_count));
 
-	int i = (cave->i + SEGMENT_COUNT) % SEGMENT_COUNT; // off-1
-	for(int off = 0; off < 3; ++off, i = (i+1) % SEGMENT_COUNT ) { // -1,0,1
+	
+	for(int n = 0, i = (cave->i + SEGMENT_COUNT) % SEGMENT_COUNT; // -1
+			n < 3; ++n, i = (i+1) % SEGMENT_COUNT ) // -1,0,1
+	{
 
 		for(int j = 0; j < SECTOR_COUNT; ++j ) {
-			int j0 = (j+0)%SECTOR_COUNT;
-			int j1 = (j+1)%SECTOR_COUNT;
 
-			ADD(center,cave->segs[i][j0]);
+			// find center
+			ADD(center,cave->segs[i][j]);
 
+			// find minimum distance
+			// FIXME needs to be a line to point distance
 			Vec3 dist;
-			SUB2(dist, ship->pos, cave->segs[i][j0]);
+			SUB2(dist, ship->pos, cave->segs[i][j]);
 			float len = LEN(dist);
 			if(len < min)
 				min = len;
+		}
+	}
+
+	// find if it's inside
+	// TODO take in account the radius toward the previous and next segment,
+	//      like in the distance calculation before, and merge both loops
+	int i = cave->i;
+	{
+		for(int j = 0; j < SECTOR_COUNT; ++j ) {
+			int j0 = (j+0)%SECTOR_COUNT;
+			int j1 = (j+1)%SECTOR_COUNT;
 
 			// optimize
 			if(cave->segs[i][j0][0] < ship->pos[0]-ship->radius &&
