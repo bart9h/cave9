@@ -40,7 +40,7 @@ typedef struct Render_struct
 	bool cockpit;
 	bool shaking;
 	bool aidtrack;
-	bool arabic;
+	bool roman;
 
 	float gauge;
 } Render;

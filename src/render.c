@@ -114,7 +114,7 @@ void render_init (Render* render, Args* args)
 	render->cockpit = args->cockpit;
 	render->shaking = !args->noshake;
 	render->aidtrack = args->aidtrack;
-	render->arabic = args->arabic;
+	render->roman = args->roman;
 
 	{ // huemap for velocity gauge
 		int base = 1;
@@ -362,7 +362,7 @@ static void render_hud (Render* render, Game* game)
 	TTF_Font* font = render->font;
 #endif
 
-	void (*number) (char *, unsigned int) = render->arabic ? arabic : roman;
+	void (*number) (char *, unsigned int) = render->roman ? roman : arabic;
 
 	char score[NUMBER_STR_MAX];
 	number(score,game_score(game));

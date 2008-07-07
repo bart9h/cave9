@@ -37,7 +37,7 @@ typedef struct Args_struct
 	int stalactites;
 	int autopilot;
 	int aidtrack;
-	int arabic;
+	int roman;
 #ifdef GLOBAL_SCORE
 	int port;
 	char server[ARG_STR_MAX];
