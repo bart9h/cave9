@@ -75,6 +75,8 @@ void arabic (char *buf, unsigned int n)
 
 void roman (char *buf, unsigned int n)
 {
+	n /= 10;  // score scale
+
 	static const struct {
 		char* str;
 		unsigned int val;
