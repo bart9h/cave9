@@ -387,6 +387,7 @@ static void render_hud (Render* render, Game* game)
 
 		if (game->score.session != game_score(game)) {
 			strcat (buf, "  session ");
+			strcat (buf, " ");  //WTF? ttf bug?
 			strcat (buf, session);
 		}
 
