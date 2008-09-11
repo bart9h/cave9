@@ -24,6 +24,7 @@
 #include "game.h"
 #include "audio.h"
 #include "util.h"
+#include "version.h"
 
 typedef struct Input_struct
 {
@@ -145,6 +146,7 @@ static void args_init (Args* args, int argc, char* argv[])
 # endif
 #endif
 	int help_called = 0;
+	int version_called = 0;
 
 	struct Option {
 		char* short_name;
@@ -156,6 +158,7 @@ static void args_init (Args* args, int argc, char* argv[])
 	} options[] = {
 		//                        arg?    exp?    int-value            string-value
 		{ "-h", "--help",         false,  false,  &help_called,        NULL         },
+		{ "-v", "--version",      false,  false,  &version_called,     NULL         },
 		{ "-g", "--game_mode",    true,   false,  &args->game_mode,    NULL         },
 		{ "-W", "--width",        true,   false,  &args->width,        NULL         },
 		{ "-H", "--height",       true,   false,  &args->height,       NULL         },
@@ -240,7 +243,12 @@ static void args_init (Args* args, int argc, char* argv[])
 			}
 			printf ("\n");
 		}
-		exit(1);
+		exit (1);
+	}
+
+	if (version_called) {
+		printf ("cave9 version %s\n", CODE_VERSION);
+		exit (0);
 	}
 }
 
