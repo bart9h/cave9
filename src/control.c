@@ -247,7 +247,7 @@ static void args_init (Args* args, int argc, char* argv[])
 	}
 
 	if (version_called) {
-		printf ("cave9 version %s\n", CODE_VERSION);
+		printf ("cave9 version %s  (data pack version %s)\n", CODE_VERSION, DATA_VERSION);
 		exit (0);
 	}
 }

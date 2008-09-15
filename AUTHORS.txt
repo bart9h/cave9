@@ -1,20 +1,19 @@
 main coders:
 ============
+
 Carlo Caputo  (aka zed9h)  <carlo.caputo@gmail.com>
+
 Rodolfo Borges  (aka bart9h)  <rodolfo.borges@gmail.com>
 
 
-texture:
-========
-Ary Monteiro  <aryamjr@yahoo.com.br>
+contributors:
+=============
 
-
-prototype 2D cave-generation code:
-==================================
-Daniel Beltrao Borges  (aka dbb9h)  <dbb9hells@gmail.com>
-
-
-collision detection idea:
-=========================
 Victor Bogado  <victor@bogado.net>
+	- collision detection idea
+	- --aidtrack feature
+	- cave deformation code
+
+Daniel Beltrao Borges  (aka dbb9h)  <dbb9hells@gmail.com>
+	- prototype 2D cave-generation code
 
