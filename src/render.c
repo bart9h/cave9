@@ -241,8 +241,8 @@ static void cave_model (Render* render, Cave* cave, int mode)
 							(float)k/SECTOR_COUNT);
 				}
 
-				// XXX: use vec.h arithmetic instead of this
-				GLfloat thenormal[] = {cave->centers[i0][0] - cave->segs[i0][k0][0], cave->centers[i0][1] - cave->segs[i0][k0][1], cave->centers[i0][2] - cave->segs[i0][k0][2]};
+				GLfloat thenormal[] = {0, 0, 0};
+				SUB2(thenormal, cave->centers[i0], cave->segs[i0][k0]);
 				NORM(thenormal);
 				glNormal3fv(thenormal);
 
@@ -254,9 +254,9 @@ static void cave_model (Render* render, Cave* cave, int mode)
 							(float)k/SECTOR_COUNT);
 				}
 
-				GLfloat thenormal2[] = {cave->centers[i1][0] - cave->segs[i1][k0][0], cave->centers[i1][1] - cave->segs[i1][k0][1], cave->centers[i1][2] - cave->segs[i1][k0][2]};
-				NORM(thenormal2);
-				glNormal3fv(thenormal2);
+				SUB2(thenormal, cave->centers[i1], cave->segs[i1][k0]);
+				NORM(thenormal);
+				glNormal3fv(thenormal);
 
 				glVertex3fv(cave->segs[i1][k0]);
 			}
