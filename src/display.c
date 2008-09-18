@@ -153,10 +153,7 @@ void display_text_box (Display* display, GLuint* id,
 	glEnable(GL_TEXTURE_2D);
 
 	// FIXME dont rebuild the texture when it didnt changed
-	// FIXME dont make mipmaps for someting that does not move on z-axis
-	gluBuild2DMipmaps(GL_TEXTURE_2D,
-			GL_RGBA, label->w, label->h,
-			GL_RGBA, GL_UNSIGNED_BYTE, label->pixels);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, label->w, label->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, label->pixels);
 
 	SDL_FreeSurface(label);
 
