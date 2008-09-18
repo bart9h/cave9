@@ -279,14 +279,17 @@ static void cave_model (Render* render, Cave* cave, int mode)
 		}
 
 		if (mode == DISPLAYMODE_MINIMAP) {
-			float alpha = .12;
+// apparently pow is a lot more complicated than what we need here.
+#define FASTPOW6(a) a * a * a * a * a * a
+			float alpha = .12f - .12f * FASTPOW6(((SEGMENT_COUNT / 2.0f - i) / SEGMENT_COUNT * 2.0f));
+
 			if(i > render->gauge * SEGMENT_COUNT)
 				glColor4f (1, 1, 1, alpha);
 			else
 				glColor4f (
-					huemap[i][0],
-					huemap[i][1],
-					huemap[i][2], alpha);
+				           huemap[i][0],
+				           huemap[i][1],
+				           huemap[i][2], alpha);
 		}
 		glCallList (render->gl_list[mode][i0]);
 	}
