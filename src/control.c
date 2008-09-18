@@ -91,7 +91,7 @@ static void control (Render* render, Audio* audio, Game* game, Input* input)
 				int aa;
 				SDL_GL_GetAttribute (SDL_GL_MULTISAMPLESAMPLES, &aa);
 				viewport (&render->display, event.resize.w, event.resize.h, 0, 
-						render->display.screen->flags & SDL_FULLSCREEN, aa);
+						render->display.screen->flags & SDL_FULLSCREEN, aa, render->lighting);
 			}
 			break;
 		case SDL_VIDEOEXPOSE:

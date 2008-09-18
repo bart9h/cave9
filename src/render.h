@@ -42,6 +42,8 @@ typedef struct Render_struct
 	bool aidtrack;
 	bool roman;
 
+	bool lighting;
+
 	float gauge;
 } Render;
 

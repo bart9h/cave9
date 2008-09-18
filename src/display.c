@@ -26,7 +26,7 @@
 #include "util.h"
 
 void viewport (Display* display, GLsizei w, GLsizei h, GLsizei bpp,
-		bool fullscreen, int aa)
+		bool fullscreen, int aa, bool lighting)
 {
 	// video mode
 	SDL_GL_SetAttribute( SDL_GL_RED_SIZE, bpp/3 );
@@ -118,7 +118,7 @@ void viewport (Display* display, GLsizei w, GLsizei h, GLsizei bpp,
 		glHint(GL_MULTISAMPLE_FILTER_HINT_NV,GL_NICEST);
 	}
 
-	if(args->lighting)
+	if(lighting)
 	{
 		GLfloat ambient[] = {0.5f, 0.5f, 0.5f, 1.0f}; // dark ambient light
 		GLfloat diffuse[] = {0.75f, 0.75f, 0.75f, 1.0f}; // bright spotlight from cruiser
@@ -308,7 +308,7 @@ void display_init (Display* display, GLfloat near_plane, GLfloat far_plane, Args
 #endif
 		f = 1;
 	}
-	viewport(display, w, h, args->bpp, f, args->antialiasing);
+	viewport(display, w, h, args->bpp, f, args->antialiasing, args->lighting);
 
 	if(TTF_Init() != 0) {
 		fprintf(stderr, "TTF_Init(): %s\n", TTF_GetError());

@@ -47,7 +47,7 @@ typedef struct Display_struct
 } Display;
 
 void display_init (Display*, GLfloat near_plane, GLfloat far_plane, Args*);
-void viewport (Display*, GLsizei w, GLsizei h, GLsizei bpp, bool fullscreen, int aa);
+void viewport (Display*, GLsizei w, GLsizei h, GLsizei bpp, bool fullscreen, int aa, bool lighting);
 
 void display_text_box (Display* display, GLuint *id, 
 		TTF_Font *font, const char* text,

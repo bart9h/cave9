@@ -116,6 +116,8 @@ void render_init (Render* render, Args* args)
 	render->aidtrack = args->aidtrack;
 	render->roman = args->roman;
 
+	render->lighting = args->lighting;
+
 	{ // huemap for velocity gauge
 		int base = 1;
 		for (int h = 0; h < SEGMENT_COUNT; ++h) {
@@ -198,7 +200,7 @@ static void cave_model (Render* render, Cave* cave, int mode)
 			glEnd();
 		}
 
-		if (args->lighting)
+		if (render->lighting)
 			glEnable(GL_LIGHTING);
 
 		int i0 = (cave->i + i)%SEGMENT_COUNT;
@@ -305,7 +307,7 @@ static void monolith_model (Render* render, Game* game)
 	glEnable (GL_DEPTH_TEST);
 	glDisable (GL_BLEND);
 	glDisable (GL_TEXTURE_2D);
-	if (args->lighting)
+	if (render->lighting)
 		glEnable (GL_LIGHTING);
 
 	glPushMatrix();
