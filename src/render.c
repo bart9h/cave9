@@ -198,7 +198,8 @@ static void cave_model (Render* render, Cave* cave, int mode)
 			glEnd();
 		}
 
-		glEnable(GL_LIGHTING);
+		if (args->lighting)
+			glEnable(GL_LIGHTING);
 
 		int i0 = (cave->i + i)%SEGMENT_COUNT;
 
@@ -304,7 +305,8 @@ static void monolith_model (Render* render, Game* game)
 	glEnable (GL_DEPTH_TEST);
 	glDisable (GL_BLEND);
 	glDisable (GL_TEXTURE_2D);
-	glEnable (GL_LIGHTING);
+	if (args->lighting)
+		glEnable (GL_LIGHTING);
 
 	glPushMatrix();
 

@@ -137,6 +137,7 @@ static void args_init (Args* args, int argc, char* argv[])
 	args->autopilot = 0;
 	args->aidtrack = 0;
 	args->roman = 0;
+	args->lighting = 0;
 #ifdef GLOBAL_SCORE
 	args->port = GLOBAL_SCORE_PORT;
 # ifndef NET_DEFAULT_DISABLED
@@ -175,6 +176,7 @@ static void args_init (Args* args, int argc, char* argv[])
 		{ "",   "--autopilot",    false,  true,   &args->autopilot,    NULL         },
 		{ "",   "--aidtrack",     false,  true,   &args->aidtrack,     NULL         },
 		{ "",   "--roman",        false,  false,  &args->roman,        NULL         },
+		{ "",   "--lighting",     false,  true,   &args->lighting,     NULL         },
 #ifdef GLOBAL_SCORE                         
 		{ "-s", "--server",       true,   true,   NULL,                args->server },
 		{ "-p", "--port",         true,   true,   &args->port,         NULL         },

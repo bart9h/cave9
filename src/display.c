@@ -118,18 +118,19 @@ void viewport (Display* display, GLsizei w, GLsizei h, GLsizei bpp,
 		glHint(GL_MULTISAMPLE_FILTER_HINT_NV,GL_NICEST);
 	}
 
-	// lighting
+	if(args->lighting)
+	{
+		GLfloat ambient[] = {0.5f, 0.5f, 0.5f, 1.0f}; // dark ambient light
+		GLfloat diffuse[] = {0.75f, 0.75f, 0.75f, 1.0f}; // bright spotlight from cruiser
 
-	GLfloat ambient[] = {0.5f, 0.5f, 0.5f, 1.0f}; // dark ambient light
-	GLfloat diffuse[] = {0.75f, 0.75f, 0.75f, 1.0f}; // bright spotlight from cruiser
+		GLfloat lightpos[]= {0.0f, 0.0f, 0.0f, 1.0f}; // position of headlights
 
-	GLfloat lightpos[]= {0.0f, 0.0f, 0.0f, 1.0f}; // position of headlights
-
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT1);
-	glLightfv(GL_LIGHT1, GL_AMBIENT, ambient);
-	glLightfv(GL_LIGHT1, GL_DIFFUSE, diffuse);
-	glLightfv(GL_LIGHT1, GL_POSITION, lightpos);
+		glEnable(GL_LIGHTING);
+		glEnable(GL_LIGHT1);
+		glLightfv(GL_LIGHT1, GL_AMBIENT, ambient);
+		glLightfv(GL_LIGHT1, GL_DIFFUSE, diffuse);
+		glLightfv(GL_LIGHT1, GL_POSITION, lightpos);
+	}
 
 	return;
 	error:

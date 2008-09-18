@@ -38,6 +38,7 @@ typedef struct Args_struct
 	int autopilot;
 	int aidtrack;
 	int roman;
+  int lighting;
 #ifdef GLOBAL_SCORE
 	int port;
 	char server[ARG_STR_MAX];
