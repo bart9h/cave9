@@ -85,8 +85,8 @@ void render_init (Render* render, Args* args)
 	for (int mode = 0; mode < DISPLAYMODE_COUNT; ++mode)
 		render->list_start[mode] = glGenLists (SEGMENT_COUNT);
 
-    render->hud_id = 0;
-    render->msg_id = 0;
+	render->hud_id = 0;
+	render->msg_id = 0;
 
 	float scale = MIN(
 			display->screen->w/(float)BASE_W, 
