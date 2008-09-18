@@ -167,6 +167,9 @@ static void render_world_transform (Render* render, Ship* player)
 	//render->target[1]=render->target[1]*.5+player->pos[1]*.5;
 	//render->target[2]+=10;
 
+	GLfloat lightpos[] = {render->cam[0], render->cam[1], render->cam[2] + 1, 1.0f};
+	glLightfv(GL_LIGHT1, GL_POSITION, lightpos);
+
 	gluLookAt(
 		render->cam[0], render->cam[1], render->cam[2],
 		render->target[0], render->target[1], render->target[2],
@@ -181,6 +184,7 @@ static void cave_model (Render* render, Cave* cave, int mode)
 
 		// aid bread-crumb track
 		if (render->aidtrack  &&  mode == DISPLAYMODE_NORMAL && !(i&1)) {
+			glDisable(GL_LIGHTING);
 			glColor4f(0.5,0.5,1,1);
 			glBegin(GL_LINE_STRIP);
 
@@ -193,6 +197,8 @@ static void cave_model (Render* render, Cave* cave, int mode)
 
 			glEnd();
 		}
+
+		glEnable(GL_LIGHTING);
 
 		int i0 = (cave->i + i)%SEGMENT_COUNT;
 
@@ -233,6 +239,12 @@ static void cave_model (Render* render, Cave* cave, int mode)
 							cave->segs[i0][k0][2]/SEGMENT_LEN/SEGMENT_COUNT, 
 							(float)k/SECTOR_COUNT);
 				}
+
+				// XXX: use vec.h arithmetic instead of this
+				GLfloat thenormal[] = {cave->centers[i0][0] - cave->segs[i0][k0][0], cave->centers[i0][1] - cave->segs[i0][k0][1], cave->centers[i0][2] - cave->segs[i0][k0][2]};
+				NORM(thenormal);
+				glNormal3fv(thenormal);
+
 				glVertex3fv(cave->segs[i0][k0]);
 
 				if (mode == DISPLAYMODE_NORMAL) {
@@ -240,6 +252,11 @@ static void cave_model (Render* render, Cave* cave, int mode)
 							cave->segs[i1][k0][2]/SEGMENT_LEN/SEGMENT_COUNT, 
 							(float)k/SECTOR_COUNT);
 				}
+
+				GLfloat thenormal2[] = {cave->centers[i1][0] - cave->segs[i1][k0][0], cave->centers[i1][1] - cave->segs[i1][k0][1], cave->centers[i1][2] - cave->segs[i1][k0][2]};
+				NORM(thenormal2);
+				glNormal3fv(thenormal2);
+
 				glVertex3fv(cave->segs[i1][k0]);
 			}
 			glEnd();
@@ -255,6 +272,7 @@ static void cave_model (Render* render, Cave* cave, int mode)
 			glDisable (GL_DEPTH_TEST);
 			glEnable  (GL_BLEND);
 			glDisable (GL_TEXTURE_2D);
+			glDisable(GL_LIGHTING);
 		}
 
 		if (mode == DISPLAYMODE_MINIMAP) {
@@ -286,6 +304,7 @@ static void monolith_model (Render* render, Game* game)
 	glEnable (GL_DEPTH_TEST);
 	glDisable (GL_BLEND);
 	glDisable (GL_TEXTURE_2D);
+	glEnable (GL_LIGHTING);
 
 	glPushMatrix();
 
@@ -330,6 +349,7 @@ static void ship_model(Render* render, Ship* ship)
 	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glDisable(GL_TEXTURE_2D);
+	glDisable(GL_LIGHTING);
 
 	glColor4f(1,white,white,alpha);
 	glPushMatrix();
@@ -464,6 +484,7 @@ void render_frame (Render* render, Game* game)
 			glDisable (GL_DEPTH_TEST);
 			glEnable  (GL_BLEND);
 			glDisable (GL_TEXTURE_2D);
+			glDisable (GL_LIGHTING);
 
 			glColor4f(1,0,0,hit/2.);
 			glBegin (GL_QUADS);

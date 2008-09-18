@@ -118,6 +118,19 @@ void viewport (Display* display, GLsizei w, GLsizei h, GLsizei bpp,
 		glHint(GL_MULTISAMPLE_FILTER_HINT_NV,GL_NICEST);
 	}
 
+	// lighting
+
+	GLfloat ambient[] = {0.5f, 0.5f, 0.5f, 1.0f}; // dark ambient light
+	GLfloat diffuse[] = {0.75f, 0.75f, 0.75f, 1.0f}; // bright spotlight from cruiser
+
+	GLfloat lightpos[]= {0.0f, 0.0f, 0.0f, 1.0f}; // position of headlights
+
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT1);
+	glLightfv(GL_LIGHT1, GL_AMBIENT, ambient);
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, diffuse);
+	glLightfv(GL_LIGHT1, GL_POSITION, lightpos);
+
 	return;
 	error:
 	fprintf(stderr, ": %s\n", SDL_GetError());
@@ -151,6 +164,7 @@ void display_text_box (Display* display, GLuint* id,
 	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glEnable(GL_TEXTURE_2D);
+	glDisable(GL_LIGHTING);
 
 	// FIXME dont rebuild the texture when it didnt changed
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, label->w, label->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, label->pixels);
