@@ -15,37 +15,15 @@
 	along with cave9.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef args_h_included
-#define args_h_included
+#ifndef detrand_h_included
+#define detrand_h_included
 
-#define ARG_STR_MAX 256
+extern int randval;
+extern int randseed;
 
-typedef struct Args_struct
-{
-	int width;
-	int height;
-	int bpp;
-	int fullscreen;
-	int highres;
-	int antialiasing;
-	int monoliths;
-	int start;
-	int cockpit;
-	int game_mode;
-	int nosound;
-	int noshake;
-	int stalactites;
-	int autopilot;
-	int aidtrack;
-	int roman;
-	int lighting;
-	int caveseed;
-#ifdef GLOBAL_SCORE
-	int port;
-	char server[ARG_STR_MAX];
-#endif
-} Args;
+float detrand();
+void detsrand(int seed);
+
+#define DRAND (detrand() / 2.0 + 0.5)
 
 #endif
-
-// vim600:fdm=syntax:fdn=1:

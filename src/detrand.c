@@ -14,38 +14,20 @@
 	You should have received a copy of the GNU General Public License
 	along with cave9.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include "detrand.h"
 
-#ifndef args_h_included
-#define args_h_included
+int randval;
+int randseed;
 
-#define ARG_STR_MAX 256
-
-typedef struct Args_struct
+float detrand()
 {
-	int width;
-	int height;
-	int bpp;
-	int fullscreen;
-	int highres;
-	int antialiasing;
-	int monoliths;
-	int start;
-	int cockpit;
-	int game_mode;
-	int nosound;
-	int noshake;
-	int stalactites;
-	int autopilot;
-	int aidtrack;
-	int roman;
-	int lighting;
-	int caveseed;
-#ifdef GLOBAL_SCORE
-	int port;
-	char server[ARG_STR_MAX];
-#endif
-} Args;
+	// taken from http://freespace.virgin.net/hugo.elias/models/m_perlin.htm
+	randval = (randval<<13) ^ randval;
+	return ( 1.0 - ( (randval++ * (randval * randval * randseed * 15731 + 789221) + 1376312589) & 0x7fffffff) / 1073741824.0);
+}
 
-#endif
+void detsrand(int seed)
+{
+	randseed = seed;
+}
 
-// vim600:fdm=syntax:fdn=1:

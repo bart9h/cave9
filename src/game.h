@@ -73,6 +73,8 @@ typedef struct Game_struct
 	Digger digger;
 	Score score;
 
+	int caveseed;
+
 	int mode;
 	bool monoliths;
 } Game;

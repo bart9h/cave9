@@ -25,6 +25,7 @@ SRCS = \
 	 render.c \
 	 score.c \
 	 util.c \
+	 detrand.c \
 
 OBJS = $(subst .c,.o,$(SRCS))
 
