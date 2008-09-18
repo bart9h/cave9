@@ -89,12 +89,16 @@ void viewport (Display* display, GLsizei w, GLsizei h, GLsizei bpp,
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_FRONT);
 
+	if(aa | lighting)
+		glShadeModel(GL_SMOOTH);
+	else
+		glShadeModel(GL_FLAT);
+		
+
 	if(aa) {
 		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-		glShadeModel(GL_SMOOTH);
 		glEnable(GL_LINE_SMOOTH);
 	} else {
-		glShadeModel(GL_FLAT);
 		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
 	}
 
