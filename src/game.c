@@ -116,7 +116,7 @@ static void cave_init (Cave* cave, Digger* digger, Args* args)
 	cave->i = 0;
 	do {
 		digger_control(digger, game_mode);
-		ship_move(ship, 1./FPS);
+		ship_move(ship, 1./50);
 		cave_gen(cave, digger);
 	}
 	while(cave->i != 0);

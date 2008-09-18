@@ -280,6 +280,7 @@ int main_control (int argc, char* argv[])
 	render_message (&render, &game, "WELCOME! use arrows and space");
 
 	float dt = 1./FPS;
+	int lastDiggerMove = 0;
 	while (input.state != QUIT) {
 		int t0 = SDL_GetTicks();
 
@@ -287,8 +288,13 @@ int main_control (int argc, char* argv[])
 
 		switch (input.state) {
 		case PLAY:
-			digger_control (&game.digger, game.mode);
-			ship_move (SHIP(&game.digger), dt);
+			if(lastDiggerMove <= SDL_GetTicks() - 50)
+			{
+				digger_control (&game.digger, game.mode);
+				cave_gen (&game.cave, &game.digger);
+				ship_move (SHIP(&game.digger), 0.05);
+				lastDiggerMove += 50;
+			}
 			
 			if (args.autopilot)
 				autopilot (&game, dt);
@@ -312,7 +318,6 @@ int main_control (int argc, char* argv[])
 				game_score_update (&game);
 				SDL_Delay(500); audio_stop (&audio); // time to listen hit sound
 			}
-			cave_gen (&game.cave, &game.digger);
 
 			render_frame (&render, &game);
 			break;

@@ -22,8 +22,9 @@ int randseed;
 float detrand()
 {
 	// taken from http://freespace.virgin.net/hugo.elias/models/m_perlin.htm
+	randval++;
 	randval = (randval<<13) ^ randval;
-	return ( 1.0 - ( (randval++ * (randval * randval * randseed * 15731 + 789221) + 1376312589) & 0x7fffffff) / 1073741824.0);
+	return ( 1.0 - ( (randval * (randval * randval * randseed * 15731 + 789221) + 1376312589) & 0x7fffffff) / 1073741824.0);
 }
 
 void detsrand(int seed)
