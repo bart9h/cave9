@@ -124,8 +124,10 @@ void viewport (Display* display, GLsizei w, GLsizei h, GLsizei bpp,
 
 	if(lighting)
 	{
-		GLfloat ambient[] = {0.5f, 0.5f, 0.5f, 1.0f}; // dark ambient light
-		GLfloat diffuse[] = {1.0f, 1.0f, 1.0f, 1.0f}; // bright spotlight from cruiser
+		float amb = 0.5;
+		float dif = 1.0;
+		GLfloat ambient[] = {amb, amb, amb, 1.0f}; // dark ambient light
+		GLfloat diffuse[] = {dif, dif, dif, 1.0f}; // bright spotlight from cruiser
 
 		GLfloat lightpos[]= {0.0f, 0.0f, 0.0f, 1.0f}; // position of headlights
 
