@@ -30,5 +30,6 @@ float detrand()
 void detsrand(int seed)
 {
 	randseed = seed;
+	randval = 0;
 }
 
