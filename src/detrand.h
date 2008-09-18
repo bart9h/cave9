@@ -18,6 +18,8 @@
 #ifndef detrand_h_included
 #define detrand_h_included
 
+#include <stdlib.h>
+
 extern int randval;
 extern int randseed;
 
@@ -25,5 +27,6 @@ float detrand();
 void detsrand(int seed);
 
 #define DRAND (detrand() / 2.0 + 0.5)
+#define DRAND_BIG (int)(DRAND * RAND_MAX)
 
 #endif

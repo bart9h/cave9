@@ -208,19 +208,19 @@ void digger_control (Digger* digger, int game_mode)
 	};
 
 	if( 
+			DRAND < twist*noise ||
 			ship->vel[1] >  max_vel[1] || 
 			ship->vel[1] < -max_vel[1] || 
 			ship->vel[0] >  max_vel[0] ||
-			ship->vel[0] < -max_vel[0] ||
-			DRAND < twist*noise
+			ship->vel[0] < -max_vel[0]
 		) 
 	{
 		if(DRAND>twist/2)
-			ship->lefton = DRAND<twist*noise ? rand()%2 :
+			ship->lefton = DRAND<twist*noise ? DRAND_BIG % 2 :
 				ship->vel[1] < 0 || ship->vel[0] > +max_vel[0]; 
 
 		if(DRAND>twist/2)
-			ship->righton = DRAND<twist*noise ? rand()%2 :
+			ship->righton = DRAND<twist*noise ? DRAND_BIG % 2 :
 				ship->vel[1] < 0 || ship->vel[0] < -max_vel[0];
 
 		if (game_mode == ONE_BUTTON)
