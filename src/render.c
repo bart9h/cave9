@@ -179,7 +179,7 @@ static void render_world_transform (Render* render, Ship* player)
 	);
 }
 
-static void cave_model (Render* render, Cave* cave, int mode)
+static void cave_model (Render* render, Cave* cave, int mode, float minimapoffset)
 {
 
 	for (int i = 0; i < SEGMENT_COUNT-1; ++i) {
@@ -281,7 +281,8 @@ static void cave_model (Render* render, Cave* cave, int mode)
 		if (mode == DISPLAYMODE_MINIMAP) {
 // apparently pow is a lot more complicated than what we need here.
 #define FASTPOW6(a) a * a * a * a * a * a
-			float alpha = .12f - .12f * FASTPOW6(((SEGMENT_COUNT / 2.0f - i) / SEGMENT_COUNT * 2.0f));
+			float ioffset = minimapoffset - (int)(minimapoffset); // i wonder if this works at all?
+			float alpha = .12f - .12f * FASTPOW6(((SEGMENT_COUNT / 2.0f - i + ioffset) / SEGMENT_COUNT * 2.0f));
 
 			if(i > render->gauge * SEGMENT_COUNT)
 				glColor4f (1, 1, 1, alpha);
@@ -465,7 +466,7 @@ static void render_minimap (Render* render, Game* game)
 				-game->player.pos[0]-len*8, // XXX hardcoded
 				-game->player.pos[1]-MAX_CAVE_RADIUS*3,
 				-game->player.pos[2]-len/2);
-		cave_model (render, &game->cave, true);
+		cave_model (render, &game->cave, true, game->player.pos[0] - len*8);
 
 		glColor4f(1,1,1,0.05);
 		glTranslatef (game->player.pos[0],game->player.pos[1],game->player.pos[2]);
@@ -482,7 +483,7 @@ void render_frame (Render* render, Game* game)
 		if(hit < .9) { // avoid drawing the cave from outside
 			glPushMatrix();
 				render_world_transform (render, &game->player);
-				cave_model (render, &game->cave, DISPLAYMODE_NORMAL);
+				cave_model (render, &game->cave, DISPLAYMODE_NORMAL, 0);
 				monolith_model (render, game);
 			glPopMatrix();
 		}
