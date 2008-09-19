@@ -177,8 +177,8 @@ static void args_init (Args* args, int argc, char* argv[])
 		{ "",   "--autopilot",    false,  true,   &args->autopilot,    NULL         },
 		{ "",   "--aidtrack",     false,  true,   &args->aidtrack,     NULL         },
 		{ "",   "--roman",        false,  false,  &args->roman,        NULL         },
-		{ "",   "--lighting",     false,  true,   &args->lighting,     NULL         },
-		{ "",   "--level",        true,   true,   &args->caveseed,     NULL         },
+		{ "",   "--lighting",     false,  false,  &args->lighting,     NULL         },
+		{ "-L", "--level",        true,   false,  &args->caveseed,     NULL         },
 #ifdef GLOBAL_SCORE                         
 		{ "-s", "--server",       true,   true,   NULL,                args->server },
 		{ "-p", "--port",         true,   true,   &args->port,         NULL         },
