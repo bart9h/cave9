@@ -161,7 +161,7 @@ void game_init (Game* game, Args* args)
 	ship_init (&game->player, SHIP_RADIUS);
 	digger_init (&game->digger, MAX_CAVE_RADIUS);
 	cave_init (&game->cave, &game->digger, args);
-	score_init (&game->score, args);
+	score_init (&game->score, args, game->caveseed, game->monoliths * 2/* + game->stalactites*/); // XXX uncomment this, once stalactites are implemented
 }
 
 void ship_move (Ship* ship, float dt)
