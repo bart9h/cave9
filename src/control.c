@@ -280,7 +280,6 @@ int main_control (int argc, char* argv[])
 	render_message (&render, &game, "WELCOME! use arrows and space");
 
 	float dt = 1./FPS;
-	int lastDiggerMove = 0;
 	while (input.state != QUIT) {
 		int t0 = SDL_GetTicks();
 
@@ -288,12 +287,12 @@ int main_control (int argc, char* argv[])
 
 		switch (input.state) {
 		case PLAY:
-			if(lastDiggerMove <= SDL_GetTicks() - 50)
+			//if(lastDiggerMove <= SDL_GetTicks() - 50)
+			if(game.digger.ship.pos[2] <= game.player.pos[2] + cave_len(&game.cave))
 			{
 				digger_control (&game.digger, game.mode);
 				cave_gen (&game.cave, &game.digger);
 				ship_move (SHIP(&game.digger), 0.05);
-				lastDiggerMove += 50;
 			}
 			
 			if (args.autopilot)
@@ -301,14 +300,7 @@ int main_control (int argc, char* argv[])
 			else
 				player_control (&game.player, &input, game.mode);
 			ship_move (&game.player, dt);
-			
-#ifndef NO_STRETCH_FIX
-			game.player.pos[2] = 
-				0.7 * (game.player.pos[2]) +
-				0.3 * (game.digger.ship.pos[2] - cave_len(&game.cave));
-			// XXX fix player position in case digger moves differently
-#endif
-
+		
 			if (collision (&game.cave, &game.player) <= 0) {
 				input.state = GAMEOVER;
 				game.player.dist = -1;
