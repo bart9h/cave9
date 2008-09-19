@@ -144,16 +144,34 @@ static void digger_init(Digger *digger, float radius)
 	digger->y_bottom_radius = 0.0;
 }
 
+void fast_forward(Game *game)
+{
+	printf("%d", game->start);
+	while((game->digger.ship.pos[2] - cave_len(&game->cave)) / (game->mode==ONE_BUTTON?2:1) < game->start)
+	{
+		digger_control (&game->digger, game->mode);
+		cave_gen (&game->cave, &game->digger);
+		ship_move (SHIP(&game->digger), 0.05);
+	}
+	COPY(game->player.pos, game->cave.centers[game->cave.i]);
+}
+
 void game_init (Game* game, Args* args)
 {
 	if (args != NULL) {
 		game->mode = args->game_mode;
 		game->monoliths = args->monoliths;
-		game->player.start = game->digger.ship.start = (float)args->start;
 		game->caveseed = args->caveseed;
+		if (game->caveseed != 0)
+		{
+			game->start = args->start;
+		} else {
+			game->player.start = game->digger.ship.start = (float)args->start;
+			game->start = 0;
+		}
 	}
 
-	if(game->caveseed == 0)
+	if (game->caveseed == 0)
 		detsrand(time(NULL));
 	else
 		detsrand(game->caveseed);
@@ -161,6 +179,8 @@ void game_init (Game* game, Args* args)
 	ship_init (&game->player, SHIP_RADIUS);
 	digger_init (&game->digger, MAX_CAVE_RADIUS);
 	cave_init (&game->cave, &game->digger, args);
+	if (game->start)
+		fast_forward(game);
 	score_init (&game->score, args, game->caveseed, game->monoliths * 2/* + game->stalactites*/); // XXX uncomment this, once stalactites are implemented
 }
 
@@ -367,7 +387,7 @@ float collision (Cave* cave, Ship* ship)
 
 bool game_nocheat (Game *game)
 {
-	return (game->player.start == 0);
+	return (game->player.start == 0 && game->start == 0);
 }
 
 int game_score (Game *game)

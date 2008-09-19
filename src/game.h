@@ -74,6 +74,7 @@ typedef struct Game_struct
 	Score score;
 
 	int caveseed;
+	int start;
 
 	int mode;
 	bool monoliths;
