@@ -445,7 +445,7 @@ static void render_hud (Render* render, Game* game)
 			}
 
 			char start[NUMBER_STR_MAX];
-			number (start, game->player.start);
+			number (start, MAX(game->player.start, game->start));
 			strcat (buf, "  starting at ");
 			strcat (buf, start);
 		}

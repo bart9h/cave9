@@ -146,14 +146,13 @@ static void digger_init(Digger *digger, float radius)
 
 void fast_forward(Game *game)
 {
-	printf("%d", game->start);
-	while((game->digger.ship.pos[2] - cave_len(&game->cave)) / (game->mode==ONE_BUTTON?2:1) < game->start)
+	while ((game->digger.ship.pos[2] - cave_len(&game->cave)) / (game->mode==ONE_BUTTON?2:1) < game->start)
 	{
 		digger_control (&game->digger, game->mode);
 		cave_gen (&game->cave, &game->digger);
 		ship_move (SHIP(&game->digger), 0.05);
 	}
-	COPY(game->player.pos, game->cave.centers[game->cave.i]);
+	COPY(game->player.pos, game->cave.centers[(game->cave.i + 1) % SEGMENT_COUNT]);
 }
 
 void game_init (Game* game, Args* args)
