@@ -162,7 +162,7 @@ void score_init (Score* score, Args* args, int caveseed, int monstal)
 			int fscore = 0;
 			while(!(fseed == score->caveseed && fmonstal == score->monstal) && !feof(fp))
 			{
-				fscanf (fp, "%11d%2d%11d ", &fseed, &fmonstal, &fscore);
+				fscanf (fp, "%11d:%2d:%11d ", &fseed, &fmonstal, &fscore);
 			}
 			if(fseed == caveseed && fmonstal == monstal)
 				score->local = fscore;
@@ -212,13 +212,13 @@ void score_update (Score* score, int new_score, bool is_global)
 				{
 					while (!feof(fp) && !found)
 					{
-						fscanf (fp, "%11d%2d%11d ", &fseed, &fmonstal, &fscore);
+						fscanf (fp, "%11d:%2d:%11d", &fseed, &fmonstal, &fscore);
 						if (fseed == score->caveseed && fmonstal == score->monstal)
 						{
 							if (fscore <= score->local)
 							{
-								fseek(fp, -12, SEEK_CUR);
-								fprintf(fp, "%11d", score->local);
+								fseek(fp, -11, SEEK_CUR);
+								fprintf(fp, "%011d", score->local);
 							}
 							found = true;
 						}
@@ -226,7 +226,7 @@ void score_update (Score* score, int new_score, bool is_global)
 				}
 				if (!found || !readwrite)
 				{
-					fprintf(fp, "%11d%2d%11d\n", score->caveseed, score->monstal, score->local);
+					fprintf(fp, "%011d:%02d:%011d\n", score->caveseed, score->monstal, score->local);
 				}
 				fclose (fp);
 			}
