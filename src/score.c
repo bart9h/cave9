@@ -160,12 +160,12 @@ void score_init (Score* score, Args* args, int caveseed, int monstal)
 			int fseed = -1;
 			int fmonstal = 0;
 			int fscore = 0;
-			while(fseed != score->caveseed && fmonstal != score->monstal && !feof(fp))
+			while(!(fseed == score->caveseed && fmonstal == score->monstal) && !feof(fp))
 			{
 				fscanf (fp, "%11d%2d%11d ", &fseed, &fmonstal, &fscore);
 			}
 			if(fseed == caveseed && fmonstal == monstal)
-				score->local = fscore;
+				score->global = fscore;
 			fclose (fp);
 		}
 	}
