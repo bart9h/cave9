@@ -165,7 +165,7 @@ void score_init (Score* score, Args* args, int caveseed, int monstal)
 				fscanf (fp, "%11d%2d%11d ", &fseed, &fmonstal, &fscore);
 			}
 			if(fseed == caveseed && fmonstal == monstal)
-				score->global = fscore;
+				score->local = fscore;
 			fclose (fp);
 		}
 	}
