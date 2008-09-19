@@ -155,12 +155,12 @@ void fast_forward(Game *game)
 	// put the player in the middle of the cave
 	COPY(game->player.pos, game->cave.centers[(game->cave.i + 1) % SEGMENT_COUNT]);
 
-	game->player.vel[0] += (game->cave.centers[(game->cave.i + 2) % SEGMENT_COUNT][0] - 
+	game->player.vel[0] += (game->cave.centers[(game->cave.i + 2) % SEGMENT_COUNT][0] -
 	                        game->cave.centers[(game->cave.i + 1) % SEGMENT_COUNT][0]) * 20;
 
-	game->player.vel[1] += (game->cave.centers[(game->cave.i + 2) % SEGMENT_COUNT][1] - 
+	game->player.vel[1] += (game->cave.centers[(game->cave.i + 2) % SEGMENT_COUNT][1] -
 	                        game->cave.centers[(game->cave.i + 1) % SEGMENT_COUNT][1]) * 20;
-	
+
 	// the y-component of the vector should be biased towards upwards movement,
 	// as reverting downwards-movement is *very* hard.
 	if (game->player.vel[1] < 0)

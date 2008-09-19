@@ -287,20 +287,19 @@ int main_control (int argc, char* argv[])
 
 		switch (input.state) {
 		case PLAY:
-			//if(lastDiggerMove <= SDL_GetTicks() - 50)
 			if(game.digger.ship.pos[2] <= game.player.pos[2] + cave_len(&game.cave))
 			{
 				digger_control (&game.digger, game.mode);
 				cave_gen (&game.cave, &game.digger);
 				ship_move (SHIP(&game.digger), 0.05);
 			}
-			
+
 			if (args.autopilot)
 				autopilot (&game, dt);
 			else
 				player_control (&game.player, &input, game.mode);
 			ship_move (&game.player, dt);
-		
+
 			if (collision (&game.cave, &game.player) <= 0) {
 				input.state = GAMEOVER;
 				game.player.dist = -1;

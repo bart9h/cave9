@@ -149,7 +149,7 @@ void score_init (Score* score, Args* args, int caveseed, int monstal)
 
 	const char* paths[] = { "", ".", "~/.cave9", NULL };
 	const char* filename = find_file (SCORE_FILE, paths, false);
-	
+
 	score->local = 0;
 	score->caveseed = caveseed;
 	score->monstal = monstal;
