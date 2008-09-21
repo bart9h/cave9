@@ -105,10 +105,10 @@ static void control (Render* render, Audio* audio, Game* game, Input* input)
 
 static void player_control (Ship* player, Input* input, int game_mode)
 {
-#define K(k) (input->pressed[k])
-	bool up    = K(SDLK_DOWN)  || K(SDLK_UP);
-	bool left  = K(SDLK_LEFT)  || K(SDLK_LSHIFT) || K(SDLK_LCTRL);
-	bool right = K(SDLK_RIGHT) || K(SDLK_RSHIFT) || K(SDLK_RCTRL);
+#define K(k) (input->pressed[SDLK_##k])
+	bool up    = K(DOWN)  || K(UP) || K(w) || K(s);;
+	bool left  = K(LEFT)  || K(LSHIFT) || K(LCTRL) || K(a);
+	bool right = K(RIGHT) || K(RSHIFT) || K(RCTRL) || K(d);
 
 	if (game_mode == ONE_BUTTON) {
 		player->lefton = player->righton = left || up || right;
