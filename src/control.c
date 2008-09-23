@@ -34,7 +34,7 @@ typedef struct Input_struct
 
 static void pause (Render* render, Audio* audio, Game* game, Input* input)
 {
-	if (input->state == PLAY)  {
+	if (input->state == PLAY) {
 		input->state = PAUSE;
 		render_message (render, game, "PAUSED");
 		audio_stop (audio);

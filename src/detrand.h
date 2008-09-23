@@ -24,7 +24,7 @@ extern int randval;
 extern int randseed;
 
 float detrand();
-void detsrand(int seed);
+void detsrand (int seed);
 
 #define DRAND (detrand() / 2.0 + 0.5)
 #define DRAND_BIG (int)(DRAND * RAND_MAX)

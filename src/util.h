@@ -10,12 +10,13 @@
 /* paths[] must be NULL-terminated */
 extern char bin_path[];
 void find_init (const char* argv0);
-const char* find_file (const char* basename, 
-		const char* paths[], 
+const char* find_file (
+		const char* basename,
+		const char* paths[],
 		bool required);
 
-void arabic (char *buf, unsigned int n);
-void roman  (char *buf, unsigned int n);
+void arabic (char* buf, unsigned int n);
+void roman  (char* buf, unsigned int n);
 
 #define NUMBER_STR_MAX 128
 
