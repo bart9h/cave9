@@ -48,25 +48,28 @@ float cave_len (Cave *cave)
 
 static inline float generate_stalactites(Cave *cave, float mult_y, float cos_a)
 {
+	static const float change_prob = 0.001;
+	static const float some_prob = 0.01;
+	static const float many_prob = 0.05;
 	float prob = 0;
 	float change = DRAND;
 
 	switch (cave->stalactites_status)
 	{
 	case STALACT_NONE:
-		if (change < 0.001)
+		if (change < change_prob)
 			cave->stalactites_status = STALACT_SOME;
 		return mult_y;
 	case STALACT_SOME:
-		prob = 0.01;
-		if (change < 0.001)
+		prob = some_prob;
+		if (change < change_prob)
 			cave->stalactites_status = STALACT_NONE;
-		else if (change > 0.999)
+		else if (change > (1 - change_prob))
 			cave->stalactites_status = STALACT_MANY;
 		break;
 	case STALACT_MANY:
-		prob = 0.05;
-		if (change < 0.001)
+		prob = many_prob;
+		if (change < change_prob)
 			cave->stalactites_status = STALACT_SOME;
 		break;
 	default:
