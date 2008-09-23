@@ -46,6 +46,37 @@ float cave_len (Cave *cave)
 	return cave->segs[tail][0][2] - cave->segs[head][0][2];
 }
 
+static inline float generate_stalactites(Cave *cave, float mult_y, float cos_a)
+{
+	float prob = 0;
+	float change = DRAND;
+
+	switch (cave->stalactites_status)
+	{
+	case STALACT_NONE:
+		if (change < 0.001)
+			cave->stalactites_status = STALACT_SOME;
+		return mult_y;
+	case STALACT_SOME:
+		prob = 0.01;
+		if (change < 0.001)
+			cave->stalactites_status = STALACT_NONE;
+		else if (change > 0.999)
+			cave->stalactites_status = STALACT_MANY;
+		break;
+	case STALACT_MANY:
+		prob = 0.05;
+		if (change < 0.001)
+			cave->stalactites_status = STALACT_SOME;
+		break;
+	default:
+		//WTF??
+		assert("stalactites_status not possible" == 0);
+	}
+	
+	return DRAND < prob ? 1 : mult_y;
+}
+
 void cave_gen (Cave* cave, Digger* digger)
 {
 	Ship *ship = SHIP(digger);
@@ -75,11 +106,8 @@ void cave_gen (Cave* cave, Digger* digger)
 		mult_x = (A + sin(mult_x))/B;
 		mult_y = (A + sin(mult_y))/B;
 
-		if (cave->has_stalactites) {
-			// cos_a == 0.7 +/- 45°
-			if (DRAND < 0.01 && cos_a > -0.7 && cos_a < 0.7)
-				mult_y = 1;
-		}
+		if (cave->stalactites_status != STALACT_DISABLED)
+			mult_y = generate_stalactites(cave, mult_y, cos_a);
 
 		SET(cave->segs[cave->i][i],
 			ship->pos[0] + (r * mult_x * cos_a) + 2 * DRAND,
@@ -109,7 +137,7 @@ static void cave_init (Cave* cave, Digger* digger, Args* args)
 	int game_mode = TWO_BUTTONS;
 	if (args != NULL) {
 		game_mode = args->game_mode;
-		cave->has_stalactites = args->stalactites;
+		cave->stalactites_status = args->stalactites?STALACT_NONE:STALACT_DISABLED;
 	}
 
 	Ship *ship = SHIP(digger);

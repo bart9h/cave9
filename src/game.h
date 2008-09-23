@@ -63,7 +63,12 @@ typedef struct  Cave_struct
 	Vec3  monolith_pos;
 	float monolith_yaw;
 
-	bool has_stalactites;
+	enum {
+		STALACT_DISABLED,
+		STALACT_NONE,
+		STALACT_SOME,
+		STALACT_MANY
+	} stalactites_status;
 } Cave;
 
 typedef struct Game_struct
