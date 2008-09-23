@@ -41,7 +41,7 @@ static void pause (Render* render, Audio* audio, Game* game, Input* input)
 	}
 }
 
-static void control (Render* render, Audio* audio, Game* game, Input* input)
+static void control (Render* render, Audio* audio, Game* game, Input* input, Args* args)
 {
 	SDL_Event event;
 
@@ -64,7 +64,7 @@ static void control (Render* render, Audio* audio, Game* game, Input* input)
 				|| input->state == PAUSE
 				|| input->state == GAMEOVER) {
 					if(input->state == GAMEOVER)
-						game_init (game, NULL);
+						game_init (game, args);
 					render_message (render, game, "");
 					input->state = PLAY;
 					audio_start (audio, &game->player);
@@ -283,7 +283,7 @@ int main_control (int argc, char* argv[])
 	while (input.state != QUIT) {
 		int t0 = SDL_GetTicks();
 
-		control (&render, &audio, &game, &input);
+		control (&render, &audio, &game, &input, &args);
 
 		switch (input.state) {
 		case PLAY:

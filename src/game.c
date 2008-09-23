@@ -202,17 +202,17 @@ void fast_forward(Game *game)
 
 void game_init (Game* game, Args* args)
 {
-	if (args != NULL) {
-		game->mode = args->game_mode;
-		game->monoliths = args->monoliths;
-		game->caveseed = args->caveseed;
-		if (game->caveseed != 0)
-		{
-			game->start = args->start;
-		} else {
-			game->player.start = game->digger.ship.start = (float)args->start;
-			game->start = 0;
-		}
+	assert(args != NULL);
+
+	game->mode = args->game_mode;
+	game->monoliths = args->monoliths;
+	game->caveseed = args->caveseed;
+	if (game->caveseed != 0)
+	{
+		game->start = args->start;
+	} else {
+		game->player.start = game->digger.ship.start = (float)args->start;
+		game->start = 0;
 	}
 
 	if (game->caveseed == 0)
@@ -225,6 +225,7 @@ void game_init (Game* game, Args* args)
 	cave_init (&game->cave, &game->digger, args);
 	if (game->start)
 		fast_forward(game);
+
 	score_init (&game->score, args, game->caveseed, game->monoliths * 2/* + game->stalactites*/); // XXX uncomment this, once stalactites are implemented
 }
 
