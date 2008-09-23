@@ -381,7 +381,7 @@ static void render_hud (Render* render, Game* game)
 	if(game->player.dist == FLT_MAX)
 		return;
 
-#define HUD_TEXT_MAX 80
+#define HUD_TEXT_MAX 128 //TODO: strncat
 	char buf[HUD_TEXT_MAX];
 
 #ifdef FONT_MENU_FILE
@@ -445,7 +445,7 @@ static void render_hud (Render* render, Game* game)
 			}
 
 			char start[NUMBER_STR_MAX];
-			number (start, game->player.start);
+			number (start, MAX(game->player.start, game->start));
 			strcat (buf, "  starting at ");
 			strcat (buf, start);
 		}

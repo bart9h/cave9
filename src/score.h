@@ -35,13 +35,16 @@ typedef struct Score_struct
 	int global;
 	char* filename;
 
+	int caveseed; // the seed used to generate the cave - 0 for random
+	int monstal;  // monoliths? * 2 + stalactites
+
 #ifdef GLOBAL_SCORE
 	UDPsocket udp_sock;
 	UDPpacket* udp_pkt;
 #endif
 } Score;
 
-void score_init (Score*, Args*);
+void score_init (Score*, Args*, int caveseed, int monstal);
 void score_finish (Score*);
 void score_update (Score*, int new_score, bool is_global);
 

@@ -26,6 +26,8 @@
 #include "vec.h"
 #include "game.h"
 #include "util.h"
+#include "detrand.h"
+#include "time.h"
 
 const char* data_paths[] =
 {
@@ -75,13 +77,13 @@ void cave_gen (Cave* cave, Digger* digger)
 
 		if (cave->has_stalactites) {
 			// cos_a == 0.7 +/- 45°
-			if (RAND < 0.01 && cos_a > -0.7 && cos_a < 0.7)
+			if (DRAND < 0.01 && cos_a > -0.7 && cos_a < 0.7)
 				mult_y = 1;
 		}
 
 		SET(cave->segs[cave->i][i],
-			ship->pos[0] + (r * mult_x * cos_a) + 2 * RAND,
-			ship->pos[1] + (r * mult_y * sin_a) + 2 * RAND,
+			ship->pos[0] + (r * mult_x * cos_a) + 2 * DRAND,
+			ship->pos[1] + (r * mult_y * sin_a) + 2 * DRAND,
 			ship->pos[2]
 		);
 	}
@@ -114,7 +116,7 @@ static void cave_init (Cave* cave, Digger* digger, Args* args)
 	cave->i = 0;
 	do {
 		digger_control(digger, game_mode);
-		ship_move(ship, 1./FPS);
+		ship_move(ship, 1./50);
 		cave_gen(cave, digger);
 	}
 	while(cave->i != 0);
@@ -142,18 +144,57 @@ static void digger_init(Digger *digger, float radius)
 	digger->y_bottom_radius = 0.0;
 }
 
+void fast_forward(Game *game)
+{
+	while ((game->digger.ship.pos[2] - cave_len(&game->cave)) / (game->mode==ONE_BUTTON?2:1) < game->start)
+	{
+		digger_control (&game->digger, game->mode);
+		cave_gen (&game->cave, &game->digger);
+		ship_move (SHIP(&game->digger), 0.05);
+	}
+	// put the player in the middle of the cave
+	COPY(game->player.pos, game->cave.centers[(game->cave.i + 1) % SEGMENT_COUNT]);
+
+	game->player.vel[0] += (game->cave.centers[(game->cave.i + 2) % SEGMENT_COUNT][0] -
+	                        game->cave.centers[(game->cave.i + 1) % SEGMENT_COUNT][0]) * 20;
+
+	game->player.vel[1] += (game->cave.centers[(game->cave.i + 2) % SEGMENT_COUNT][1] -
+	                        game->cave.centers[(game->cave.i + 1) % SEGMENT_COUNT][1]) * 20;
+
+	// the y-component of the vector should be biased towards upwards movement,
+	// as reverting downwards-movement is *very* hard.
+	if (game->player.vel[1] < 0)
+		game->player.vel[1] *= 0.1;
+
+	COPY(game->player.lookAt, game->player.vel);
+}
+
 void game_init (Game* game, Args* args)
 {
 	if (args != NULL) {
 		game->mode = args->game_mode;
 		game->monoliths = args->monoliths;
-		game->player.start = game->digger.ship.start = (float)args->start;
+		game->caveseed = args->caveseed;
+		if (game->caveseed != 0)
+		{
+			game->start = args->start;
+		} else {
+			game->player.start = game->digger.ship.start = (float)args->start;
+			game->start = 0;
+		}
 	}
+
+	if (game->caveseed == 0)
+		detsrand(time(NULL));
+	else
+		detsrand(game->caveseed);
 
 	ship_init (&game->player, SHIP_RADIUS);
 	digger_init (&game->digger, MAX_CAVE_RADIUS);
 	cave_init (&game->cave, &game->digger, args);
-	score_init (&game->score, args);
+	if (game->start)
+		fast_forward(game);
+	score_init (&game->score, args, game->caveseed, game->monoliths * 2/* + game->stalactites*/); // XXX uncomment this, once stalactites are implemented
 }
 
 void ship_move (Ship* ship, float dt)
@@ -200,19 +241,19 @@ void digger_control (Digger* digger, int game_mode)
 	};
 
 	if( 
+			DRAND < twist*noise ||
 			ship->vel[1] >  max_vel[1] || 
 			ship->vel[1] < -max_vel[1] || 
 			ship->vel[0] >  max_vel[0] ||
-			ship->vel[0] < -max_vel[0] ||
-			RAND < twist*noise
+			ship->vel[0] < -max_vel[0]
 		) 
 	{
-		if(RAND>twist/2)
-			ship->lefton = RAND<twist*noise ? rand()%2 :
+		if(DRAND>twist/2)
+			ship->lefton = DRAND<twist*noise ? DRAND_BIG % 2 :
 				ship->vel[1] < 0 || ship->vel[0] > +max_vel[0]; 
 
-		if(RAND>twist/2)
-			ship->righton = RAND<twist*noise ? rand()%2 :
+		if(DRAND>twist/2)
+			ship->righton = DRAND<twist*noise ? DRAND_BIG % 2 :
 				ship->vel[1] < 0 || ship->vel[0] < -max_vel[0];
 
 		if (game_mode == ONE_BUTTON)
@@ -233,10 +274,10 @@ void digger_control (Digger* digger, int game_mode)
 	if (ship->pos[2] - ship->start  <  .33*SEGMENT_COUNT*SEGMENT_LEN)
 		ship->lefton = ship->righton = false;
 
-	digger->x_right_radius += RAND - 0.5;
-	digger->y_top_radius += RAND - 0.5;
-	digger->x_left_radius += RAND - 0.5;
-	digger->y_bottom_radius += RAND - 0.5;
+	digger->x_right_radius += DRAND - 0.5;
+	digger->y_top_radius += DRAND - 0.5;
+	digger->x_left_radius += DRAND - 0.5;
+	digger->y_bottom_radius += DRAND - 0.5;
 }
 
 void autopilot (Game* game, float dt)
@@ -359,7 +400,7 @@ float collision (Cave* cave, Ship* ship)
 
 bool game_nocheat (Game *game)
 {
-	return (game->player.start == 0);
+	return (game->player.start == 0 && game->start == 0);
 }
 
 int game_score (Game *game)

@@ -93,7 +93,6 @@ void viewport (Display* display, GLsizei w, GLsizei h, GLsizei bpp,
 		glShadeModel(GL_SMOOTH);
 	else
 		glShadeModel(GL_FLAT);
-		
 
 	if(aa) {
 		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);

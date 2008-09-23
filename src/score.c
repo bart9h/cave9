@@ -116,7 +116,7 @@ static void score_net_update (Score* score)
 
 #endif
 
-void score_init (Score* score, Args* args)
+void score_init (Score* score, Args* args, int caveseed, int monstal)
 {
 	if (args == NULL)
 		return;
@@ -149,12 +149,23 @@ void score_init (Score* score, Args* args)
 
 	const char* paths[] = { "", ".", "~/.cave9", NULL };
 	const char* filename = find_file (SCORE_FILE, paths, false);
+
 	score->local = 0;
+	score->caveseed = caveseed;
+	score->monstal = monstal;
+
 	if(filename != NULL) {
 		FILE* fp = fopen (filename, "r");
 		if (fp != NULL) {
-			fscanf (fp, "%d", &score->local);
-			printf("Score '%s' %d\n", filename, score->local);
+			int fseed = -1;
+			int fmonstal = 0;
+			int fscore = 0;
+			while(!(fseed == score->caveseed && fmonstal == score->monstal) && !feof(fp))
+			{
+				fscanf (fp, "%11d:%2d:%11d ", &fseed, &fmonstal, &fscore);
+			}
+			if(fseed == caveseed && fmonstal == monstal)
+				score->local = fscore;
 			fclose (fp);
 		}
 	}
@@ -182,11 +193,41 @@ void score_update (Score* score, int new_score, bool is_global)
 
 		if (new_score > score->local) {
 			score->local = new_score;
-			FILE* fp = fopen (score->filename, "w");
+			FILE* fp = fopen (score->filename, "r+");
+			bool readwrite = true;
+			if (fp == NULL)
+			{
+				// file didn't exist yet, we need to create an empty one
+				fp = fopen (score->filename, "w");
+				readwrite = false;
+			}
 			if (fp == NULL) {
 				perror ("failed to open score file");
 			} else {
-				fprintf (fp, "%d\n", score->local);
+				int fseed = -1;
+				int fmonstal = 0;
+				int fscore = 0;
+				bool found = false;
+				if (readwrite)
+				{
+					while (!feof(fp) && !found)
+					{
+						fscanf (fp, "%11d:%2d:%11d", &fseed, &fmonstal, &fscore);
+						if (fseed == score->caveseed && fmonstal == score->monstal)
+						{
+							if (fscore <= score->local)
+							{
+								fseek(fp, -11, SEEK_CUR);
+								fprintf(fp, "%011d", score->local);
+							}
+							found = true;
+						}
+					}
+				}
+				if (!found || !readwrite)
+				{
+					fprintf(fp, "%011d:%02d:%011d\n", score->caveseed, score->monstal, score->local);
+				}
 				fclose (fp);
 			}
 		}

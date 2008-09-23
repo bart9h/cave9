@@ -68,12 +68,27 @@ const char* find_file (const char* basename,
 	return NULL;
 }
 
-void arabic (char *buf, unsigned int n)
+void arabic (char* buf, unsigned int n)
 {
-	snprintf(buf,NUMBER_STR_MAX,"%d",n);
+	const char thousand_separator = ' ';
+
+	if (snprintf (buf, NUMBER_STR_MAX, "%u", n) >= NUMBER_STR_MAX) {
+		fprintf (stderr, "truncated number %u\n", n);
+		return;
+	}
+
+	int from = strlen (buf);
+	int to = from + (from-1)/3;
+
+	while (from != to) {
+		from -= 3;
+		to -= 3;
+		memmove (&buf[to], &buf[from], 3);
+		buf[--to] = thousand_separator;
+	}
 }
 
-void roman (char *buf, unsigned int n)
+void roman (char* buf, unsigned int n)
 {
 	n /= 10;  // score scale
 

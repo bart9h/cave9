@@ -105,10 +105,10 @@ static void control (Render* render, Audio* audio, Game* game, Input* input)
 
 static void player_control (Ship* player, Input* input, int game_mode)
 {
-#define K(k) (input->pressed[k])
-	bool up    = K(SDLK_DOWN)  || K(SDLK_UP);
-	bool left  = K(SDLK_LEFT)  || K(SDLK_LSHIFT) || K(SDLK_LCTRL);
-	bool right = K(SDLK_RIGHT) || K(SDLK_RSHIFT) || K(SDLK_RCTRL);
+#define K(k) (input->pressed[SDLK_##k])
+	bool up    = K(DOWN)  || K(UP) || K(w) || K(s);;
+	bool left  = K(LEFT)  || K(LSHIFT) || K(LCTRL) || K(a);
+	bool right = K(RIGHT) || K(RSHIFT) || K(RCTRL) || K(d);
 
 	if (game_mode == ONE_BUTTON) {
 		player->lefton = player->righton = left || up || right;
@@ -138,6 +138,7 @@ static void args_init (Args* args, int argc, char* argv[])
 	args->aidtrack = 0;
 	args->roman = 0;
 	args->lighting = 0;
+	args->caveseed = 0;
 #ifdef GLOBAL_SCORE
 	args->port = GLOBAL_SCORE_PORT;
 # ifndef NET_DEFAULT_DISABLED
@@ -176,7 +177,8 @@ static void args_init (Args* args, int argc, char* argv[])
 		{ "",   "--autopilot",    false,  true,   &args->autopilot,    NULL         },
 		{ "",   "--aidtrack",     false,  true,   &args->aidtrack,     NULL         },
 		{ "",   "--roman",        false,  false,  &args->roman,        NULL         },
-		{ "",   "--lighting",     false,  true,   &args->lighting,     NULL         },
+		{ "",   "--lighting",     false,  false,  &args->lighting,     NULL         },
+		{ "-L", "--level",        true,   false,  &args->caveseed,     NULL         },
 #ifdef GLOBAL_SCORE                         
 		{ "-s", "--server",       true,   true,   NULL,                args->server },
 		{ "-p", "--port",         true,   true,   &args->port,         NULL         },
@@ -285,21 +287,18 @@ int main_control (int argc, char* argv[])
 
 		switch (input.state) {
 		case PLAY:
-			digger_control (&game.digger, game.mode);
-			ship_move (SHIP(&game.digger), dt);
-			
+			if(game.digger.ship.pos[2] <= game.player.pos[2] + cave_len(&game.cave))
+			{
+				digger_control (&game.digger, game.mode);
+				cave_gen (&game.cave, &game.digger);
+				ship_move (SHIP(&game.digger), 0.05);
+			}
+
 			if (args.autopilot)
 				autopilot (&game, dt);
 			else
 				player_control (&game.player, &input, game.mode);
 			ship_move (&game.player, dt);
-			
-#ifndef NO_STRETCH_FIX
-			game.player.pos[2] = 
-				0.7 * (game.player.pos[2]) +
-				0.3 * (game.digger.ship.pos[2] - cave_len(&game.cave));
-			// XXX fix player position in case digger moves differently
-#endif
 
 			if (collision (&game.cave, &game.player) <= 0) {
 				input.state = GAMEOVER;
@@ -310,7 +309,6 @@ int main_control (int argc, char* argv[])
 				game_score_update (&game);
 				SDL_Delay(500); audio_stop (&audio); // time to listen hit sound
 			}
-			cave_gen (&game.cave, &game.digger);
 
 			render_frame (&render, &game);
 			break;
