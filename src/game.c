@@ -210,15 +210,12 @@ void game_init (Game* game, Args* args)
 	if (game->caveseed != 0)
 	{
 		game->start = args->start;
+		detsrand(game->caveseed);
 	} else {
 		game->player.start = game->digger.ship.start = (float)args->start;
 		game->start = 0;
-	}
-
-	if (game->caveseed == 0)
 		detsrand(time(NULL));
-	else
-		detsrand(game->caveseed);
+	}
 
 	ship_init (&game->player, SHIP_RADIUS);
 	digger_init (&game->digger, MAX_CAVE_RADIUS);
