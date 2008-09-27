@@ -80,6 +80,8 @@ void arabic (char* buf, unsigned int n)
 	int from = strlen (buf);
 	int to = from + (from-1)/3;
 
+	if (from != to)
+		buf[to] = 0;
 	while (from != to) {
 		from -= 3;
 		to -= 3;
