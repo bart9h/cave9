@@ -14,6 +14,10 @@ Victor Bogado  <victor@bogado.net>
 	- --aidtrack feature
 	- cave deformation code
 
+Timo Paulssen <timonator@perpetuum-immobile.de>
+	- deterministic cave generation (--level)
+	- other improvements and fixes
+
 Daniel Beltrao Borges  (aka dbb9h)  <dbb9hells@gmail.com>
 	- prototype 2D cave-generation code
 
