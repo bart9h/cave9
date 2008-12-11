@@ -33,12 +33,14 @@ SDL, SDL_image, SDL_ttf, and SDL_net.
 To compile it, you must have the development version of all these libraries
 installed on your system (-dev on debian, -devel on fedora).
 
-After that, just get into the cave9 dir and run 'make'.
-If this don't work, please report to cave9@googlegroups.com
+After that, just get into the cave9 src dir and run 'make'.
+The binary will be placed in cave9 dir.
 
 You also need to download the cave9_data file from the game homepage,
 and extract it either under cave9 dir, or under "~/.cave9/".
 It contains the font, texture and sounds.
+
+If this doesn't work, please report to cave9@googlegroups.com
 
 Use the --help option to check for startup options.
 
@@ -64,7 +66,7 @@ KEYBOARD CONTROLS:
 Activate both thursts.
 
 <Left-Arrow>   or  <Left-Control>   or  <Left-Shift>:
-Activate the right thrust jet.
+Activate the left thrust jet.
 
 <Right-Arrow>  or  <Right-Control>  or  <Right-Shift>:
 Activate the right thrust jet.
