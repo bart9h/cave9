@@ -37,7 +37,7 @@ typedef GLfloat Vec3[3];
 #define COPY(a,b) \
 	(a)[0]=(b)[0]; \
 	(a)[1]=(b)[1]; \
-	(a)[2]=(b)[2]; 
+	(a)[2]=(b)[2];
 
 #define CROSS(a,b,c) \
 	(a)[0]=(b)[1]*(c)[2]-(b)[2]*(c)[1]; \
@@ -50,32 +50,32 @@ typedef GLfloat Vec3[3];
 #define ADD2(a,b,c) \
 	(a)[0]=(b)[0]+(c)[0]; \
 	(a)[1]=(b)[1]+(c)[1]; \
-	(a)[2]=(b)[2]+(c)[2]; 
+	(a)[2]=(b)[2]+(c)[2];
 
 #define ADD(a,b) \
 	(a)[0]+=(b)[0]; \
 	(a)[1]+=(b)[1]; \
-	(a)[2]+=(b)[2]; 
+	(a)[2]+=(b)[2];
 
 #define ADDSCALE(a,b,x) \
 	(a)[0]+=(b)[0]*(x); \
 	(a)[1]+=(b)[1]*(x); \
-	(a)[2]+=(b)[2]*(x); 
+	(a)[2]+=(b)[2]*(x);
 
 #define SUB2(a,b,c) \
 	(a)[0]=(b)[0]-(c)[0]; \
 	(a)[1]=(b)[1]-(c)[1]; \
-	(a)[2]=(b)[2]-(c)[2]; 
+	(a)[2]=(b)[2]-(c)[2];
 
 #define SCALE(a,k) \
 	(a)[0]*=(k); \
 	(a)[1]*=(k); \
-	(a)[2]*=(k); 
+	(a)[2]*=(k);
 
 #define SCALE2(a,b,k) \
 	(a)[0]=(b)[0]*(k); \
 	(a)[1]=(b)[1]*(k); \
-	(a)[2]=(b)[2]*(k); 
+	(a)[2]=(b)[2]*(k);
 
 #define LEN(a) \
 	sqrt(DOT((a),(a)))
@@ -83,7 +83,7 @@ typedef GLfloat Vec3[3];
 #define SET(a,x,y,z) \
 	(a)[0]=(x); \
 	(a)[1]=(y); \
-	(a)[2]=(z); 
+	(a)[2]=(z);
 
 #if 1
 #define NORM(a) { \

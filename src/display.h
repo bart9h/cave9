@@ -49,13 +49,13 @@ typedef struct Display_struct
 void display_init (Display*, GLfloat near_plane, GLfloat far_plane, Args*);
 void viewport (Display*, GLsizei w, GLsizei h, GLsizei bpp, bool fullscreen, int aa, bool lighting);
 
-void display_text_box (Display* display, GLuint *id, 
-		TTF_Font *font, const char* text,
+void display_text_box (Display* display, GLuint *id,
+		TTF_Font* font, const char* text,
 		float x, float y, float w, float h,
 		float r, float g, float b, float a);
 
-void display_text (Display* display, GLuint *id, 
-		TTF_Font *font, const char* text,
+void display_text (Display* display, GLuint *id,
+		TTF_Font* font, const char* text,
 		float x, float y, float scale,
 		float r, float g, float b, float a);
 
@@ -64,7 +64,7 @@ void display_end_frame();
 
 GLuint load_texture (const char* filename);
 
-TTF_Font *load_font (const char* filename, int size);
+TTF_Font* load_font (const char* filename, int size);
 
 #endif
 

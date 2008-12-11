@@ -40,20 +40,20 @@ static GLuint render_make_ship_list()
 	const float a = 0.525731112119;
 	const float b = 0.850650808354;
 	const float p[12][6][3] = {
-		{ {  0,  a,  b }, {  0,  z,  x }, { -1,  1,  1 }, { -x,  0,  z }, {  x,  0,  z }, {  1,  1,  1 } },
-		{ {  0,  a, -b }, {  0,  z, -x }, {  1,  1, -1 }, {  x,  0, -z }, { -x,  0, -z }, { -1,  1, -1 } },
-		{ {  0, -a,  b }, {  0, -z,  x }, {  1, -1,  1 }, {  x,  0,  z }, { -x,  0,  z }, { -1, -1,  1 } },
-		{ {  0, -a, -b }, {  0, -z, -x }, { -1, -1, -1 }, { -x,  0, -z }, {  x,  0, -z }, {  1, -1, -1 } },
+		{ { 0, a, b}, { 0, z, x}, {-1, 1, 1}, {-x, 0, z}, { x, 0, z}, { 1, 1, 1} },
+		{ { 0, a,-b}, { 0, z,-x}, { 1, 1,-1}, { x, 0,-z}, {-x, 0,-z}, {-1, 1,-1} },
+		{ { 0,-a, b}, { 0,-z, x}, { 1,-1, 1}, { x, 0, z}, {-x, 0, z}, {-1,-1, 1} },
+		{ { 0,-a,-b}, { 0,-z,-x}, {-1,-1,-1}, {-x, 0,-z}, { x, 0,-z}, { 1,-1,-1} },
 
-		{ {  b,  0,  a }, {  x,  0,  z }, {  1, -1,  1 }, {  z, -x,  0 }, {  z,  x,  0 }, {  1,  1,  1 } },
-		{ { -b,  0,  a }, { -x,  0,  z }, { -1,  1,  1 }, { -z,  x,  0 }, { -z, -x,  0 }, { -1, -1,  1 } },
-		{ {  b,  0, -a }, {  x,  0, -z }, {  1,  1, -1 }, {  z,  x,  0 }, {  z, -x,  0 }, {  1, -1, -1 } },
-		{ { -b,  0, -a }, { -x,  0, -z }, { -1, -1, -1 }, { -z, -x,  0 }, { -z,  x,  0 }, { -1,  1, -1 } },
+		{ { b, 0, a}, { x, 0, z}, { 1,-1, 1}, { z,-x, 0}, { z, x, 0}, { 1, 1, 1} },
+		{ {-b, 0, a}, {-x, 0, z}, {-1, 1, 1}, {-z, x, 0}, {-z,-x, 0}, {-1,-1, 1} },
+		{ { b, 0,-a}, { x, 0,-z}, { 1, 1,-1}, { z, x, 0}, { z,-x, 0}, { 1,-1,-1} },
+		{ {-b, 0,-a}, {-x, 0,-z}, {-1,-1,-1}, {-z,-x, 0}, {-z, x, 0}, {-1, 1,-1} },
 
-		{ {  a,  b,  0 }, {  z,  x,  0 }, {  1,  1, -1 }, {  0,  z, -x }, {  0,  z,  x }, {  1,  1,  1 } },
-		{ {  a, -b,  0 }, {  z, -x,  0 }, {  1, -1,  1 }, {  0, -z,  x }, {  0, -z, -x }, {  1, -1, -1 } },
-		{ { -a,  b,  0 }, { -z,  x,  0 }, { -1,  1,  1 }, {  0,  z,  x }, {  0,  z, -x }, { -1,  1, -1 } },
-		{ { -a, -b,  0 }, { -z, -x,  0 }, { -1, -1, -1 }, {  0, -z, -x }, {  0, -z,  x }, { -1, -1,  1 } }
+		{ { a, b, 0}, { z, x, 0}, { 1, 1,-1}, { 0, z,-x}, { 0, z, x}, { 1, 1, 1} },
+		{ { a,-b, 0}, { z,-x, 0}, { 1,-1, 1}, { 0,-z, x}, { 0,-z,-x}, { 1,-1,-1} },
+		{ {-a, b, 0}, {-z, x, 0}, {-1, 1, 1}, { 0, z, x}, { 0, z,-x}, {-1, 1,-1} },
+		{ {-a,-b, 0}, {-z,-x, 0}, {-1,-1,-1}, { 0,-z,-x}, { 0,-z, x}, {-1,-1, 1} }
 	};
 
 	GLuint ship_list = glGenLists (SEGMENT_COUNT);
@@ -89,14 +89,14 @@ void render_init (Render* render, Args* args)
 	render->msg_id = 0;
 
 	float scale = MIN(
-			display->screen->w/(float)BASE_W, 
+			display->screen->w/(float)BASE_W,
 			display->screen->h/(float)BASE_H
 		) * args->antialiasing ? 2 : 1;
 
 	render->font      = load_font(FONT_FILE,      48*scale);
 
 	display_start_frame (0,0,0);
-	display_text_box(display, &render->msg_id, render->font, 
+	display_text_box(display, &render->msg_id, render->font,
 			"loading cave9", .5,.5,1,.25, .75,.25,.25,1);
 	display_end_frame();
 
@@ -146,18 +146,18 @@ static void render_world_transform (Render* render, Ship* player)
 	COPY(render->cam, player->pos);
 
 	if (render->shaking) {
-		float hit = ship_hit(player);
+		float hit = ship_hit (player);
 		Vec3 shake = {
-			shake_hit    * RAND * player->radius * hit + 
+			shake_hit    * RAND * player->radius * hit +
 			shake_vel    * RAND * player->radius * player->vel[0] / MAX_VEL_X +
-			shake_thrust * RAND * player->radius * player->lefton + 
+			shake_thrust * RAND * player->radius * player->lefton +
 			shake_thrust * RAND * player->radius * player->righton +
 			shake_velZ   * RAND * player->radius * player->vel[2] / MAX_VEL_Z,
-					 
-			shake_hit    * RAND * player->radius * hit + 
+					
+			shake_hit    * RAND * player->radius * hit +
 			shake_vel    * RAND * player->radius * player->vel[1] / MAX_VEL_Y +
 			shake_velZ   * RAND * player->radius * player->vel[2] / MAX_VEL_Z,
-					 
+
 			shake_hit    * RAND * player->radius * hit +
 			shake_vel    * RAND * player->radius * player->vel[2] / MAX_VEL_Z
 		};
@@ -170,7 +170,7 @@ static void render_world_transform (Render* render, Ship* player)
 	//render->target[2]+=10;
 
 	GLfloat lightpos[] = {render->cam[0], render->cam[1], render->cam[2] + 1, 1.0f};
-	glLightfv(GL_LIGHT1, GL_POSITION, lightpos);
+	glLightfv (GL_LIGHT1, GL_POSITION, lightpos);
 
 	gluLookAt(
 		render->cam[0], render->cam[1], render->cam[2],
@@ -186,22 +186,24 @@ static void cave_model (Render* render, Cave* cave, int mode, float minimapoffse
 
 		// aid bread-crumb track
 		if (render->aidtrack  &&  mode == DISPLAYMODE_NORMAL && !(i&1)) {
-			glDisable(GL_LIGHTING);
-			glColor4f(0.5,0.5,1,1);
-			glBegin(GL_LINE_STRIP);
+			glDisable (GL_LIGHTING);
+			glColor4f (0.5,0.5,1,1);
+			glBegin (GL_LINE_STRIP);
 
 			#define CRUMB_SIZE 0.1
-			glVertex3f(cave->centers[i][0]-CRUMB_SIZE,cave->centers[i][1]-CRUMB_SIZE,cave->centers[i][2]);
-			glVertex3f(cave->centers[i][0]+CRUMB_SIZE,cave->centers[i][1]+CRUMB_SIZE,cave->centers[i][2]);
-			glVertex3fv(cave->centers[i]);
-			glVertex3f(cave->centers[i][0]+CRUMB_SIZE,cave->centers[i][1]-CRUMB_SIZE,cave->centers[i][2]);
-			glVertex3f(cave->centers[i][0]-CRUMB_SIZE,cave->centers[i][1]+CRUMB_SIZE,cave->centers[i][2]);
+			#define c cave->centers[i]
+			glVertex3f (c[0]-CRUMB_SIZE, c[1]-CRUMB_SIZE, c[2]);
+			glVertex3f (c[0]+CRUMB_SIZE, c[1]+CRUMB_SIZE, c[2]);
+			glVertex3fv (c);
+			glVertex3f (c[0]+CRUMB_SIZE, c[1]-CRUMB_SIZE, c[2]);
+			glVertex3f (c[0]-CRUMB_SIZE, c[1]+CRUMB_SIZE, c[2]);
+			#undef c
 
 			glEnd();
 		}
 
 		if (render->lighting)
-			glEnable(GL_LIGHTING);
+			glEnable (GL_LIGHTING);
 
 		int i0 = (cave->i + i)%SEGMENT_COUNT;
 
@@ -224,7 +226,7 @@ static void cave_model (Render* render, Cave* cave, int mode, float minimapoffse
 				glBindTexture (GL_TEXTURE_2D,
 #ifdef OUTSIDE_TEXTURE_FILE
 						cave->segs[0][0][2] < ROOM_LEN/2
-						? render->outside_texture_id : 
+						? render->outside_texture_id :
 #endif
 						render->wall_texture_id
 				);
@@ -239,28 +241,28 @@ static void cave_model (Render* render, Cave* cave, int mode, float minimapoffse
 
 				if (mode == DISPLAYMODE_NORMAL) {
 					glTexCoord2f(
-							cave->segs[i0][k0][2]/SEGMENT_LEN/SEGMENT_COUNT, 
+							cave->segs[i0][k0][2]/SEGMENT_LEN/SEGMENT_COUNT,
 							(float)k/SECTOR_COUNT);
 				}
 
 				GLfloat thenormal[] = {0, 0, 0};
 				SUB2(thenormal, cave->centers[i0], cave->segs[i0][k0]);
 				NORM(thenormal);
-				glNormal3fv(thenormal);
+				glNormal3fv (thenormal);
 
-				glVertex3fv(cave->segs[i0][k0]);
+				glVertex3fv (cave->segs[i0][k0]);
 
 				if (mode == DISPLAYMODE_NORMAL) {
 					glTexCoord2f(
-							cave->segs[i1][k0][2]/SEGMENT_LEN/SEGMENT_COUNT, 
+							cave->segs[i1][k0][2]/SEGMENT_LEN/SEGMENT_COUNT,
 							(float)k/SECTOR_COUNT);
 				}
 
 				SUB2(thenormal, cave->centers[i1], cave->segs[i1][k0]);
 				NORM(thenormal);
-				glNormal3fv(thenormal);
+				glNormal3fv (thenormal);
 
-				glVertex3fv(cave->segs[i1][k0]);
+				glVertex3fv (cave->segs[i1][k0]);
 			}
 			glEnd();
 
@@ -275,7 +277,7 @@ static void cave_model (Render* render, Cave* cave, int mode, float minimapoffse
 			glDisable (GL_DEPTH_TEST);
 			glEnable  (GL_BLEND);
 			glDisable (GL_TEXTURE_2D);
-			glDisable(GL_LIGHTING);
+			glDisable (GL_LIGHTING);
 		}
 
 		if (mode == DISPLAYMODE_MINIMAP) {
@@ -284,7 +286,7 @@ static void cave_model (Render* render, Cave* cave, int mode, float minimapoffse
 			float ioffset = minimapoffset - (int)(minimapoffset); // i wonder if this works at all?
 			float alpha = .12f - .12f * FASTPOW6(((SEGMENT_COUNT / 2.0f - i + ioffset) / SEGMENT_COUNT * 2.0f));
 
-			if(i > render->gauge * SEGMENT_COUNT)
+			if (i > render->gauge * SEGMENT_COUNT)
 				glColor4f (1, 1, 1, alpha);
 			else
 				glColor4f (
@@ -354,31 +356,31 @@ static void ship_model(Render* render, Ship* ship)
 
 	float f = 1.8;
 
-	glDisable(GL_DEPTH_TEST);
-	glEnable(GL_BLEND);
-	glDisable(GL_TEXTURE_2D);
-	glDisable(GL_LIGHTING);
+	glDisable (GL_DEPTH_TEST);
+	glEnable  (GL_BLEND);
+	glDisable (GL_TEXTURE_2D);
+	glDisable (GL_LIGHTING);
 
-	glColor4f(1,white,white,alpha);
+	glColor4f (1,white,white,alpha);
 	glPushMatrix();
-		glTranslatef(0,0,-SHIP_RADIUS*f);
-		glCallList( render->ship_list );
+		glTranslatef (0,0,-SHIP_RADIUS*f);
+		glCallList (render->ship_list);
 	glPopMatrix();
 
 	glPushMatrix();
-		render_world_transform(render, ship);
+		render_world_transform (render, ship);
 		glTranslatef(
 				ship->pos[0],
 				ship->pos[1],
 				ship->pos[2]+SHIP_RADIUS*f
 		);
-		glCallList( render->ship_list );
+		glCallList (render->ship_list);
 	glPopMatrix();
 }
 
 static void render_hud (Render* render, Game* game)
 {
-	if(game->player.dist == FLT_MAX)
+	if (game->player.dist == FLT_MAX)
 		return;
 
 #define HUD_TEXT_MAX 128 //TODO: strncat
@@ -403,7 +405,7 @@ static void render_hud (Render* render, Game* game)
 		char session[NUMBER_STR_MAX];
 		number (session,game->score.session);
 
-		display_text (&render->display, &render->hud_id, font, buf, 
+		display_text (&render->display, &render->hud_id, font, buf,
 				0.25,1, .25, 1,1,1,.5);
 
 		render->gauge = ship_speed(&game->player);
@@ -450,7 +452,7 @@ static void render_hud (Render* render, Game* game)
 			strcat (buf, start);
 		}
 
-		display_text_box (&render->display, &render->hud_id, font, buf, 
+		display_text_box (&render->display, &render->hud_id, font, buf,
 			.5,.85, 1,.1, 1,1,1,1);
 	}
 
@@ -458,19 +460,19 @@ static void render_hud (Render* render, Game* game)
 
 static void render_minimap (Render* render, Game* game)
 {
-	float len = cave_len(&game->cave);
+	float len = cave_len (&game->cave);
 	glPushMatrix();
-		glScalef(.0065,.003,.001);
-		glRotatef(-90,0,1,0);
+		glScalef (.0065,.003,.001);
+		glRotatef (-90,0,1,0);
 		glTranslatef(
 				-game->player.pos[0]-len*8, // XXX hardcoded
 				-game->player.pos[1]-MAX_CAVE_RADIUS*3,
 				-game->player.pos[2]-len/2);
 		cave_model (render, &game->cave, true, game->player.pos[0] - len*8);
 
-		glColor4f(1,1,1,0.05);
+		glColor4f (1,1,1,0.05);
 		glTranslatef (game->player.pos[0],game->player.pos[1],game->player.pos[2]);
-		glCallList( render->ship_list );
+		glCallList (render->ship_list);
 	glPopMatrix();
 }
 
@@ -479,7 +481,7 @@ void render_frame (Render* render, Game* game)
 	display_start_frame (0,0,0);
 
 	if (game != NULL) {
-		float hit = ship_hit(&game->player);
+		float hit = ship_hit (&game->player);
 		if(hit < .9) { // avoid drawing the cave from outside
 			glPushMatrix();
 				render_world_transform (render, &game->player);
@@ -488,18 +490,18 @@ void render_frame (Render* render, Game* game)
 			glPopMatrix();
 		}
 
-		if(hit) {
+		if (hit) {
 			glDisable (GL_DEPTH_TEST);
 			glEnable  (GL_BLEND);
 			glDisable (GL_TEXTURE_2D);
 			glDisable (GL_LIGHTING);
 
-			glColor4f(1,0,0,hit/2.);
+			glColor4f (1,0,0, hit/2.);
 			glBegin (GL_QUADS);
-			glVertex3f(-1,-1,-1);
-			glVertex3f(+1,-1,-1);
-			glVertex3f(+1,+1,-1);
-			glVertex3f(-1,+1,-1);
+			glVertex3f (-1,-1,-1);
+			glVertex3f (+1,-1,-1);
+			glVertex3f (+1,+1,-1);
+			glVertex3f (-1,+1,-1);
 			glEnd();
 		}
 
@@ -508,8 +510,8 @@ void render_frame (Render* render, Game* game)
 		render_hud (render, game);
 	}
 
-	display_text_box (&render->display, &render->msg_id, 
-			render->font, render_message_buf, 
+	display_text_box (&render->display, &render->msg_id,
+			render->font, render_message_buf,
 			.5,.5,1,.25, 1,1,1,1);
 
 	display_end_frame();

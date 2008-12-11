@@ -39,11 +39,45 @@ const char* data_paths[] =
 	NULL
 };
 
-float cave_len (Cave *cave)
+float cave_len (Cave* cave)
 {
 	int head = cave->i;
 	int tail = (head - 1 + SEGMENT_COUNT) % SEGMENT_COUNT;
 	return cave->segs[tail][0][2] - cave->segs[head][0][2];
+}
+
+static inline float generate_stalactites (Cave* cave, float mult_y, float cos_a)
+{
+	static const float change_prob = 0.001;
+	static const float some_prob = 0.01;
+	static const float many_prob = 0.05;
+	float prob = 0;
+	float change = DRAND;
+
+	switch (cave->stalactites_status)
+	{
+	case STALACT_NONE:
+		if (change < change_prob)
+			cave->stalactites_status = STALACT_SOME;
+		return mult_y;
+	case STALACT_SOME:
+		prob = some_prob;
+		if (change < change_prob)
+			cave->stalactites_status = STALACT_NONE;
+		else if (change > (1 - change_prob))
+			cave->stalactites_status = STALACT_MANY;
+		break;
+	case STALACT_MANY:
+		prob = many_prob;
+		if (change < change_prob)
+			cave->stalactites_status = STALACT_SOME;
+		break;
+	default:
+		//WTF??
+		assert ("stalactites_status not possible" == 0);
+	}
+
+	return DRAND < prob ? 1 : mult_y;
 }
 
 void cave_gen (Cave* cave, Digger* digger)
@@ -61,7 +95,7 @@ void cave_gen (Cave* cave, Digger* digger)
 	const float A = B*WALL_MULT_MAX - 1;
 
 	// generate new segment
-	for( i = 0; i < SECTOR_COUNT; ++i ) {
+	for (i = 0; i < SECTOR_COUNT; ++i) {
 		float a = M_PI_2+(i-1)*M_PI*2/SECTOR_COUNT;
 		float r = ship->radius;
 
@@ -75,11 +109,8 @@ void cave_gen (Cave* cave, Digger* digger)
 		mult_x = (A + sin(mult_x))/B;
 		mult_y = (A + sin(mult_y))/B;
 
-		if (cave->has_stalactites) {
-			// cos_a == 0.7 +/- 45°
-			if (DRAND < 0.01 && cos_a > -0.7 && cos_a < 0.7)
-				mult_y = 1;
-		}
+		if (cave->stalactites_status != STALACT_DISABLED)
+			mult_y = generate_stalactites(cave, mult_y, cos_a);
 
 		SET(cave->segs[cave->i][i],
 			ship->pos[0] + (r * mult_x * cos_a) + 2 * DRAND,
@@ -109,7 +140,7 @@ static void cave_init (Cave* cave, Digger* digger, Args* args)
 	int game_mode = TWO_BUTTONS;
 	if (args != NULL) {
 		game_mode = args->game_mode;
-		cave->has_stalactites = args->stalactites;
+		cave->stalactites_status = args->stalactites?STALACT_NONE:STALACT_DISABLED;
 	}
 
 	Ship *ship = SHIP(digger);
@@ -144,7 +175,7 @@ static void digger_init(Digger *digger, float radius)
 	digger->y_bottom_radius = 0.0;
 }
 
-void fast_forward(Game *game)
+void fast_forward (Game* game)
 {
 	while ((game->digger.ship.pos[2] - cave_len(&game->cave)) / (game->mode==ONE_BUTTON?2:1) < game->start)
 	{
@@ -171,29 +202,27 @@ void fast_forward(Game *game)
 
 void game_init (Game* game, Args* args)
 {
-	if (args != NULL) {
-		game->mode = args->game_mode;
-		game->monoliths = args->monoliths;
-		game->caveseed = args->caveseed;
-		if (game->caveseed != 0)
-		{
-			game->start = args->start;
-		} else {
-			game->player.start = game->digger.ship.start = (float)args->start;
-			game->start = 0;
-		}
-	}
+	assert(args != NULL);
 
-	if (game->caveseed == 0)
-		detsrand(time(NULL));
-	else
+	game->mode = args->game_mode;
+	game->monoliths = args->monoliths;
+	game->caveseed = args->caveseed;
+	if (game->caveseed != 0)
+	{
+		game->start = args->start;
 		detsrand(game->caveseed);
+	} else {
+		game->player.start = game->digger.ship.start = (float)args->start;
+		game->start = 0;
+		detsrand(time(NULL));
+	}
 
 	ship_init (&game->player, SHIP_RADIUS);
 	digger_init (&game->digger, MAX_CAVE_RADIUS);
 	cave_init (&game->cave, &game->digger, args);
 	if (game->start)
 		fast_forward(game);
+
 	score_init (&game->score, args, game->caveseed, game->monoliths * 2/* + game->stalactites*/); // XXX uncomment this, once stalactites are implemented
 }
 
