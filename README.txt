@@ -62,19 +62,19 @@ the lateral forces, and pull you straight up.
 KEYBOARD CONTROLS:
 ==================
 
-<Up-Arrow>  or  <Down-Arrow>
+<Up-Arrow>  or  <Down-Arrow>  or  <W>  or  <S>
 Activate both thursts.
 
-<Left-Arrow>   or  <Left-Control>   or  <Left-Shift>:
+<Left-Arrow>   or  <Left-Control>   or  <Left-Shift>  or  <A>
 Activate the left thrust jet.
 
-<Right-Arrow>  or  <Right-Control>  or  <Right-Shift>:
+<Right-Arrow>  or  <Right-Control>  or  <Right-Shift>  or  <D>
 Activate the right thrust jet.
 
-<Space>
+<P>  or  <Space>  or  <Pause>
 Pause/un-pause the game.
 
-<F>
+<F>  or  <Alt>+<Enter>
 Toggles full-screen mode.
 
 <Esc>  or  <Q>
