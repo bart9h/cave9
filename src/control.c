@@ -326,6 +326,7 @@ int main_control (int argc, char* argv[])
 		dt = (SDL_GetTicks()-t0)/1000.;
 	}
 
+	audio_stop(&audio);
 	//render_message (&render, &game, "bye.");
 	score_finish (&game.score);
 
