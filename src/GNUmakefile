@@ -3,7 +3,7 @@
 TARGET = ../cave9
 
 CFLAGS += -std=c99 -Wall -Werror -ggdb `sdl-config --cflags`
-LDFLAGS += `sdl-config --libs` -lm -L/usr/X11/lib -lGL -lGLU -lSDL_ttf -lSDL_image
+LDFLAGS += -lSDL_ttf -lSDL_image `sdl-config --libs` -L/usr/X11/lib -lGL -lGLU -lm
 
 ifdef GLOBAL_SCORE
 CFLAGS += -DGLOBAL_SCORE
@@ -30,7 +30,7 @@ SRCS = \
 OBJS = $(subst .c,.o,$(SRCS))
 
 $(TARGET): $(OBJS)
-	$(CC) $(LDFLAGS) -o $@ $^
+	$(CC) $^ $(LDFLAGS) -o $@
 
 
 #{{{1  administrative rules
