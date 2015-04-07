@@ -36,10 +36,6 @@ installed on your system (-dev on debian, -devel on fedora).
 After that, just get into the cave9 src dir and run 'make'.
 The binary will be placed in cave9 dir.
 
-You also need to download the cave9_data file from the game homepage,
-and extract it either under cave9 dir, or under "~/.cave9/".
-It contains the font, texture and sounds.
-
 If this doesn't work, please report to cave9@googlegroups.com
 
 Use the --help option to check for startup options.
