@@ -162,7 +162,7 @@ static void ship_init (Ship* ship, float radius)
 	ship->radius = radius;
 	ship->dist = FLT_MAX;
 	SET (ship->repulsion,0,1,0);
-	ship->lefton = ship->righton = false;
+	ship->lefton = ship->righton = ship->downon = ship->upon = false;
 }
 
 static void digger_init(Digger *digger, float radius)
@@ -230,18 +230,28 @@ void ship_move (Ship* ship, float dt)
 {
 	float acc = THRUST*dt;
 	int roll = 0;
-
+        
+        if(ship->upon) {
+                Vec3 up = { 0, acc*2.0, 0 };
+                ADD(ship->vel, up);
+        }
+        
 	if(ship->lefton) {
-		Vec3 leftup = { -acc, acc/2, 0 };
+		Vec3 leftup = { -acc*2, acc/2.0, 0 };
 		ADD(ship->vel, leftup);
 		roll--;
 	}
 
 	if(ship->righton) {
-		Vec3 rightup = { +acc, acc/2, 0 };
+		Vec3 rightup = { +acc*2, acc/2.0, 0 };
 		ADD(ship->vel, rightup);
 		roll++;
 	}
+	
+	if(ship->downon) {
+                Vec3 down = { 0, -acc*2, 0 };
+                ADD(ship->vel, down);
+        }
 
 	ship->vel[1] -= GRAVITY*dt;
 
