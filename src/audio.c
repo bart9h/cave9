@@ -87,8 +87,8 @@ static void audio_mix(void *data, Uint8 *stream, int len)
                 float both  = audio_index_value(&audio->back,  0) +
                               audio_index_value(&audio->hit,   0) +
                               audio_index_value(&audio->crash, 0);
-                float left  = audio_index_value(&audio->left,  audio->ship->lefton);
-                float right = audio_index_value(&audio->right, audio->ship->righton);
+                float left  = audio_index_value(&audio->left,  audio->ship->lefton || audio->ship->upon || audio->ship->downon);
+                float right = audio_index_value(&audio->right, audio->ship->righton || audio->ship->upon || audio->ship->downon);
 
                 buffer[i++] = audio_soft_clamp(right + both);
                 buffer[i++] = audio_soft_clamp(left  + both);
