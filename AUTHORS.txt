@@ -21,3 +21,6 @@ Timo Paulssen <timonator@perpetuum-immobile.de>
 Daniel Beltrao Borges  (aka dbb9h)  <dbb9hells@gmail.com>
 	- prototype 2D cave-generation code
 
+Timothy Welborn <welborntimothy@gmail.com>
+	- fixed GCC compile errors
+

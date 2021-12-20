@@ -51,7 +51,7 @@ const char* find_file (const char* basename,
 			snprintf (path, FILENAME_MAX, "%s/%s", paths[i], basename);
 		}
 		else { // bin
-			snprintf (path, FILENAME_MAX, "%s/%s/%s", bin_path, paths[i], basename);
+			snprintf (path, FILENAME_MAX + 2, "%s/%s/%s", bin_path, paths[i], basename);
 		}
 
 		if (access (path, R_OK) == 0)
