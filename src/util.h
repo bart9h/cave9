@@ -18,7 +18,7 @@ const char* find_file (
 void arabic (char* buf, unsigned int n);
 void roman  (char* buf, unsigned int n);
 
-#define NUMBER_STR_MAX 128
+#define NUMBER_STR_MAX 96
 
 // FIXME what is the license?
 // ######################################################################

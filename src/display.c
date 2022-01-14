@@ -16,7 +16,6 @@
  */
 
 #include <SDL_image.h>
-#include <SDL_opengl.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <stdlib.h>
