@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <float.h>
+#include <GL/glu.h>
 #include "render.h"
 #include "util.h"
 

@@ -21,7 +21,6 @@
 #include <math.h>
 #include <float.h>
 #include <assert.h>
-#include <SDL_opengl.h>
 #include <GL/gl.h>
 #include "vec.h"
 #include "game.h"

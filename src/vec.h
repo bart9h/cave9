@@ -15,10 +15,9 @@
 	along with cave9.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef math_h_included
-#define math_h_included
+#ifndef cave9_vec_h_included
+#define cave9_vec_h_included
 
-#include <SDL_opengl.h>
 #include <GL/gl.h>
 
 #define EPSILON 0.000001
