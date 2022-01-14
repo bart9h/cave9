@@ -91,7 +91,7 @@ void render_init (Render* render, Args* args)
 	float scale = MIN(
 			display->screen->w/(float)BASE_W,
 			display->screen->h/(float)BASE_H
-		) * args->antialiasing ? 2 : 1;
+		) * (args->antialiasing ? 2 : 1);
 
 	render->font      = load_font(FONT_FILE,      48*scale);
 
