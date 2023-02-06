@@ -35,7 +35,7 @@ typedef struct  Ship_struct
 	float radius;
 	Vec3 pos, vel, lookAt;
 	float roll;
-	bool lefton, righton;
+	bool lefton, righton, downon, upon;
 	float dist;  // distance to cave wall
 	Vec3 repulsion;  // normal to collision
 	float start;
@@ -113,7 +113,7 @@ extern const char* data_paths[];
 
 #define GRAVITY 9.8
 #define THRUST (GRAVITY*2)
-#define VELOCITY 30.0
+#define VELOCITY 120.0
 
 #define MAX_CAVE_RADIUS (SHIP_RADIUS*30)
 #define MIN_CAVE_RADIUS (SHIP_RADIUS*5)
